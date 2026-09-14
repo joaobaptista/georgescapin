@@ -1,0 +1,25 @@
+Options -Indexes
+
+<FilesMatch "(?i)^(?:\.|(?:composer|package(?:-lock)?)\.(?:json|lock)|.*\.(?:sql|log|md|bak))$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Preserve bearer tokens when Apache/FastCGI forwards requests to PHP.
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule ^ - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # This compatibility rule is only needed when the project root is the
+    # document root. Prefer configuring the server directly to public/.
+    RewriteRule ^(?:app|database|routes|resources|vendor|node_modules|scripts)(?:/|$) - [F,END,NC]
+
+    # Existing public assets are served from public/ without exposing the rest
+    # of the project. Everything else reaches the native front controller.
+    RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -f [OR]
+    RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -d
+    RewriteRule ^(.*)$ public/$1 [END]
+
+    RewriteRule ^ public/index.php [QSA,END]
+</IfModule>

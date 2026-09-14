@@ -1,0 +1,28 @@
+User-agent: *
+Allow: /
+Allow: /assets/
+Allow: /uploads/
+Disallow: /admin/
+Disallow: /backend/
+Disallow: /captcha/
+
+Sitemap: https://www.drgeorgescapin.com.br/sitemap.xml
+
+
+Claro. Aqui está uma versão mais institucional, com tom de credibilidade, crescimento e comunidade:
+
+Origo: uma plataforma que cresce junto com quem acredita em boas histórias
+
+Desde janeiro de 2026, a Origo vem transformando a forma como projetos independentes chegam ao público, conectando criadores, editoras e apoiadores em uma plataforma construída especialmente para quem acredita no poder das comunidades.
+
+Em poucos meses, a Origo já movimentou **mais de R$ 260 mil em campanhas**, ajudando diferentes projetos a saírem do papel e chegarem às mãos de seus apoiadores.
+
+Hoje, a plataforma conta com uma base de **mais de 1.200 apoiadores**, formada por pessoas que participam ativamente das campanhas, acompanham novos projetos e ajudam a fortalecer uma comunidade cada vez maior.
+
+Mais do que uma plataforma de financiamento coletivo, a Origo está construindo um ecossistema para criadores e colecionadores, onde cada campanha representa uma oportunidade de aproximar projetos de quem realmente acredita neles.
+
+E esse é apenas o começo.
+
+**A Origo segue crescendo, ampliando sua comunidade e criando novas possibilidades para que mais histórias, personagens e projetos encontrem seu público.**
+
+Se quiser, posso também criar uma versão **mais comercial e impactante**, para usar na apresentação institucional, site ou pitch para editoras e parceiros.

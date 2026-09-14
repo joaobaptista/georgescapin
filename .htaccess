@@ -1,0 +1,38 @@
+# Compatibilidade quando o DocumentRoot aponta para a raiz do projeto.
+#
+# A configuração recomendada é apontar o DocumentRoot para /public. Ainda
+# assim, estas regras permitem que hospedagens compartilhadas que apontam
+# para a raiz executem a aplicação sem reescrever /public repetidamente.
+
+# Bloqueio estrito a arquivos e pastas sensíveis
+<FilesMatch "(?i)^(\.env|\.env\.example|\.git|\.htaccess|composer\.(json|lock)|package(-lock)?\.json|.*\.sql|.*\.log|README\.md|ROADMAP\.md)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Bloqueia acesso direto a diretórios do backend
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Bloqueia pastas internas
+    RewriteRule ^(?:app|config|database|backend)(?:/|$) - [F,L,NC]
+
+    # Impede que um redirecionamento interno seja processado novamente por
+    # este arquivo. Sem esta guarda, /clinica pode virar
+    # public/clinica, depois public/public/clinica, causando HTTP 500.
+    RewriteRule ^public(?:/|$) - [L,NC]
+
+    # Expõe somente arquivos que existem dentro de /public, mantendo URLs
+    # de assets como /assets/css/style.css. Diretórios não são mapeados para
+    # evitar que /admin seja desviado para /public/admin/.
+    RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -f
+    RewriteRule ^(.+)$ public/$1 [L]
+
+    # Todas as demais requisições são resolvidas pelo front controller.
+    RewriteRule ^ public/index.php [QSA,L]
+</IfModule>

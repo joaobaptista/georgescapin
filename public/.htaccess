@@ -1,0 +1,21 @@
+# Bloqueio a arquivos sensíveis caso estejam em public
+<FilesMatch "(?i)^(\.env|\.git|\.htaccess|.*\.sql|.*\.log|.*\.bak)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Não reescreve arquivos e pastas reais existentes
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Encaminha todas as demais requisições para o Front Controller
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>

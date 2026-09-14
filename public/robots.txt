@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Allow: /assets/
+Allow: /uploads/
+Disallow: /admin/
+Disallow: /backend/
+Disallow: /captcha/
+
+Sitemap: https://www.drgeorgescapin.com.br/sitemap.xml

@@ -1,0 +1,12 @@
+# Bloqueia qualquer tentativa de executar scripts enviados por upload.
+# Isso funciona tanto com mod_php quanto com PHP-FPM, sem diretivas Options
+# ou php_flag que alguns provedores não permitem em .htaccess.
+<FilesMatch "(?i)\.(php|phtml|php3|php4|php5|php7|php8|phps|pl|py|cgi|asp|aspx|sh|bash|exe|jsp)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
