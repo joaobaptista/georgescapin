@@ -1,0 +1,49 @@
+-- MySQL Seed Inicial: Dados reais e completos da Clínica Dr. George Scapin
+
+-- Senha padrão do admin: admin123 (hash BCRYPT)
+INSERT INTO users (id, name, email, password) VALUES 
+(1, 'Dr. George Scapin', 'admin@drgeorgescapin.com.br', '$2y$12$1wGmKc8IUNqm42ESLmmN4OD0qv71WF8eXeX6nU0LASy5tvIEhHDWC')
+ON DUPLICATE KEY UPDATE name = VALUES(name), email = VALUES(email), password = VALUES(password);
+
+INSERT INTO site_settings (setting_key, setting_value) VALUES 
+('site_title', 'Dr. George Scapin | Harmonização e Estética Facial Avançada em RS'),
+('meta_description', 'Clínica Dr. George Scapin em Porto Alegre. Especialista em Estética Facial, Toxina Botulínica, Preenchimento e Harmonização Full Face. Agende sua consulta.'),
+('meta_keywords', 'Dr. George Scapin, estética facial, harmonização facial, toxina botulínica, preenchimento facial, full face, clínica de estética Porto Alegre, rejuvenescimento'),
+('contact_phone', '(51) 99824-4379'),
+('contact_whatsapp', '5551998244379'),
+('contact_address', 'Av. Ipiranga, 40, sala 1512 - Praia de Belas, Porto Alegre - RS | CEP 90160-090'),
+('contact_hours_week', 'Seg - Sex: 08h às 20h'),
+('contact_hours_sat', 'Sáb: 09h às 13h')
+ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value);
+
+INSERT INTO hero_content (id, title, subtitle, button_text, button_link, bg_image_dark, bg_image_light) VALUES 
+(1, 'Estética Avançada,<br>Gerenciamento do Envelhecimento,<br>Harmonização Facial e Corporal.', 'Resultados que transcendem o tempo. Harmonização sofisticada com o rigor e a excelência que sua beleza merece.', 'Agende sua consulta', '/contato', '/assets/images/hero.png', '/assets/images/hero_light.png')
+ON DUPLICATE KEY UPDATE title = VALUES(title), subtitle = VALUES(subtitle), button_text = VALUES(button_text), button_link = VALUES(button_link);
+
+INSERT INTO clinic_content (id, title, subtitle, paragraph_1, paragraph_2, highlight_quote, image_url) VALUES 
+(1, 'Dr. George Scapin', 'Biomédico Esteta | CRBM 5202<br>Especialista em Harmonização Facial Avançada', 'Com formação sólida e dedicação exclusiva à estética avançada e ao gerenciamento do envelhecimento, o Dr. George Scapin combina conhecimento anatômico aprofundado e visão artística refinada.', 'Cada paciente recebe um plano de tratamento 360° totalmente individualizado, utilizando produtos de padrão ouro e tecnologias modernas para proporcionar rejuvenescimento seguro, duradouro e com máxima naturalidade.', 'A verdadeira elegância está na naturalidade e no respeito aos seus traços.', '/assets/img/drgeorge.jpeg')
+ON DUPLICATE KEY UPDATE title = VALUES(title), subtitle = VALUES(subtitle), paragraph_1 = VALUES(paragraph_1), paragraph_2 = VALUES(paragraph_2), highlight_quote = VALUES(highlight_quote), image_url = VALUES(image_url);
+
+INSERT INTO procedures (id, title, slug, short_description, full_description, image_url, icon_name, sort_order, is_active) VALUES 
+(1, 'Toxina Botulínica', 'toxina-botulinica', 'De maneira segura, é possível diminuir linhas de expressões que são causadas pela movimentação repetitiva dos músculos faciais, como as linhas da testa, rugas entre as sobrancelhas e os famosos pés de galinha ao redor dos olhos.', 'A Toxina Botulínica é um dos tratamentos mais consagrados e eficazes na estética médica preventiva. Ao atuar no relaxamento dos músculos responsáveis pelas linhas dinâmicas, preserva a textura da pele e retarda o envelhecimento, mantendo a naturalidade e expressividade dos seus traços únicos.', '/assets/img/01.jpeg', 'sparkles', 1, 1),
+(2, 'Prevenção e Suavização de Rugas', 'prevencao-rugas', 'Ajuste fino da sua rotina e protocolos combinados para rejuvenescer sem exageros, tratando rugas estáticas e dinâmicas.', 'Combinando bioestimuladores de colágeno, peelings de alta precisão e hidratação injetável profunda (Skinboosters), tratamos as rugas em todas as suas camadas, estimulando a regeneração celular e a firmeza tecidual.', '/assets/img/02.jpeg', 'scan-face', 2, 1),
+(3, 'Harmonização Facial Full Face', 'harmonizacao-facial', 'A Harmonização Facial é um conjunto de procedimentos estéticos realizados com o objetivo de equilibrar e realçar os traços faciais, proporcionando uma aparência mais harmônica e rejuvenescida.', 'Com planejamento arquitetônico 360°, estruturamos malar, mandíbula, queixo, têmporas e lábios com ácido hialurônico de padrão ouro. O resultado é um rejuvenescimento global que valoriza a sua beleza natural.', '/assets/img/03.jpeg', 'user', 3, 1),
+(4, 'Harmonização Corporal', 'harmonizacao-corporal', 'A Harmonização Corporal é um conjunto de procedimentos estéticos realizados com o objetivo de tratar afecções estéticas como celulite, gordura localizada e flacidez, além de modelar e esculpir os contornos do corpo.', 'Utilizando bioestimuladores corporais (como ácido polilático e hidroxiapatita de cálcio) e preenchedores de alta densidade, conseguimos remodelar glúteos, tratar a flacidez de braços, abdômen e coxas com excelência e segurança.', '/assets/img/04.jpeg', 'activity', 4, 1)
+ON DUPLICATE KEY UPDATE title = VALUES(title), short_description = VALUES(short_description), full_description = VALUES(full_description), image_url = VALUES(image_url);
+
+INSERT INTO posts (id, title, slug, author, summary, content, image_url, is_published) VALUES 
+(1, 'Toxina Botulínica: O Segredo da Prevenção e Naturalidade', 'toxina-botulinica', 'Dr. George', 'Descubra como a toxina botulínica vai muito além de tratar rugas, atuando de forma preventiva para manter um rosto descansado e jovial.', '<p>Muitos pacientes chegam ao meu consultório com receio de perder a expressão facial. O que eu sempre reforço é que a toxina botulínica moderna, quando aplicada com técnica refinada, não paralisa o rosto. Pelo contrário, ela suaviza as expressões e previne o aprofundamento das linhas dinâmicas.</p><p>A durabilidade do procedimento varia de 3 a 5 meses, dependendo do metabolismo e estilo de vida de cada paciente. A prevenção é a chave do sucesso: iniciar o tratamento antes que as rugas se tornem estáticas (marcadas mesmo sem expressão) garante resultados extremamente mais naturais.</p><p>O meu foco é devolver o ar de descanso e a vivacidade que o tempo e o estresse diário tendem a apagar, sempre priorizando a sua anatomia única. Uma avaliação cuidadosa permite que a dosagem seja exata, entregando a você não um rosto congelado, mas sim a sua melhor versão.</p>', '/assets/botox.png', 1),
+(2, 'A Arte do Preenchimento Labial Seguro e Sofisticado', 'preenchimento-labial', 'Dr. George', 'O preenchimento labial ideal é aquele que realça sua beleza sem exageros. Entenda os pilares para um contorno perfeito e seguro.', '<p>Lábios bem desenhados transmitem jovialidade, sensualidade e elegância. No entanto, o medo de resultados exagerados ou artificiais ainda afasta muitas pessoas do preenchimento labial com ácido hialurônico.</p><p>A chave para um resultado elegante está no respeito à anatomia e às proporções áureas de cada rosto. O lábio inferior naturalmente deve ser ligeiramente mais volumoso que o superior, e o contorno do arco do cupido precisa ser esculpido com delicadeza.</p><p>Utilizando produtos de primeira linha com alta maleabilidade e biocompatibilidade, conseguimos devolver a hidratação, corrigir assimetrias e proporcionar um volume sutil que se harmoniza perfeitamente com os seus traços.</p>', '/assets/lips.png', 1),
+(3, 'Primeiros Passos na Estética Avançada: Qual o Tratamento Ideal?', 'procedimentos-esteticos', 'Dr. George', 'Dar o primeiro passo nos procedimentos estéticos pode gerar dúvidas. Veja como uma avaliação individualizada muda tudo.', '<p>Iniciar uma jornada de cuidados estéticos avançados é uma decisão importante que deve ser pautada pela confiança e pelo alinhamento de expectativas. Muitas pessoas sentem vontade de melhorar algum aspecto da face, mas não sabem por onde começar.</p><p>O primeiro passo é sempre uma consulta de avaliação 360°, onde analisamos a qualidade da pele, a dinâmica muscular, a perda de sustentação óssea e de compartimentos de gordura. A partir desse diagnóstico, traçamos um plano de tratamento personalizado em etapas.</p><p>A estética moderna não busca transformar você em outra pessoa, mas sim gerenciar o envelhecimento para que você se sinta radiante e confiante em todas as fases da vida.</p>', '/assets/fullface.png', 1),
+(4, 'Harmonização Corporal: Alta Performance para o Seu Corpo', 'harmonizacao-corporal', 'Dr. George', 'O conceito de harmonização vai além da face. Descubra como tecnologias avançadas podem esculpir contornos e tratar flacidez corporal.', '<p>A busca por um contorno corporal harmônico, firme e bem definido tem impulsionado tratamentos de alta performance que vão muito além de cirurgias invasivas.</p><p>A harmonização corporal combina bioestimuladores de colágeno, preenchedores corporais para glúteos e áreas específicas, e protocolos de combate à flacidez e celulite. Esses procedimentos estimulam a produção natural de colágeno e melhoram a densidade tecidual.</p><p>Com recuperação rápida e resultados progressivos, é possível conquistar firmeza, contorno e melhora significativa da textura da pele com total segurança e embasamento científico.</p>', '/assets/clinic.png', 1)
+ON DUPLICATE KEY UPDATE title = VALUES(title), summary = VALUES(summary), content = VALUES(content);
+
+INSERT INTO menu_items (id, label, url, target, sort_order, is_active, is_button) VALUES 
+(1, 'Início', '/', '_self', 1, 1, 0),
+(2, 'A Clínica', '/clinica', '_self', 2, 1, 0),
+(3, 'Procedimentos', '/procedimentos', '_self', 3, 1, 0),
+(4, 'Full Face', '/harmonizacao-facial', '_self', 4, 1, 0),
+(5, 'Blog', '/blog', '_self', 5, 1, 0),
+(6, 'Contato', '/contato', '_self', 6, 1, 0)
+ON DUPLICATE KEY UPDATE label = VALUES(label), url = VALUES(url), target = VALUES(target), sort_order = VALUES(sort_order), is_active = VALUES(is_active), is_button = VALUES(is_button);
+

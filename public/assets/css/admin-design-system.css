@@ -1,0 +1,149 @@
+/**
+ * ==============================================================================
+ * MATERIAL DESIGN 3 / CLEAN ADMIN DESIGN SYSTEM
+ * Dr. George Scapin CMS & Future Projects Framework
+ * ==============================================================================
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,400&display=swap');
+
+:root {
+  /* Font Families */
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+
+  /* Layout dimensions */
+  --admin-sidebar-w: 260px;
+  --admin-topbar-h: 68px;
+
+  /* Corner Radii */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==========================================================================
+   THEME TOKENS: DARK (Material 3 Deep Neutral)
+   ========================================================================== */
+[data-theme="dark"] {
+  /* Surfaces */
+  --bg-app: #0d1210;
+  --bg-surface: #141a17;
+  --bg-surface-container: #1b231f;
+  --bg-surface-container-high: #232c27;
+  --bg-surface-variant: #28342e;
+  
+  /* Borders & Outlines */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.15);
+  --card-border: rgba(197, 160, 89, 0.18);
+
+  /* Typography Colors */
+  --text-main: #f1f5f3;
+  --text-secondary: #c0ccc5;
+  --text-muted: #82938a;
+  --text-disabled: #54645b;
+
+  /* Primary Brand Accent (Refined Neutral Gold) */
+  --color-primary: #d4af65;
+  --color-primary-hover: #e0c283;
+  --color-primary-container: rgba(212, 175, 101, 0.15);
+  --color-on-primary: #121814;
+  --color-on-primary-container: #ecd8ae;
+
+  /* Legacy variable bridges */
+  --gold-primary: #d4af65;
+  --gold-light: #ecd8ae;
+  --bg-color: #0d1210;
+  --bg-light: #141a17;
+  --bg-input: #1b231f;
+
+  /* Functional Semantic Statuses */
+  --color-success: #10b981;
+  --color-success-container: rgba(16, 185, 129, 0.15);
+  --color-on-success: #064e3b;
+
+  --color-error: #f43f5e;
+  --color-error-container: rgba(244, 63, 94, 0.15);
+  --color-on-error: #881337;
+
+  --color-warning: #f59e0b;
+  --color-warning-container: rgba(245, 158, 11, 0.15);
+  --color-on-warning: #78350f;
+
+  --color-info: #0ea5e9;
+  --color-info-container: rgba(14, 165, 233, 0.15);
+  --color-on-info: #075985;
+
+  /* Elevations */
+  --elevation-1: 0px 1px 3px rgba(0, 0, 0, 0.4), 0px 1px 2px rgba(0, 0, 0, 0.6);
+  --elevation-2: 0px 4px 12px rgba(0, 0, 0, 0.5);
+  --elevation-3: 0px 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+/* ==========================================================================
+   THEME TOKENS: LIGHT (Material 3 Clean Neutral & Slate)
+   ========================================================================== */
+[data-theme="light"] {
+  /* Surfaces */
+  --bg-app: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-container: #f1f5f9;
+  --bg-surface-container-high: #e2e8f0;
+  --bg-surface-variant: #f3f4f6;
+
+  /* Borders & Outlines */
+  --border-subtle: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --card-border: #e2e8f0;
+
+  /* Typography Colors */
+  --text-main: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-disabled: #94a3b8;
+
+  /* Primary Brand Accent (Warm Champagne Gold) */
+  --color-primary: #a88434;
+  --color-primary-hover: #8f6e24;
+  --color-primary-container: #fef7e6;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #5a4310;
+
+  /* Legacy variable bridges */
+  --gold-primary: #a88434;
+  --gold-light: #5a4310;
+  --bg-color: #f8fafc;
+  --bg-light: #ffffff;
+  --bg-input: #ffffff;
+
+  /* Functional Semantic Statuses */
+  --color-success: #059669;
+  --color-success-container: #ecfdf5;
+  --color-on-success: #065f46;
+
+  --color-error: #e11d48;
+  --color-error-container: #fff1f2;
+  --color-on-error: #9f1239;
+
+  --color-warning: #d97706;
+  --color-warning-container: #fffbeb;
+  --color-on-warning: #92400e;
+
+  --color-info: #0284c7;
+  --color-info-container: #f0f9ff;
+  --color-on-info: #075985;
+
+  /* Elevations */
+  --elevation-1: 0px 1px 3px rgba(15, 23, 42, 0.08), 0px 1px 2px rgba(15, 23, 42, 0.04);
+  --elevation-2: 0px 4px 14px rgba(15, 23, 42, 0.06);
+  --elevation-3: 0px 10px 25px rgba(15, 23, 42, 0.08);
+}
