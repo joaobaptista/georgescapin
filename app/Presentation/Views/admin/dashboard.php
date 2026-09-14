@@ -62,7 +62,7 @@ ob_start();
           <th>Telefone</th>
           <th>Mensagem</th>
           <th>Status</th>
-          <th>Ações</th>
+          <th style="text-align: right;">Ações</th>
         </tr>
       </thead>
       <tbody>
@@ -77,7 +77,7 @@ ob_start();
                 <?= ucfirst($c['status']) ?>
               </span>
             </td>
-            <td>
+            <td style="text-align: right;">
               <a href="https://wa.me/55<?= preg_replace('/\D/', '', $c['telefone']) ?>?text=Olá%20<?= urlencode($c['nome']) ?>,%20recebemos%20sua%20mensagem%20no%20site%20do%20Dr.%20George%20Scapin." target="_blank" class="btn-primary" style="padding: 4px 10px; font-size: 0.75rem; background: #25D366; border-color: #25D366; color: #fff;">
                 <i data-lucide="message-circle" size="14"></i> WhatsApp
               </a>
@@ -98,12 +98,12 @@ ob_start();
   <table class="admin-table">
     <thead>
       <tr>
-        <th>Ordem</th>
-        <th>Imagem</th>
+        <th style="width: 60px;">Ordem</th>
+        <th style="width: 70px;">Imagem</th>
         <th>Título</th>
         <th>Ícone</th>
         <th>Status</th>
-        <th>Ações</th>
+        <th style="text-align: right; width: 180px;">Ações</th>
       </tr>
     </thead>
     <tbody>
@@ -118,8 +118,21 @@ ob_start();
               <?= $p['is_active'] ? 'Ativo' : 'Inativo' ?>
             </span>
           </td>
-          <td>
-            <a href="<?= url('/admin/procedures/edit/' . $p['id']) ?>" style="color: var(--gold-primary); margin-right: 15px; text-decoration: none;"><i data-lucide="edit" size="16"></i> Editar</a>
+          <td style="text-align: right;">
+            <div style="display: inline-flex; gap: 6px; align-items: center;">
+              <a href="<?= url('/admin/procedures/edit/' . $p['id']) ?>" class="btn-primary" style="padding: 5px 10px; font-size: 0.75rem;" title="Editar Procedimento">
+                <i data-lucide="edit" size="14"></i> Editar
+              </a>
+              <button type="button" onclick="openConfirmModal({
+                title: 'Excluir Procedimento?',
+                message: 'Tem certeza que deseja excluir o tratamento <strong><?= htmlspecialchars(addslashes($p['title'])) ?></strong>? A imagem e todos os dados associados serão removidos permanentemente.',
+                actionUrl: '<?= url('/admin/procedures/delete/' . $p['id']) ?>',
+                btnText: '<i data-lucide=\'trash-2\' size=\'15\'></i> Sim, Excluir',
+                type: 'danger'
+              })" class="btn-primary" style="padding: 5px 10px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444;" title="Excluir Procedimento">
+                <i data-lucide="trash-2" size="14"></i>
+              </button>
+            </div>
           </td>
         </tr>
       <?php endforeach; ?>

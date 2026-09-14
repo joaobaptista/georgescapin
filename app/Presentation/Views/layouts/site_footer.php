@@ -2,10 +2,19 @@
     <div class="footer-grid">
       <div class="footer-brand">
         <div class="logo-svg" style="background-image: url('<?= asset('assets/images/logo.svg') ?>'); background-position: left center;"></div>
-        <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-muted);">
-          Estética facial de alta performance e<br>sofisticação para realçar a sua melhor<br>versão.
+        <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">
+          <?= nl2br(htmlspecialchars($settings['footer_tagline'] ?? "Estética facial de alta performance e sofisticação para realçar a sua melhor versão.")) ?>
         </p>
-        <div class="footer-social" style="justify-content: flex-start;">
+        
+        <?php if (!empty($settings['social_instagram'])): ?>
+          <div style="margin-top: 12px; margin-bottom: 12px;">
+            <a href="<?= htmlspecialchars($settings['social_instagram']) ?>" target="_blank" rel="noopener noreferrer" style="color: var(--gold-primary); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 500;">
+              <i data-lucide="instagram" size="18"></i> Instagram Oficial
+            </a>
+          </div>
+        <?php endif; ?>
+
+        <div class="footer-social" style="justify-content: flex-start; margin-top: 10px;">
           <form id="newsletterForm" class="newsletter-form" onsubmit="handleNewsletter(event)">
             <input type="email" name="email" placeholder="Assine nossa Newsletter" required>
             <button type="submit" aria-label="Assinar"><i data-lucide="send" size="18"></i></button>
@@ -16,12 +25,24 @@
       <div class="footer-links">
         <h4>Navegação</h4>
         <nav class="footer-nav">
-          <a href="<?= url('/') ?>">Início</a>
-          <a href="<?= url('/clinica') ?>">George Scapin</a>
-          <a href="<?= url('/procedimentos') ?>">Procedimentos</a>
-          <a href="<?= url('/harmonizacao-facial') ?>">Harmonização Facial</a>
-          <a href="<?= url('/contato') ?>">Contato</a>
-          <a href="<?= url('/blog') ?>">Blog</a>
+          <?php 
+            $footerMenuRepo = new \App\Infrastructure\Repositories\PDOMenuRepository();
+            $footerMenuItems = $footerMenuRepo->getAll(true);
+          ?>
+          <?php if (!empty($footerMenuItems)): ?>
+            <?php foreach ($footerMenuItems as $fm): ?>
+              <a href="<?= (strpos($fm['url'], 'http') === 0) ? $fm['url'] : url($fm['url']) ?>" target="<?= htmlspecialchars($fm['target'] ?? '_self') ?>">
+                <?= htmlspecialchars($fm['label']) ?>
+              </a>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <a href="<?= url('/') ?>">Início</a>
+            <a href="<?= url('/clinica') ?>">George Scapin</a>
+            <a href="<?= url('/procedimentos') ?>">Procedimentos</a>
+            <a href="<?= url('/harmonizacao-facial') ?>">Harmonização Facial</a>
+            <a href="<?= url('/contato') ?>">Contato</a>
+            <a href="<?= url('/blog') ?>">Blog</a>
+          <?php endif; ?>
           <a href="<?= url('/admin/login') ?>" style="opacity: 0.4; font-size: 0.75rem; margin-top: 10px;">Área Restrita</a>
         </nav>
       </div>
@@ -44,7 +65,7 @@
     </div>
 
     <div class="footer-bottom">
-      <p>&copy; <?= date('Y') ?> Dr. George Scapin. Todos os direitos reservados.</p>
+      <p><?= htmlspecialchars(str_replace('{year}', date('Y'), $settings['footer_copyright'] ?? ('© ' . date('Y') . ' Dr. George Scapin. Todos os direitos reservados.'))) ?></p>
     </div>
   </footer>
 

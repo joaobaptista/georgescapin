@@ -1,8 +1,8 @@
 <?php require __DIR__ . '/../layouts/site_header.php'; ?>
 
   <div class="page-header" style="padding: 140px 5% 60px;">
-    <h1>Blog do Dr. George</h1>
-    <p>Artigos, dicas e novidades sobre Estética Avançada, Gerenciamento do Envelhecimento e Harmonização.</p>
+    <h1><?= htmlspecialchars($settings['blog_page_title'] ?? 'Blog do Dr. George') ?></h1>
+    <p><?= htmlspecialchars($settings['blog_page_subtitle'] ?? 'Artigos, dicas e novidades sobre Estética Avançada, Gerenciamento do Envelhecimento e Harmonização.') ?></p>
   </div>
 
   <section style="max-width: 1000px; margin: 0 auto; padding: 60px 5% 100px;">

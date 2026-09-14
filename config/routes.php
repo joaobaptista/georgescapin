@@ -48,6 +48,7 @@ return [
         '/admin/pages' => ['AdminController', 'pages'],
         '/admin/pages/home' => ['AdminController', 'pageHome'],
         '/admin/pages/clinic' => ['AdminController', 'pageClinic'],
+        '/admin/pages/harmonization' => ['AdminController', 'pageHarmonization'],
         '/admin/custom-pages' => ['AdminController', 'customPages'],
         '/admin/custom-pages/create' => ['AdminController', 'customPageCreate'],
         '/admin/custom-pages/edit/(?P<id>\d+)' => ['AdminController', 'customPageEdit'],
@@ -92,6 +93,9 @@ return [
         // CMS - Páginas do Site
         '/admin/pages/home' => ['AdminController', 'updatePageHome'],
         '/admin/pages/clinic' => ['AdminController', 'updatePageClinic'],
+        '/admin/pages/harmonization' => ['AdminController', 'updatePageHarmonization'],
+        '/admin/pages/delete/(?P<id>[\w\-]+)' => ['AdminController', 'deletePage'],
+        '/admin/pages/toggle-status/(?P<id>[\w\-]+)' => ['AdminController', 'togglePageStatus'],
         '/admin/custom-pages/store' => ['AdminController', 'customPageStore'],
         '/admin/custom-pages/update/(?P<id>\d+)' => ['AdminController', 'customPageUpdate'],
         '/admin/custom-pages/delete/(?P<id>\d+)' => ['AdminController', 'customPageDelete'],

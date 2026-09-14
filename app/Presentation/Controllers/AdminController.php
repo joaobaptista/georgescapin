@@ -492,7 +492,11 @@ class AdminController
         $settingsKeys = [
             'site_title', 'meta_description', 'meta_keywords',
             'contact_phone', 'contact_whatsapp', 'contact_address',
-            'contact_hours_week', 'contact_hours_sat'
+            'contact_hours_week', 'contact_hours_sat',
+            'footer_tagline', 'footer_copyright', 'social_instagram',
+            'procedures_page_title', 'procedures_page_subtitle',
+            'blog_page_title', 'blog_page_subtitle', 'blog_cta_title', 'blog_cta_text',
+            'contact_page_title', 'contact_page_subtitle'
         ];
 
         foreach ($settingsKeys as $key) {
@@ -501,23 +505,27 @@ class AdminController
             }
         }
 
-        $this->contentRepo->updateHeroContent([
-            'title' => $_POST['hero_title'] ?? '',
-            'subtitle' => $_POST['hero_subtitle'] ?? '',
-            'button_text' => $_POST['hero_button_text'] ?? 'Agendar Consulta',
-            'button_link' => $_POST['hero_button_link'] ?? '/contato',
-            'bg_image_dark' => $_POST['hero_bg_dark'] ?? '/assets/images/hero.png',
-            'bg_image_light' => $_POST['hero_bg_light'] ?? '/assets/images/hero_light.png'
-        ]);
+        if (isset($_POST['hero_title'])) {
+            $this->contentRepo->updateHeroContent([
+                'title' => $_POST['hero_title'] ?? '',
+                'subtitle' => $_POST['hero_subtitle'] ?? '',
+                'button_text' => $_POST['hero_button_text'] ?? 'Agendar Consulta',
+                'button_link' => $_POST['hero_button_link'] ?? '/contato',
+                'bg_image_dark' => $_POST['hero_bg_dark'] ?? '/assets/images/hero.png',
+                'bg_image_light' => $_POST['hero_bg_light'] ?? '/assets/images/hero_light.png'
+            ]);
+        }
 
-        $this->contentRepo->updateClinicContent([
-            'title' => $_POST['clinic_title'] ?? '',
-            'subtitle' => $_POST['clinic_subtitle'] ?? '',
-            'paragraph_1' => $_POST['clinic_p1'] ?? '',
-            'paragraph_2' => $_POST['clinic_p2'] ?? '',
-            'highlight_quote' => $_POST['clinic_quote'] ?? '',
-            'image_url' => $_POST['clinic_image'] ?? '/assets/img/drgeorge.jpeg'
-        ]);
+        if (isset($_POST['clinic_title'])) {
+            $this->contentRepo->updateClinicContent([
+                'title' => $_POST['clinic_title'] ?? '',
+                'subtitle' => $_POST['clinic_subtitle'] ?? '',
+                'paragraph_1' => $_POST['clinic_p1'] ?? '',
+                'paragraph_2' => $_POST['clinic_p2'] ?? '',
+                'highlight_quote' => $_POST['clinic_quote'] ?? '',
+                'image_url' => $_POST['clinic_image'] ?? '/assets/img/drgeorge.jpeg'
+            ]);
+        }
 
         flash('success', 'Configurações e conteúdos salvos com sucesso!');
         redirect('admin/settings');
@@ -527,6 +535,7 @@ class AdminController
     public function pages(): void
     {
         $user = Auth::user();
+        $settings = $this->settingsRepo->getAll();
         $hero = $this->contentRepo->getHeroContent();
         $clinic = $this->contentRepo->getClinicContent();
         $totalProcedures = count($this->procedureRepo->getAll(false));
@@ -540,10 +549,13 @@ class AdminController
                 'slug' => '/',
                 'url' => url('/'),
                 'edit_url' => url('/admin/pages/home'),
+                'delete_url' => url('/admin/pages/delete/home'),
+                'toggle_url' => url('/admin/pages/toggle-status/home'),
                 'description' => 'Hero principal, 3 pilares de atendimento, tratamentos em destaque, dúvidas frequentes.',
                 'image' => '/assets/images/hero.png',
                 'badge' => 'Principal',
-                'status' => 'Publicada'
+                'status' => ($settings['page_status_home'] ?? 'active') === 'inactive' ? 'Inativa' : 'Publicada',
+                'is_system' => true
             ],
             [
                 'id' => 'clinic',
@@ -551,10 +563,13 @@ class AdminController
                 'slug' => '/clinica',
                 'url' => url('/clinica'),
                 'edit_url' => url('/admin/pages/clinic'),
+                'delete_url' => url('/admin/pages/delete/clinic'),
+                'toggle_url' => url('/admin/pages/toggle-status/clinic'),
                 'description' => 'Apresentação institucional do Dr. George Scapin (CRBM 5202), filosofia de naturalidade e biografia.',
                 'image' => $clinic['image_url'] ?? '/assets/img/drgeorge.jpeg',
                 'badge' => 'Institucional',
-                'status' => 'Publicada'
+                'status' => ($settings['page_status_clinic'] ?? 'active') === 'inactive' ? 'Inativa' : 'Publicada',
+                'is_system' => true
             ],
             [
                 'id' => 'procedures',
@@ -562,21 +577,27 @@ class AdminController
                 'slug' => '/procedimentos',
                 'url' => url('/procedimentos'),
                 'edit_url' => url('/admin/procedures'),
+                'delete_url' => url('/admin/pages/delete/procedures'),
+                'toggle_url' => url('/admin/pages/toggle-status/procedures'),
                 'description' => 'Layout Split-Screen interativo com todos os tratamentos cadastrados (' . $totalProcedures . ' itens).',
                 'image' => '/assets/botox.png',
                 'badge' => 'Dinâmica',
-                'status' => 'Publicada'
+                'status' => ($settings['page_status_procedures'] ?? 'active') === 'inactive' ? 'Inativa' : 'Publicada',
+                'is_system' => true
             ],
             [
                 'id' => 'harmonization',
                 'name' => 'Harmonização Facial Full Face',
                 'slug' => '/harmonizacao-facial',
                 'url' => url('/harmonizacao-facial'),
-                'edit_url' => url('/admin/pages/clinic'),
+                'edit_url' => url('/admin/pages/harmonization'),
+                'delete_url' => url('/admin/pages/delete/harmonization'),
+                'toggle_url' => url('/admin/pages/toggle-status/harmonization'),
                 'description' => 'Landing page dedicada ao conceito, anatomia tridimensional e metodologia do Full Face.',
-                'image' => '/assets/fullface.png',
+                'image' => $settings['harmonization_image'] ?? '/assets/fullface.png',
                 'badge' => 'Especialidade',
-                'status' => 'Publicada'
+                'status' => ($settings['page_status_harmonization'] ?? 'active') === 'inactive' ? 'Inativa' : 'Publicada',
+                'is_system' => true
             ],
             [
                 'id' => 'blog',
@@ -584,10 +605,13 @@ class AdminController
                 'slug' => '/blog',
                 'url' => url('/blog'),
                 'edit_url' => url('/admin/posts'),
+                'delete_url' => url('/admin/pages/delete/blog'),
+                'toggle_url' => url('/admin/pages/toggle-status/blog'),
                 'description' => 'Listagem de artigos educativos sobre rejuvenescimento com paginação (' . $totalPosts . ' artigos).',
                 'image' => '/assets/clinic.png',
                 'badge' => 'Artigos',
-                'status' => 'Publicada'
+                'status' => ($settings['page_status_blog'] ?? 'active') === 'inactive' ? 'Inativa' : 'Publicada',
+                'is_system' => true
             ],
             [
                 'id' => 'blog_single',
@@ -595,10 +619,13 @@ class AdminController
                 'slug' => '/blog/{slug}',
                 'url' => url('/blog'),
                 'edit_url' => url('/admin/posts'),
+                'delete_url' => url('/admin/pages/delete/blog_single'),
+                'toggle_url' => url('/admin/pages/toggle-status/blog_single'),
                 'description' => 'Template de leitura de artigos individuais com banner, texto rico formatado e chamada para consulta.',
                 'image' => '/assets/images/botox.png',
                 'badge' => 'Dinâmica',
-                'status' => 'Publicada'
+                'status' => 'Publicada',
+                'is_system' => true
             ],
             [
                 'id' => 'contact',
@@ -606,10 +633,13 @@ class AdminController
                 'slug' => '/contato',
                 'url' => url('/contato'),
                 'edit_url' => url('/admin/settings'),
+                'delete_url' => url('/admin/pages/delete/contact'),
+                'toggle_url' => url('/admin/pages/toggle-status/contact'),
                 'description' => 'Formulário de pré-agendamento VIP, mapa, canais de WhatsApp e telefones.',
                 'image' => '/assets/images/logo.svg',
                 'badge' => 'Conversão',
-                'status' => 'Publicada'
+                'status' => ($settings['page_status_contact'] ?? 'active') === 'inactive' ? 'Inativa' : 'Publicada',
+                'is_system' => true
             ],
             [
                 'id' => '404',
@@ -617,10 +647,13 @@ class AdminController
                 'slug' => '/404',
                 'url' => url('/pagina-inexistente-teste'),
                 'edit_url' => url('/admin/settings'),
+                'delete_url' => url('/admin/pages/delete/404'),
+                'toggle_url' => url('/admin/pages/toggle-status/404'),
                 'description' => 'Tela apresentada quando o visitante digita uma URL inexistente, com botão de retorno à Home.',
                 'image' => '/assets/images/logo.svg',
                 'badge' => 'Sistema',
-                'status' => 'Ativa'
+                'status' => 'Ativa',
+                'is_system' => true
             ]
         ];
 
@@ -632,6 +665,7 @@ class AdminController
     {
         $user = Auth::user();
         $hero = $this->contentRepo->getHeroContent();
+        $settings = $this->settingsRepo->getAll();
         $activeTab = 'pages';
         require admin_view_path('page_home');
     }
@@ -667,6 +701,21 @@ class AdminController
             'bg_image_light' => $bgLight
         ]);
 
+        // Salva os 3 pilares, seção de tratamentos e banner de queixas / FAQ
+        $homeFields = [
+            'home_pillar1_title', 'home_pillar1_text',
+            'home_pillar2_title', 'home_pillar2_text',
+            'home_pillar3_title', 'home_pillar3_text',
+            'home_services_title', 'home_services_subtitle',
+            'home_faq_tag', 'home_faq_title', 'home_faq_subtitle', 'home_faq_btn'
+        ];
+
+        foreach ($homeFields as $field) {
+            if (isset($_POST[$field])) {
+                $this->settingsRepo->set($field, trim($_POST[$field]));
+            }
+        }
+
         flash('success', 'Conteúdo da Página Inicial (Home) atualizado com sucesso!');
         redirect('admin/pages');
     }
@@ -675,6 +724,7 @@ class AdminController
     {
         $user = Auth::user();
         $clinic = $this->contentRepo->getClinicContent();
+        $settings = $this->settingsRepo->getAll();
         $activeTab = 'pages';
         require admin_view_path('page_clinic');
     }
@@ -706,8 +756,108 @@ class AdminController
             'image_url' => $imageUrl
         ]);
 
+        if (isset($_POST['clinic_section_title'])) {
+            $this->settingsRepo->set('clinic_section_title', trim($_POST['clinic_section_title']));
+        }
+        if (isset($_POST['clinic_cta_btn'])) {
+            $this->settingsRepo->set('clinic_cta_btn', trim($_POST['clinic_cta_btn']));
+        }
+
         flash('success', 'Conteúdo da Página "George Scapin / A Clínica" atualizado com sucesso!');
         redirect('admin/pages');
+    }
+
+    // ================= PÁGINA HARMONIZAÇÃO FACIAL =================
+    public function pageHarmonization(): void
+    {
+        $user = Auth::user();
+        $settings = $this->settingsRepo->getAll();
+        $activeTab = 'pages';
+        require admin_view_path('page_harmonization');
+    }
+
+    public function updatePageHarmonization(): void
+    {
+        $settings = $this->settingsRepo->getAll();
+        $image = $settings['harmonization_image'] ?? '/assets/fullface.png';
+
+        if (!empty($_POST['remove_image'])) {
+            $this->deleteUploadedFile($image);
+            $image = '/assets/fullface.png';
+        }
+
+        if (isset($_FILES['harmonization_image_file'])) {
+            $uploaded = $this->handleUpload($_FILES['harmonization_image_file'], 'harmonization_');
+            if ($uploaded) {
+                $this->deleteUploadedFile($image);
+                $image = $uploaded;
+            }
+        }
+
+        $fields = [
+            'harmonization_title',
+            'harmonization_subtitle',
+            'harmonization_intro',
+            'harmonization_section_title',
+            'harmonization_p1',
+            'harmonization_p2',
+            'harmonization_feature1_title',
+            'harmonization_feature1_text',
+            'harmonization_feature2_title',
+            'harmonization_feature2_text',
+            'harmonization_cta_title',
+            'harmonization_cta_text',
+            'harmonization_cta_btn'
+        ];
+
+        foreach ($fields as $field) {
+            if (isset($_POST[$field])) {
+                $this->settingsRepo->set($field, trim($_POST[$field]));
+            }
+        }
+
+        $this->settingsRepo->set('harmonization_image', $image);
+
+        flash('success', 'Conteúdo da página "Harmonização Facial Full Face" salvo com sucesso!');
+        redirect('admin/pages');
+    }
+
+    // ================= EXCLUSÃO / DESATIVAÇÃO DE PÁGINAS NA LINHA =================
+    public function deletePage(string $id): void
+    {
+        // Se for página customizada (ex: número ou id com prefixo cp_)
+        if (is_numeric($id)) {
+            $this->customPageRepo->delete((int)$id);
+            flash('success', 'Página personalizada excluída com sucesso!');
+            redirect('admin/pages');
+        }
+
+        if (strpos($id, 'cp_') === 0) {
+            $realId = (int)str_replace('cp_', '', $id);
+            $this->customPageRepo->delete($realId);
+            flash('success', 'Página personalizada excluída com sucesso!');
+            redirect('admin/pages');
+        }
+
+        // Se for página do sistema, desativa ou reseta
+        $systemPages = ['home', 'clinic', 'procedures', 'harmonization', 'blog', 'blog_single', 'contact', '404'];
+        if (in_array($id, $systemPages, true)) {
+            $currentStatus = $this->settingsRepo->get("page_status_{$id}", 'active');
+            $newStatus = ($currentStatus === 'active') ? 'inactive' : 'active';
+            $this->settingsRepo->set("page_status_{$id}", $newStatus);
+
+            $statusLabel = ($newStatus === 'inactive') ? 'desativada / ocultada' : 'reativada';
+            flash('success', "A página foi {$statusLabel} com sucesso!");
+            redirect('admin/pages');
+        }
+
+        flash('error', 'Página não encontrada.');
+        redirect('admin/pages');
+    }
+
+    public function togglePageStatus(string $id): void
+    {
+        $this->deletePage($id);
     }
 
     // ================= MENU DE NAVEGAÇÃO =================
