@@ -176,7 +176,7 @@
           </a>
         <?php endforeach; ?>
       </nav>
-      <button class="theme-toggle" id="themeToggle" aria-label="Alternar Tema">
+      <button class="theme-toggle" id="themeToggle" aria-label="Alternar para Modo Claro" title="Alternar para Modo Claro">
         <i data-lucide="sun" size="24"></i>
       </button>
     </div>

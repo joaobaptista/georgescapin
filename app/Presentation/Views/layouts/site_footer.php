@@ -82,20 +82,26 @@
 
     // Theme Logic
     const themeToggleBtn = document.getElementById('themeToggle');
-    function updateIcon() {
+    function updateThemeIcon() {
+      if (!themeToggleBtn) return;
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       themeToggleBtn.innerHTML = isDark ? '<i data-lucide="sun" size="24"></i>' : '<i data-lucide="moon" size="24"></i>';
+      const label = isDark ? 'Alternar para Modo Claro' : 'Alternar para Modo Escuro';
+      themeToggleBtn.setAttribute('title', label);
+      themeToggleBtn.setAttribute('aria-label', label);
       lucide.createIcons();
     }
-    updateIcon();
+    updateThemeIcon();
     
-    themeToggleBtn.addEventListener('click', () => {
-      let current = document.documentElement.getAttribute('data-theme');
-      let next = current === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem('theme', next);
-      updateIcon();
-    });
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        let current = document.documentElement.getAttribute('data-theme') || 'dark';
+        let next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        updateThemeIcon();
+      });
+    }
 
     // Mobile Menu
     const menuToggle = document.getElementById('menuToggle');

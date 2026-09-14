@@ -18,7 +18,7 @@
   --card-border-hover: rgba(197, 160, 89, 0.4);
   --card-bg: #121814;
   
-  --hero-bg-image: url('./assets/hero.png');
+  --hero-bg-image: url('../images/hero.png');
   --logo-filter: invert(86%) sepia(18%) saturate(687%) hue-rotate(345deg) brightness(97%) contrast(89%);
   
   --font-serif: 'Playfair Display', serif;
@@ -40,7 +40,7 @@
   --header-bg: rgba(248, 249, 250, 0.95);
   --header-border: rgba(156, 122, 49, 0.2);
   
-  --hero-bg-image: url('./assets/hero_light.png');
+  --hero-bg-image: url('../images/hero_light.png');
   --hero-overlay-start: rgba(248, 249, 250, 0.4);
   --hero-overlay-end: rgba(248, 249, 250, 0.95);
   --page-header-bg: linear-gradient(to bottom, #E9ECEF 0%, #F8F9FA 100%);
