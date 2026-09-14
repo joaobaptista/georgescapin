@@ -1,8 +1,8 @@
 <?php require __DIR__ . '/../layouts/site_header.php'; ?>
 
   <div class="page-header" style="padding: 140px 5% 60px;">
-    <h1>Nossos Procedimentos</h1>
-    <p>Conheça os procedimentos desenhados para realçar o que você tem de melhor, com foco absoluto em proporção geométrica e elegância.</p>
+    <h1><?= htmlspecialchars($settings['procedures_page_title'] ?? 'Nossos Procedimentos') ?></h1>
+    <p><?= htmlspecialchars($settings['procedures_page_subtitle'] ?? 'Conheça os procedimentos desenhados para realçar o que você tem de melhor, com foco absoluto em proporção geométrica e elegância.') ?></p>
   </div>
 
   <section style="max-width: 100%; margin: 0 auto; padding: 0;">

@@ -28,12 +28,13 @@ ob_start();
         <th>Tipo</th>
         <th>Descrição do Conteúdo</th>
         <th>Status</th>
-        <th style="text-align: right; width: 200px;">Ações</th>
+        <th style="text-align: right; width: 220px;">Ações</th>
       </tr>
     </thead>
     <tbody>
       <?php foreach ($pagesList as $page): ?>
-        <tr>
+        <?php $isInactive = ($page['status'] ?? '') === 'Inativa'; ?>
+        <tr style="<?= $isInactive ? 'opacity: 0.65;' : '' ?>">
           <td>
             <div style="width: 70px; height: 48px; border-radius: 6px; overflow: hidden; border: 1px solid var(--card-border); background: var(--bg-light); display: flex; align-items: center; justify-content: center;">
               <?php if (!empty($page['image'])): ?>
@@ -54,22 +55,43 @@ ob_start();
               <?= htmlspecialchars($page['badge']) ?>
             </span>
           </td>
-          <td style="color: var(--text-muted); font-size: 0.85rem; max-width: 320px; line-height: 1.4;">
+          <td style="color: var(--text-muted); font-size: 0.85rem; max-width: 300px; line-height: 1.4;">
             <?= htmlspecialchars($page['description']) ?>
           </td>
           <td>
-            <span class="badge badge-success">
+            <span class="badge <?= $isInactive ? 'badge-muted' : 'badge-success' ?>">
               <?= htmlspecialchars($page['status']) ?>
             </span>
           </td>
           <td style="text-align: right;">
-            <div style="display: inline-flex; gap: 8px;">
-              <a href="<?= $page['url'] ?>" target="_blank" class="btn-primary" style="padding: 7px 12px; font-size: 0.8rem;" title="Ver Página ao Vivo">
-                <i data-lucide="eye" size="14"></i> Ver
+            <div style="display: inline-flex; gap: 6px; align-items: center;">
+              <a href="<?= $page['url'] ?>" target="_blank" class="btn-primary" style="padding: 6px 10px; font-size: 0.8rem;" title="Ver Página ao Vivo">
+                <i data-lucide="eye" size="14"></i>
               </a>
-              <a href="<?= $page['edit_url'] ?>" class="btn-primary btn-solid" style="padding: 7px 14px; font-size: 0.8rem;" title="Editar Conteúdo">
+              <a href="<?= $page['edit_url'] ?>" class="btn-primary btn-solid" style="padding: 6px 12px; font-size: 0.8rem;" title="Editar Conteúdo">
                 <i data-lucide="edit" size="14"></i> Editar
               </a>
+              <?php if ($isInactive): ?>
+                <button type="button" onclick="openConfirmModal({
+                  title: 'Reativar Página?',
+                  message: 'Deseja reativar a página <strong><?= htmlspecialchars(addslashes($page['name'])) ?></strong> (<?= htmlspecialchars($page['slug']) ?>) para que volte a ser publicada normalmente?',
+                  actionUrl: '<?= $page['toggle_url'] ?>',
+                  btnText: '<i data-lucide=\'check-circle\' size=\'14\'></i> Sim, Reativar',
+                  type: 'primary'
+                })" class="btn-primary" style="padding: 6px 10px; font-size: 0.8rem; border-color: #25D366; color: #25D366;" title="Reativar Página">
+                  <i data-lucide="check-circle" size="14"></i>
+                </button>
+              <?php else: ?>
+                <button type="button" onclick="openConfirmModal({
+                  title: 'Excluir / Desativar Página?',
+                  message: 'Tem certeza que deseja desativar/ocultar a página <strong><?= htmlspecialchars(addslashes($page['name'])) ?></strong> (<?= htmlspecialchars($page['slug']) ?>)? Ela ficará marcada como inativa.',
+                  actionUrl: '<?= $page['delete_url'] ?>',
+                  btnText: '<i data-lucide=\'trash-2\' size=\'14\'></i> Sim, Excluir',
+                  type: 'danger'
+                })" class="btn-primary" style="padding: 6px 10px; font-size: 0.8rem; border-color: #ef4444; color: #ef4444;" title="Excluir / Desativar Página">
+                  <i data-lucide="trash-2" size="14"></i>
+                </button>
+              <?php endif; ?>
             </div>
           </td>
         </tr>
@@ -112,18 +134,19 @@ ob_start();
                 </span>
               </td>
               <td style="text-align: right;">
-                <div style="display: inline-flex; gap: 8px;">
+                <div style="display: inline-flex; gap: 6px; align-items: center;">
                   <a href="<?= url('/p/' . $cp['slug']) ?>" target="_blank" class="btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" title="Ver Página">
                     <i data-lucide="eye" size="14"></i>
                   </a>
-                  <a href="<?= url('/admin/custom-pages/edit/' . $cp['id']) ?>" class="btn-primary" style="padding: 6px 12px; font-size: 0.75rem;" title="Editar Conteúdo">
+                  <a href="<?= url('/admin/custom-pages/edit/' . $cp['id']) ?>" class="btn-primary btn-solid" style="padding: 6px 12px; font-size: 0.75rem;" title="Editar Conteúdo">
                     <i data-lucide="edit" size="14"></i> Editar
                   </a>
                   <button type="button" onclick="openConfirmModal({
                     title: 'Excluir Página Customizada?',
-                    message: 'Tem certeza que deseja excluir a página <strong><?= htmlspecialchars(addslashes($cp['title'])) ?></strong> (/p/<?= htmlspecialchars($cp['slug']) ?>)? Esta ação não poderá ser desfeita.',
+                    message: 'Tem certeza que deseja excluir permanentemente a página <strong><?= htmlspecialchars(addslashes($cp['title'])) ?></strong> (/p/<?= htmlspecialchars($cp['slug']) ?>)? Esta ação não poderá ser desfeita.',
                     actionUrl: '<?= url('/admin/custom-pages/delete/' . $cp['id']) ?>',
-                    btnText: '<i data-lucide=\'trash-2\' size=\'15\'></i> Sim, Excluir Página'
+                    btnText: '<i data-lucide=\'trash-2\' size=\'14\'></i> Sim, Excluir Página',
+                    type: 'danger'
                   })" class="btn-primary" style="padding: 6px 10px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444;" title="Excluir Página">
                     <i data-lucide="trash-2" size="14"></i>
                   </button>

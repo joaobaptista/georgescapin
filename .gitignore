@@ -1,0 +1,68 @@
+# ==============================================================================
+# Git Ignore - Clínica Dr. George Scapin
+# ==============================================================================
+
+# Environment & Credentials
+.env
+.env.*
+!.env.example
+auth.json
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# IDEs and Code Editors
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.project
+.settings/
+.buildpath
+*.swp
+*.swo
+*~
+.zed/
+.cursor/
+.codex/
+.nova/
+
+# Dependencies & Package Managers
+/vendor/
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+composer.phar
+
+# Logs and Temporary / Cache Files
+*.log
+logs/
+error_log
+cache/
+tmp/
+temp/
+.cache/
+.phpunit.cache/
+.phpunit.result.cache
+.phpactor.json
+
+# Backups and Archives
+*.bak
+*.backup
+*.tmp
+*.zip
+*.tar.gz
+*.sql.gz
+
+# Uploads (ignora arquivos gerados por upload dinâmico no CMS, mantendo .htaccess e .gitkeep)
+/public/uploads/*
+!/public/uploads/.htaccess
+!/public/uploads/.gitkeep

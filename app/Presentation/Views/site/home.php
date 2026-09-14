@@ -18,16 +18,28 @@
   <section style="background-color: var(--bg-light); border-top: 1px solid var(--card-border); border-bottom: 1px solid var(--card-border); padding: 80px 5%;">
     <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px;">
       <div class="excellence-content" style="text-align: center; padding: 20px;">
-        <h3 style="color: var(--gold-primary); font-size: 1.8rem; margin-bottom: 15px; font-family: var(--font-serif);">01. Planejamento 360</h3>
-        <p style="font-size: 1rem; color: var(--text-muted); line-height: 1.7;">Entender os desejos de cada paciente para indicar os melhores tratamentos, garantindo um acompanhamento próximo e resultados satisfatórios.</p>
+        <h3 style="color: var(--gold-primary); font-size: 1.8rem; margin-bottom: 15px; font-family: var(--font-serif);">
+          <?= htmlspecialchars($settings['home_pillar1_title'] ?? '01. Planejamento 360') ?>
+        </h3>
+        <p style="font-size: 1rem; color: var(--text-muted); line-height: 1.7;">
+          <?= nl2br(htmlspecialchars($settings['home_pillar1_text'] ?? 'Entender os desejos de cada paciente para indicar os melhores tratamentos, garantindo um acompanhamento próximo e resultados satisfatórios.')) ?>
+        </p>
       </div>
       <div class="excellence-content" style="text-align: center; padding: 20px;">
-        <h3 style="color: var(--gold-primary); font-size: 1.8rem; margin-bottom: 15px; font-family: var(--font-serif);">02. Cuidado Personalizado</h3>
-        <p style="font-size: 1rem; color: var(--text-muted); line-height: 1.7;">Descubra a excelência em cuidados estéticos personalizados, onde utilizo as melhores técnicas para proporcionar resultados eficazes, seguros e adaptados às suas necessidades únicas.</p>
+        <h3 style="color: var(--gold-primary); font-size: 1.8rem; margin-bottom: 15px; font-family: var(--font-serif);">
+          <?= htmlspecialchars($settings['home_pillar2_title'] ?? '02. Cuidado Personalizado') ?>
+        </h3>
+        <p style="font-size: 1rem; color: var(--text-muted); line-height: 1.7;">
+          <?= nl2br(htmlspecialchars($settings['home_pillar2_text'] ?? 'Descubra a excelência em cuidados estéticos personalizados, onde utilizo as melhores técnicas para proporcionar resultados eficazes, seguros e adaptados às suas necessidades únicas.')) ?>
+        </p>
       </div>
       <div class="excellence-content" style="text-align: center; padding: 20px;">
-        <h3 style="color: var(--gold-primary); font-size: 1.8rem; margin-bottom: 15px; font-family: var(--font-serif);">03. Rejuvenescimento</h3>
-        <p style="font-size: 1rem; color: var(--text-muted); line-height: 1.7;">Sua aparência deve acompanhar como a sua mente se sente. Começamos a intervenção no momento certo, permitindo gerenciar o tempo com total naturalidade.</p>
+        <h3 style="color: var(--gold-primary); font-size: 1.8rem; margin-bottom: 15px; font-family: var(--font-serif);">
+          <?= htmlspecialchars($settings['home_pillar3_title'] ?? '03. Rejuvenescimento') ?>
+        </h3>
+        <p style="font-size: 1rem; color: var(--text-muted); line-height: 1.7;">
+          <?= nl2br(htmlspecialchars($settings['home_pillar3_text'] ?? 'Sua aparência deve acompanhar como a sua mente se sente. Começamos a intervenção no momento certo, permitindo gerenciar o tempo com total naturalidade.')) ?>
+        </p>
       </div>
     </div>
   </section>
@@ -35,8 +47,8 @@
   <!-- Services Grid -->
   <section>
     <div class="section-header">
-      <h2>Naturalidade, Ciência e Bem-Estar</h2>
-      <p>Procedimentos focados em realçar a sua beleza natural com sofisticação inigualável.</p>
+      <h2><?= htmlspecialchars($settings['home_services_title'] ?? 'Naturalidade, Ciência e Bem-Estar') ?></h2>
+      <p><?= htmlspecialchars($settings['home_services_subtitle'] ?? 'Procedimentos focados em realçar a sua beleza natural com sofisticação inigualável.') ?></p>
     </div>
 
     <div class="procedures-grid">
@@ -65,12 +77,18 @@
   <!-- Pain Points Section -->
   <section style="text-align: center; padding: 80px 5% 100px; background-color: var(--bg-light); border-top: 1px solid var(--card-border);">
     <div class="section-header" style="max-width: 850px; margin: 0 auto 40px auto;">
-      <p style="color: var(--gold-primary); font-size: 1rem; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 2px;">Possui alguma dúvida?</p>
-      <h2 style="font-size: 2.3rem; line-height: 1.3;">Flacidez? Bigode Chinês? Pés de Galinha? Cicatrizes de Acne?</h2>
-      <p style="font-size: 1.15rem; color: var(--text-muted); margin-top: 20px;">Para toda queixa existe uma alternativa e possibilidade de tratamento. Estou aqui para te ouvir.</p>
+      <p style="color: var(--gold-primary); font-size: 1rem; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 2px;">
+        <?= htmlspecialchars($settings['home_faq_tag'] ?? 'Possui alguma dúvida?') ?>
+      </p>
+      <h2 style="font-size: 2.3rem; line-height: 1.3;">
+        <?= htmlspecialchars($settings['home_faq_title'] ?? 'Flacidez? Bigode Chinês? Pés de Galinha? Cicatrizes de Acne?') ?>
+      </h2>
+      <p style="font-size: 1.15rem; color: var(--text-muted); margin-top: 20px;">
+        <?= nl2br(htmlspecialchars($settings['home_faq_subtitle'] ?? 'Para toda queixa existe uma alternativa e possibilidade de tratamento. Estou aqui para te ouvir.')) ?>
+      </p>
     </div>
     <a href="<?= url('/contato') ?>" class="btn-primary btn-solid">
-      Agende sua consulta
+      <?= htmlspecialchars($settings['home_faq_btn'] ?? 'Agende sua consulta') ?>
       <i data-lucide="calendar" size="18"></i>
     </a>
   </section>

@@ -1,8 +1,8 @@
 <?php require __DIR__ . '/../layouts/site_header.php'; ?>
 
   <div class="page-header">
-    <h1>Agende sua Consulta</h1>
-    <p>Dê o primeiro passo para elevar sua autoestima. Preencha o formulário ou entre em contato diretamente conosco.</p>
+    <h1><?= htmlspecialchars($settings['contact_page_title'] ?? 'Agende sua Consulta') ?></h1>
+    <p><?= htmlspecialchars($settings['contact_page_subtitle'] ?? 'Dê o primeiro passo para elevar sua autoestima. Preencha o formulário ou entre em contato diretamente conosco.') ?></p>
   </div>
 
   <section>

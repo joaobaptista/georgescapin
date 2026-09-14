@@ -18,8 +18,8 @@
 
     <!-- CTA do Post -->
     <div style="background: var(--bg-light); border: 1px solid var(--card-border); border-radius: 10px; padding: 40px; text-align: center; margin-top: 60px;">
-      <h3 style="color: var(--gold-light); font-size: 1.8rem; margin-bottom: 10px; font-family: var(--font-serif);">Gostou do conteúdo?</h3>
-      <p style="color: var(--text-muted); font-size: 1.05rem; margin-bottom: 25px;">Agende uma consulta de avaliação personalizada com o Dr. George Scapin em Porto Alegre.</p>
+      <h3 style="color: var(--gold-light); font-size: 1.8rem; margin-bottom: 10px; font-family: var(--font-serif);"><?= htmlspecialchars($settings['blog_cta_title'] ?? 'Gostou do conteúdo?') ?></h3>
+      <p style="color: var(--text-muted); font-size: 1.05rem; margin-bottom: 25px;"><?= nl2br(htmlspecialchars($settings['blog_cta_text'] ?? 'Agende uma consulta de avaliação personalizada com o Dr. George Scapin em Porto Alegre.')) ?></p>
       <a href="<?= url('/contato') ?>" class="btn-primary btn-solid">
         Agendar Consulta <i data-lucide="calendar" size="18"></i>
       </a>

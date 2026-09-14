@@ -57,4 +57,27 @@ class PDOSettingsRepository
         ");
         return $stmt->execute([$key, $value]);
     }
+
+    public function setMany(array $settings): bool
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                INSERT INTO site_settings (setting_key, setting_value, updated_at) 
+                VALUES (?, ?, NOW())
+                ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_at = NOW()
+            ");
+            foreach ($settings as $key => $value) {
+                $stmt->execute([$key, (string)$value]);
+            }
+            return true;
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    public function delete(string $key): bool
+    {
+        $stmt = $this->pdo->prepare("DELETE FROM site_settings WHERE setting_key = ?");
+        return $stmt->execute([$key]);
+    }
 }

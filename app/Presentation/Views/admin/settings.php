@@ -1,114 +1,15 @@
 <?php
-$pageTitle = 'Conteúdos do Site & SEO';
+$pageTitle = 'Conteúdos Globais do Site & SEO';
 ob_start();
 ?>
 
 <form method="POST" action="<?= url('/admin/settings/update') ?>">
   <?= csrf_field() ?>
 
-  <!-- Seção Hero -->
+  <!-- 1. SEO & METATAGS -->
   <div class="admin-card">
     <div style="margin-bottom: 20px;">
-      <h3 style="color: var(--gold-light); font-size: 1.3rem;">1. Seção Principal (Hero da Home)</h3>
-      <p style="color: var(--text-muted); font-size: 0.85rem;">Textos e botões de destaque exibidos no topo da página inicial.</p>
-    </div>
-
-    <div class="form-group">
-      <label for="hero_title">Título Principal (Hero Title)</label>
-      <input type="text" id="hero_title" name="hero_title" class="form-control" value="<?= htmlspecialchars($hero['title'] ?? '') ?>">
-      <small style="color: var(--text-muted);">Use &lt;br&gt; para quebra de linha se desejar.</small>
-    </div>
-
-    <div class="form-group">
-      <label for="hero_subtitle">Subtítulo do Hero</label>
-      <textarea id="hero_subtitle" name="hero_subtitle" class="form-control" rows="2"><?= htmlspecialchars($hero['subtitle'] ?? '') ?></textarea>
-    </div>
-
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-      <div class="form-group">
-        <label for="hero_button_text">Texto do Botão Principal</label>
-        <input type="text" id="hero_button_text" name="hero_button_text" class="form-control" value="<?= htmlspecialchars($hero['button_text'] ?? '') ?>">
-      </div>
-      <div class="form-group">
-        <label for="hero_button_link">Link do Botão</label>
-        <input type="text" id="hero_button_link" name="hero_button_link" class="form-control" value="<?= htmlspecialchars($hero['button_link'] ?? '/contato') ?>">
-      </div>
-    </div>
-  </div>
-
-  <!-- Seção A Clínica -->
-  <div class="admin-card">
-    <div style="margin-bottom: 20px;">
-      <h3 style="color: var(--gold-light); font-size: 1.3rem;">2. Página "A Clínica"</h3>
-      <p style="color: var(--text-muted); font-size: 0.85rem;">Conteúdo institucional, parágrafos e frase em destaque.</p>
-    </div>
-
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-      <div class="form-group">
-        <label for="clinic_title">Título da Página</label>
-        <input type="text" id="clinic_title" name="clinic_title" class="form-control" value="<?= htmlspecialchars($clinic['title'] ?? '') ?>">
-      </div>
-      <div class="form-group">
-        <label for="clinic_subtitle">Subtítulo / Chamada</label>
-        <input type="text" id="clinic_subtitle" name="clinic_subtitle" class="form-control" value="<?= htmlspecialchars($clinic['subtitle'] ?? '') ?>">
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label for="clinic_p1">Primeiro Parágrafo</label>
-      <textarea id="clinic_p1" name="clinic_p1" class="form-control" rows="3"><?= htmlspecialchars($clinic['paragraph_1'] ?? '') ?></textarea>
-    </div>
-
-    <div class="form-group">
-      <label for="clinic_p2">Segundo Parágrafo</label>
-      <textarea id="clinic_p2" name="clinic_p2" class="form-control" rows="3"><?= htmlspecialchars($clinic['paragraph_2'] ?? '') ?></textarea>
-    </div>
-
-    <div class="form-group">
-      <label for="clinic_quote">Citação em Destaque (Frase de Efeito)</label>
-      <input type="text" id="clinic_quote" name="clinic_quote" class="form-control" value="<?= htmlspecialchars($clinic['highlight_quote'] ?? '') ?>">
-    </div>
-  </div>
-
-  <!-- Contato & Atendimento -->
-  <div class="admin-card">
-    <div style="margin-bottom: 20px;">
-      <h3 style="color: var(--gold-light); font-size: 1.3rem;">3. Dados de Contato & Rodapé</h3>
-      <p style="color: var(--text-muted); font-size: 0.85rem;">Telefone, WhatsApp, endereço e horários de atendimento da clínica.</p>
-    </div>
-
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-      <div class="form-group">
-        <label for="contact_phone">Telefone de Atendimento</label>
-        <input type="text" id="contact_phone" name="contact_phone" class="form-control" value="<?= htmlspecialchars($settings['contact_phone'] ?? '(51) 99824-4379') ?>">
-      </div>
-      <div class="form-group">
-        <label for="contact_whatsapp">WhatsApp (com DDD, somente números)</label>
-        <input type="text" id="contact_whatsapp" name="contact_whatsapp" class="form-control" value="<?= htmlspecialchars($settings['contact_whatsapp'] ?? '5551998244379') ?>">
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label for="contact_address">Endereço Completo</label>
-      <input type="text" id="contact_address" name="contact_address" class="form-control" value="<?= htmlspecialchars($settings['contact_address'] ?? '') ?>">
-    </div>
-
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-      <div class="form-group">
-        <label for="contact_hours_week">Horário Dias Úteis</label>
-        <input type="text" id="contact_hours_week" name="contact_hours_week" class="form-control" value="<?= htmlspecialchars($settings['contact_hours_week'] ?? 'Seg - Sex: 08h às 20h') ?>">
-      </div>
-      <div class="form-group">
-        <label for="contact_hours_sat">Horário Sábados</label>
-        <input type="text" id="contact_hours_sat" name="contact_hours_sat" class="form-control" value="<?= htmlspecialchars($settings['contact_hours_sat'] ?? 'Sáb: 09h às 13h') ?>">
-      </div>
-    </div>
-  </div>
-
-  <!-- SEO & Metatags -->
-  <div class="admin-card">
-    <div style="margin-bottom: 20px;">
-      <h3 style="color: var(--gold-light); font-size: 1.3rem;">4. Configurações de SEO & Google</h3>
+      <h3 style="color: var(--gold-light); font-size: 1.3rem;">1. Configurações de SEO & Google</h3>
       <p style="color: var(--text-muted); font-size: 0.85rem;">Palavras-chave e títulos indexados pelos mecanismos de busca.</p>
     </div>
 
@@ -128,7 +29,122 @@ ob_start();
     </div>
   </div>
 
-  <div style="margin-top: 20px; margin-bottom: 50px;">
+  <!-- 2. CONTATO & ATENDIMENTO -->
+  <div class="admin-card">
+    <div style="margin-bottom: 20px;">
+      <h3 style="color: var(--gold-light); font-size: 1.3rem;">2. Dados de Contato & Redes Sociais</h3>
+      <p style="color: var(--text-muted); font-size: 0.85rem;">Telefone, WhatsApp, endereço, horários de atendimento e link do Instagram.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      <div class="form-group">
+        <label for="contact_phone">Telefone de Atendimento</label>
+        <input type="text" id="contact_phone" name="contact_phone" class="form-control" value="<?= htmlspecialchars($settings['contact_phone'] ?? '(51) 99824-4379') ?>">
+      </div>
+      <div class="form-group">
+        <label for="contact_whatsapp">WhatsApp (com DDD, somente números)</label>
+        <input type="text" id="contact_whatsapp" name="contact_whatsapp" class="form-control" value="<?= htmlspecialchars($settings['contact_whatsapp'] ?? '5551998244379') ?>">
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      <div class="form-group">
+        <label for="contact_address">Endereço Completo</label>
+        <input type="text" id="contact_address" name="contact_address" class="form-control" value="<?= htmlspecialchars($settings['contact_address'] ?? '') ?>">
+      </div>
+      <div class="form-group">
+        <label for="social_instagram">Link do Instagram</label>
+        <input type="text" id="social_instagram" name="social_instagram" class="form-control" placeholder="https://instagram.com/drgeorgescapin" value="<?= htmlspecialchars($settings['social_instagram'] ?? 'https://instagram.com/drgeorgescapin') ?>">
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      <div class="form-group">
+        <label for="contact_hours_week">Horário Dias Úteis</label>
+        <input type="text" id="contact_hours_week" name="contact_hours_week" class="form-control" value="<?= htmlspecialchars($settings['contact_hours_week'] ?? 'Seg - Sex: 08h às 20h') ?>">
+      </div>
+      <div class="form-group">
+        <label for="contact_hours_sat">Horário Sábados</label>
+        <input type="text" id="contact_hours_sat" name="contact_hours_sat" class="form-control" value="<?= htmlspecialchars($settings['contact_hours_sat'] ?? 'Sáb: 09h às 13h') ?>">
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px;">
+      <div class="form-group">
+        <label for="footer_tagline">Slogan / Texto do Rodapé</label>
+        <input type="text" id="footer_tagline" name="footer_tagline" class="form-control" value="<?= htmlspecialchars($settings['footer_tagline'] ?? 'Estética facial de alta performance e sofisticação para realçar a sua melhor versão.') ?>">
+      </div>
+      <div class="form-group">
+        <label for="footer_copyright">Texto de Copyright (use {year} para o ano atual)</label>
+        <input type="text" id="footer_copyright" name="footer_copyright" class="form-control" value="<?= htmlspecialchars($settings['footer_copyright'] ?? '© {year} Dr. George Scapin. Todos os direitos reservados.') ?>">
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. CABEÇALHOS DAS PÁGINAS PADRÃO -->
+  <div class="admin-card">
+    <div style="margin-bottom: 20px;">
+      <h3 style="color: var(--gold-light); font-size: 1.3rem;">3. Cabeçalhos e Textos das Páginas Padrão</h3>
+      <p style="color: var(--text-muted); font-size: 0.85rem;">Personalize os títulos e introduções exibidos no topo de cada página pública.</p>
+    </div>
+
+    <!-- Procedimentos -->
+    <div style="background: var(--bg-light); padding: 16px; border-radius: 6px; border: 1px solid var(--card-border); margin-bottom: 15px;">
+      <h4 style="color: var(--gold-light); font-size: 0.95rem; margin-bottom: 10px;">Página de Procedimentos (/procedimentos)</h4>
+      <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px;">
+        <div class="form-group" style="margin: 0;">
+          <label for="procedures_page_title">Título da Página</label>
+          <input type="text" id="procedures_page_title" name="procedures_page_title" class="form-control" value="<?= htmlspecialchars($settings['procedures_page_title'] ?? 'Nossos Procedimentos') ?>">
+        </div>
+        <div class="form-group" style="margin: 0;">
+          <label for="procedures_page_subtitle">Subtítulo / Descrição</label>
+          <input type="text" id="procedures_page_subtitle" name="procedures_page_subtitle" class="form-control" value="<?= htmlspecialchars($settings['procedures_page_subtitle'] ?? 'Conheça os procedimentos desenhados para realçar o que você tem de melhor, com foco absoluto em proporção geométrica e elegância.') ?>">
+        </div>
+      </div>
+    </div>
+
+    <!-- Blog -->
+    <div style="background: var(--bg-light); padding: 16px; border-radius: 6px; border: 1px solid var(--card-border); margin-bottom: 15px;">
+      <h4 style="color: var(--gold-light); font-size: 0.95rem; margin-bottom: 10px;">Página do Blog (/blog)</h4>
+      <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; margin-bottom: 10px;">
+        <div class="form-group" style="margin: 0;">
+          <label for="blog_page_title">Título do Blog</label>
+          <input type="text" id="blog_page_title" name="blog_page_title" class="form-control" value="<?= htmlspecialchars($settings['blog_page_title'] ?? 'Blog do Dr. George') ?>">
+        </div>
+        <div class="form-group" style="margin: 0;">
+          <label for="blog_page_subtitle">Subtítulo do Blog</label>
+          <input type="text" id="blog_page_subtitle" name="blog_page_subtitle" class="form-control" value="<?= htmlspecialchars($settings['blog_page_subtitle'] ?? 'Artigos, dicas e novidades sobre Estética Avançada, Gerenciamento do Envelhecimento e Harmonização.') ?>">
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px;">
+        <div class="form-group" style="margin: 0;">
+          <label for="blog_cta_title">Título do CTA Final dos Artigos</label>
+          <input type="text" id="blog_cta_title" name="blog_cta_title" class="form-control" value="<?= htmlspecialchars($settings['blog_cta_title'] ?? 'Gostou do conteúdo?') ?>">
+        </div>
+        <div class="form-group" style="margin: 0;">
+          <label for="blog_cta_text">Texto de Apoio do CTA nos Artigos</label>
+          <input type="text" id="blog_cta_text" name="blog_cta_text" class="form-control" value="<?= htmlspecialchars($settings['blog_cta_text'] ?? 'Agende uma consulta de avaliação personalizada com o Dr. George Scapin em Porto Alegre.') ?>">
+        </div>
+      </div>
+    </div>
+
+    <!-- Contato -->
+    <div style="background: var(--bg-light); padding: 16px; border-radius: 6px; border: 1px solid var(--card-border);">
+      <h4 style="color: var(--gold-light); font-size: 0.95rem; margin-bottom: 10px;">Página de Contato (/contato)</h4>
+      <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px;">
+        <div class="form-group" style="margin: 0;">
+          <label for="contact_page_title">Título da Página de Contato</label>
+          <input type="text" id="contact_page_title" name="contact_page_title" class="form-control" value="<?= htmlspecialchars($settings['contact_page_title'] ?? 'Agende sua Consulta') ?>">
+        </div>
+        <div class="form-group" style="margin: 0;">
+          <label for="contact_page_subtitle">Subtítulo / Mensagem Introdutória</label>
+          <input type="text" id="contact_page_subtitle" name="contact_page_subtitle" class="form-control" value="<?= htmlspecialchars($settings['contact_page_subtitle'] ?? 'Dê o primeiro passo para elevar sua autoestima. Preencha o formulário ou entre em contato diretamente conosco.') ?>">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 25px; margin-bottom: 50px;">
     <button type="submit" class="btn-primary btn-solid" style="padding: 14px 40px; font-size: 1rem;">
       <i data-lucide="check" size="20"></i> Salvar Todas as Configurações
     </button>

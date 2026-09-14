@@ -24,13 +24,26 @@ ob_start();
 
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
       <div class="form-group">
-        <label for="clinic_title">Título da Página *</label>
-        <input type="text" id="clinic_title" name="clinic_title" class="form-control" required value="<?= htmlspecialchars($clinic['title'] ?? 'Excelência em Detalhes') ?>">
+        <label for="clinic_title">Título da Página (Nome do Profissional) *</label>
+        <input type="text" id="clinic_title" name="clinic_title" class="form-control" required value="<?= htmlspecialchars($clinic['title'] ?? 'Dr. George Scapin') ?>">
       </div>
 
       <div class="form-group">
-        <label for="clinic_subtitle">Subtítulo / Chamada de Impacto *</label>
-        <input type="text" id="clinic_subtitle" name="clinic_subtitle" class="form-control" required value="<?= htmlspecialchars($clinic['subtitle'] ?? 'O Rigor do Tempo, A Beleza do Detalhe.') ?>">
+        <label for="clinic_subtitle">Subtítulo / Especialidades e CRBM *</label>
+        <input type="text" id="clinic_subtitle" name="clinic_subtitle" class="form-control" required value="<?= htmlspecialchars($clinic['subtitle'] ?? 'Biomédico Esteta | CRBM 5202<br>Especialista em Harmonização Facial Avançada') ?>">
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+      <div class="form-group">
+        <label for="clinic_section_title">Título do Bloco Lateral (Frase Principal)</label>
+        <input type="text" id="clinic_section_title" name="clinic_section_title" class="form-control" value="<?= htmlspecialchars($settings['clinic_section_title'] ?? 'Ciência, Precisão e<br>Sensibilidade Artística.') ?>">
+        <small style="color: var(--text-muted);">Dica: Pode usar &lt;br&gt; para quebrar linha.</small>
+      </div>
+
+      <div class="form-group">
+        <label for="clinic_cta_btn">Texto do Botão de Agendamento</label>
+        <input type="text" id="clinic_cta_btn" name="clinic_cta_btn" class="form-control" value="<?= htmlspecialchars($settings['clinic_cta_btn'] ?? 'Agendar Consulta com Dr. George') ?>">
       </div>
     </div>
 
