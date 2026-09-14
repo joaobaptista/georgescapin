@@ -1,4 +1,12 @@
 <?php require __DIR__ . '/../layouts/site_header.php'; ?>
+<?php 
+  $heroBgDark = !empty($hero['bg_image_dark']) ? asset($hero['bg_image_dark']) : asset('assets/images/hero.png');
+  $heroBgLight = !empty($hero['bg_image_light']) ? asset($hero['bg_image_light']) : asset('assets/images/hero_light.png');
+?>
+<style>
+  :root { --hero-bg-image: url('<?= $heroBgDark ?>'); }
+  [data-theme="light"] { --hero-bg-image: url('<?= $heroBgLight ?>'); }
+</style>
 
   <!-- Hero Section -->
   <section class="hero">
