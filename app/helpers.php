@@ -22,6 +22,24 @@
     }
 })();
 
+// Autoloader PSR-4 para o namespace App\
+spl_autoload_register(function ($class) {
+    $prefix = 'App\\';
+    $base_dir = __DIR__ . '/';
+    
+    $len = strlen($prefix);
+    if (strncmp($prefix, $class, $len) !== 0) {
+        return;
+    }
+    
+    $relative_class = substr($class, $len);
+    $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
+    if (file_exists($file)) {
+        require_once $file;
+    }
+});
+
+
 if (!function_exists('config')) {
     function config(string $key, $default = null) {
         static $configs = [];
@@ -202,7 +220,7 @@ if (!function_exists('slugify')) {
 
 if (!function_exists('generate_captcha')) {
     function generate_captcha(): array {
-        if (session_status() === PHP_SESSION_NONE) {
+        if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
             session_start();
         }
         $n1 = rand(2, 9);

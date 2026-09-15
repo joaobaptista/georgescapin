@@ -61,6 +61,7 @@ temp/
 *.zip
 *.tar.gz
 *.sql.gz
+build/
 
 # Uploads (ignora arquivos gerados por upload dinâmico no CMS, mantendo .htaccess e .gitkeep)
 /public/uploads/*
