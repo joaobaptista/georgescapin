@@ -2,12 +2,12 @@
 $isEdit = !empty($page);
 $pageTitle = $isEdit ? 'Editar Página Personalizada' : 'Criar Nova Página';
 $activeTab = 'pages';
+$backUrl = url('/admin/pages');
 $breadcrumbs = [
     ['label' => 'Dashboard', 'url' => url('/admin')],
-    ['label' => 'Páginas do Site', 'url' => url('/admin/pages')],
+    ['label' => 'Páginas', 'url' => url('/admin/pages')],
     ['label' => $pageTitle]
 ];
-$pageActions = '<a href="' . url('/admin/pages') . '" class="btn-admin btn-secondary"><i data-lucide="arrow-left" size="14"></i> Voltar às Páginas</a>';
 ob_start();
 ?>
 
@@ -15,7 +15,7 @@ ob_start();
   <form method="POST" action="<?= $isEdit ? url('/admin/custom-pages/update/' . $page['id']) : url('/admin/custom-pages/store') ?>" enctype="multipart/form-data" id="customPageForm">
     <?= csrf_field() ?>
 
-    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+    <div class="admin-grid-2col">
       <div class="form-group">
         <label for="title">Título da Página *</label>
         <input type="text" id="title" name="title" class="form-control" required value="<?= htmlspecialchars($page['title'] ?? '') ?>" placeholder="Ex: Protocolo Rejuvenescimento 40+">

@@ -1,12 +1,12 @@
 <?php
 $pageTitle = 'Editar Página Inicial (Home)';
 $activeTab = 'pages';
+$backUrl = url('/admin/pages');
 $breadcrumbs = [
     ['label' => 'Dashboard', 'url' => url('/admin')],
-    ['label' => 'Páginas do Site', 'url' => url('/admin/pages')],
+    ['label' => 'Páginas', 'url' => url('/admin/pages')],
     ['label' => 'Página Inicial (Home)']
 ];
-$pageActions = '<a href="' . url('/admin/pages') . '" class="btn-admin btn-secondary"><i data-lucide="arrow-left" size="14"></i> Voltar</a>';
 ob_start();
 ?>
 
@@ -32,7 +32,7 @@ ob_start();
       <textarea id="hero_subtitle" name="hero_subtitle" class="form-control" rows="3" required placeholder="Texto complementar que destaca a excelência e sofisticação"><?= htmlspecialchars($hero['subtitle'] ?? '') ?></textarea>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+    <div class="admin-grid-2col" style="gap: 20px;">
       <div class="form-group">
         <label for="hero_button_text">Texto do Botão Principal (CTA)</label>
         <input type="text" id="hero_button_text" name="hero_button_text" class="form-control" value="<?= htmlspecialchars($hero['button_text'] ?? 'Agendar Consulta') ?>">
@@ -45,7 +45,7 @@ ob_start();
     </div>
 
     <!-- BANNERS DE FUNDO (DARK E LIGHT) -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+    <div class="admin-grid-2col" style="gap: 20px; margin-top: 15px;">
       <div style="background: var(--bg-surface-hover); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
         <label style="font-weight: 600; font-size: 0.9rem; color: var(--text-primary); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
           <i data-lucide="moon" size="16" style="color: var(--pastel-purple-accent);"></i> Imagem Hero (Modo Escuro)

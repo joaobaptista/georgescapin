@@ -4,82 +4,76 @@ $activeTab = 'menu';
 ob_start();
 ?>
 
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px; align-items: start;">
+<div class="admin-form-grid-2-1">
   
   <!-- LISTAGEM E EDIÇÃO DOS ITENS DE MENU -->
-  <div class="admin-card">
-    <div class="admin-card-header">
-      <h3 class="admin-card-title">Estrutura de Links do Menu</h3>
-    </div>
-
-    <div class="admin-table-container">
-      <?php if (empty($menuItems)): ?>
-        <p style="color: var(--text-muted); text-align: center; padding: 35px;">Nenhum item configurado no menu ainda.</p>
-      <?php else: ?>
-        <table class="admin-table">
-          <thead>
+  <div class="admin-table-container">
+    <?php if (empty($menuItems)): ?>
+      <p style="color: var(--text-muted); text-align: center; padding: 35px;">Nenhum item configurado no menu ainda.</p>
+    <?php else: ?>
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th style="width: 70px;">Ordem</th>
+            <th>Nome do Link</th>
+            <th>Destino (URL)</th>
+            <th>Estilo</th>
+            <th>Status</th>
+            <th style="text-align: right; width: 80px;">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($menuItems as $item): ?>
             <tr>
-              <th style="width: 70px;">Ordem</th>
-              <th>Nome do Link</th>
-              <th>Destino (URL)</th>
-              <th>Estilo</th>
-              <th>Status</th>
-              <th style="text-align: right; width: 80px;">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php foreach ($menuItems as $item): ?>
-              <tr>
-                <td style="color: var(--text-muted); font-weight: 600;">#<?= $item['sort_order'] ?></td>
-                <td>
-                  <strong style="color: var(--text-primary); font-size: 0.92rem;"><?= htmlspecialchars($item['label']) ?></strong>
-                  <?php if ($item['target'] === '_blank'): ?>
-                    <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">(Abre em nova aba)</span>
-                  <?php endif; ?>
-                </td>
-                <td>
-                  <code style="background: var(--bg-surface-hover); padding: 3px 8px; border-radius: var(--radius-xs); font-size: 0.8rem; color: var(--pastel-blue-text); border: 1px solid var(--border-light);"><?= htmlspecialchars($item['url']) ?></code>
-                </td>
-                <td>
-                  <?php if (!empty($item['is_button'])): ?>
-                    <span class="badge badge-info">Botão CTA</span>
-                  <?php else: ?>
-                    <span style="color: var(--text-muted); font-size: 0.82rem;">Link Normal</span>
-                  <?php endif; ?>
-                </td>
-                <td>
-                  <span class="badge <?= $item['is_active'] ? 'badge-success' : 'badge-muted' ?>">
-                    <?= $item['is_active'] ? 'Visível' : 'Oculto' ?>
-                  </span>
-                </td>
-                <td style="text-align: right;">
-                  <div class="table-action-dropdown">
-                    <button type="button" class="table-action-trigger" title="Mais Ações" aria-label="Mais Ações">
-                      <i data-lucide="more-horizontal" size="18"></i>
+              <td style="color: var(--text-muted); font-weight: 600;">#<?= $item['sort_order'] ?></td>
+              <td>
+                <strong style="color: var(--text-primary); font-size: 0.92rem;"><?= htmlspecialchars($item['label']) ?></strong>
+                <?php if ($item['target'] === '_blank'): ?>
+                  <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">(Abre em nova aba)</span>
+                <?php endif; ?>
+              </td>
+              <td>
+                <code style="background: var(--bg-surface-hover); padding: 3px 8px; border-radius: var(--radius-xs); font-size: 0.8rem; color: var(--pastel-blue-text); border: 1px solid var(--border-light);"><?= htmlspecialchars($item['url']) ?></code>
+              </td>
+              <td>
+                <?php if (!empty($item['is_button'])): ?>
+                  <span class="badge badge-info">Botão CTA</span>
+                <?php else: ?>
+                  <span style="color: var(--text-muted); font-size: 0.82rem;">Link Normal</span>
+                <?php endif; ?>
+              </td>
+              <td>
+                <span class="badge <?= $item['is_active'] ? 'badge-success' : 'badge-muted' ?>">
+                  <?= $item['is_active'] ? 'Visível' : 'Oculto' ?>
+                </span>
+              </td>
+              <td style="text-align: right;">
+                <div class="table-action-dropdown">
+                  <button type="button" class="table-action-trigger" title="Mais Ações" aria-label="Mais Ações">
+                    <i data-lucide="more-horizontal" size="18"></i>
+                  </button>
+                  <div class="table-action-menu">
+                    <button type="button" onclick="editMenuItem(<?= htmlspecialchars(json_encode($item)) ?>)" class="table-action-item">
+                      <i data-lucide="edit-3" size="15"></i> Editar Link
                     </button>
-                    <div class="table-action-menu">
-                      <button type="button" onclick="editMenuItem(<?= htmlspecialchars(json_encode($item)) ?>)" class="table-action-item">
-                        <i data-lucide="edit-3" size="15"></i> Editar Link
-                      </button>
-                      <div class="table-action-divider"></div>
-                      <button type="button" onclick="openConfirmModal({
-                        title: 'Remover Link do Menu?',
-                        message: 'Deseja realmente remover o link <strong><?= htmlspecialchars(addslashes($item['label'])) ?></strong> da barra de navegação?',
-                        actionUrl: '<?= url('/admin/menu/delete/' . $item['id']) ?>',
-                        btnText: '<i data-lucide=\'trash-2\' size=\'15\'></i> Sim, Remover',
-                        type: 'danger'
-                      })" class="table-action-item danger">
-                        <i data-lucide="trash-2" size="15"></i> Excluir Link
-                      </button>
-                    </div>
+                    <div class="table-action-divider"></div>
+                    <button type="button" onclick="openConfirmModal({
+                      title: 'Remover Link do Menu?',
+                      message: 'Deseja realmente remover o link <strong><?= htmlspecialchars(addslashes($item['label'])) ?></strong> da barra de navegação?',
+                      actionUrl: '<?= url('/admin/menu/delete/' . $item['id']) ?>',
+                      btnText: '<i data-lucide=\'trash-2\' size=\'15\'></i> Sim, Remover',
+                      type: 'danger'
+                    })" class="table-action-item danger">
+                      <i data-lucide="trash-2" size="15"></i> Excluir Link
+                    </button>
                   </div>
-                </td>
-              </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-      <?php endif; ?>
-    </div>
+                </div>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    <?php endif; ?>
   </div>
 
   <!-- FORMULÁRIO ADICIONAR / EDITAR ITEM -->
@@ -127,7 +121,7 @@ ob_start();
         <input type="text" id="menu_url" name="url" class="form-control" required placeholder="Ex: /minha-pagina ou https://...">
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+      <div class="admin-grid-2col" style="gap: 12px;">
         <div class="form-group">
           <label for="menu_order">Ordem</label>
           <input type="number" id="menu_order" name="sort_order" class="form-control" value="10">

@@ -1,5 +1,5 @@
 <?php
-$pageTitle = 'Artigos do Blog';
+$pageTitle = 'Blog';
 $activeTab = 'posts';
 $pageActions = '<a href="' . url('/admin/posts/create') . '" class="btn-admin btn-primary"><i data-lucide="plus" size="16"></i> Novo Artigo</a>';
 ob_start();
@@ -13,7 +13,7 @@ ob_start();
       <thead>
         <tr>
           <th style="width: 80px;">Imagem</th>
-          <th>Título & Link</th>
+          <th>Título</th>
           <th>Autor</th>
           <th>Data</th>
           <th>Status</th>
@@ -33,10 +33,7 @@ ob_start();
               <?php endif; ?>
             </td>
             <td>
-              <strong style="color: var(--text-primary); font-size: 0.92rem;"><?= htmlspecialchars($p['title']) ?></strong><br>
-              <a href="<?= url('/blog/' . $p['slug']) ?>" target="_blank" style="color: var(--pastel-blue-text); font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px;">
-                /blog/<?= htmlspecialchars($p['slug']) ?> <i data-lucide="external-link" size="12"></i>
-              </a>
+              <strong style="color: var(--text-primary); font-size: 0.92rem;"><?= htmlspecialchars($p['title']) ?></strong>
             </td>
             <td style="color: var(--text-secondary); font-size: 0.85rem;"><?= htmlspecialchars($p['author'] ?? 'Dr. George') ?></td>
             <td style="color: var(--text-muted); font-size: 0.82rem;"><?= date('d/m/Y', strtotime($p['created_at'])) ?></td>

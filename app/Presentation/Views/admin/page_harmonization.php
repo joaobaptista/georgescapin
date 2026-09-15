@@ -1,12 +1,12 @@
 <?php
 $pageTitle = 'Editar Página: Harmonização Facial';
 $activeTab = 'pages';
+$backUrl = url('/admin/pages');
 $breadcrumbs = [
     ['label' => 'Dashboard', 'url' => url('/admin')],
-    ['label' => 'Páginas do Site', 'url' => url('/admin/pages')],
+    ['label' => 'Páginas', 'url' => url('/admin/pages')],
     ['label' => 'Harmonização Facial']
 ];
-$pageActions = '<a href="' . url('/admin/pages') . '" class="btn-admin btn-secondary"><i data-lucide="arrow-left" size="14"></i> Voltar</a>';
 ob_start();
 ?>
 
@@ -61,7 +61,7 @@ ob_start();
     </div>
 
     <!-- Diferenciais em 2 Colunas -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+    <div class="admin-grid-2col" style="gap: 20px; margin-top: 15px;">
       <div style="background: var(--bg-surface-hover); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
         <label style="font-weight: 600; color: var(--text-primary); margin-bottom: 6px; display: block;">Diferencial 1 (Título & Texto)</label>
         <input type="text" name="harmonization_feature1_title" class="form-control" style="margin-bottom: 8px;" value="<?= htmlspecialchars($settings['harmonization_feature1_title'] ?? 'Precisão Milimétrica') ?>" placeholder="Título">

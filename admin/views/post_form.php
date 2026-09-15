@@ -2,12 +2,12 @@
 $isEdit = !empty($post);
 $pageTitle = $isEdit ? 'Editar Artigo' : 'Novo Artigo do Blog';
 $activeTab = 'posts';
+$backUrl = url('/admin/posts');
 $breadcrumbs = [
     ['label' => 'Dashboard', 'url' => url('/admin')],
-    ['label' => 'Artigos do Blog', 'url' => url('/admin/posts')],
+    ['label' => 'Blog', 'url' => url('/admin/posts')],
     ['label' => $pageTitle]
 ];
-$pageActions = '<a href="' . url('/admin/posts') . '" class="btn-admin btn-secondary"><i data-lucide="arrow-left" size="14"></i> Voltar aos Artigos</a>';
 ob_start();
 ?>
 
@@ -20,7 +20,7 @@ ob_start();
       <input type="text" id="title" name="title" class="form-control" required value="<?= htmlspecialchars($post['title'] ?? '') ?>" placeholder="Ex: Toxina Botulínica: O Segredo da Prevenção">
     </div>
 
-    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+    <div class="admin-grid-2col">
       <div class="form-group">
         <label for="slug">Slug da URL (Opcional)</label>
         <input type="text" id="slug" name="slug" class="form-control" value="<?= htmlspecialchars($post['slug'] ?? '') ?>" placeholder="ex: toxina-botulinica-prevencao">

@@ -2,12 +2,12 @@
 $isEdit = !empty($procedure);
 $pageTitle = $isEdit ? 'Editar Procedimento' : 'Novo Procedimento';
 $activeTab = 'procedures';
+$backUrl = url('/admin/procedures');
 $breadcrumbs = [
     ['label' => 'Dashboard', 'url' => url('/admin')],
     ['label' => 'Procedimentos', 'url' => url('/admin/procedures')],
     ['label' => $pageTitle]
 ];
-$pageActions = '<a href="' . url('/admin/procedures') . '" class="btn-admin btn-secondary"><i data-lucide="arrow-left" size="14"></i> Voltar</a>';
 $currentIcon = $procedure['icon_name'] ?? 'sparkles';
 $popularIcons = ['sparkles', 'droplet', 'scan-face', 'heart', 'shield', 'award', 'activity', 'eye', 'clock', 'star'];
 ob_start();
@@ -17,7 +17,7 @@ ob_start();
   <form method="POST" action="<?= $isEdit ? url('/admin/procedures/update/' . $procedure['id']) : url('/admin/procedures/store') ?>" enctype="multipart/form-data" id="procForm">
     <?= csrf_field() ?>
 
-    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+    <div class="admin-grid-2col">
       <div class="form-group">
         <label for="title">Título do Procedimento *</label>
         <input type="text" id="title" name="title" class="form-control" required value="<?= htmlspecialchars($procedure['title'] ?? '') ?>" placeholder="Ex: Toxina Botulínica">
@@ -51,7 +51,7 @@ ob_start();
       </small>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 20px; margin-top: 25px; align-items: flex-start;">
+    <div class="admin-grid-3col" style="gap: 20px; margin-top: 25px; align-items: flex-start;">
       <div class="form-group">
         <label for="icon_name">Ícone Lucide</label>
         <input type="text" id="icon_name" name="icon_name" class="form-control" value="<?= htmlspecialchars($currentIcon) ?>" placeholder="ex: sparkles">
