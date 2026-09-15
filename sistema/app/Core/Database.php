@@ -12,11 +12,11 @@ class Database
     public static function getConnection(): PDO
     {
         if (self::$instance === null) {
-            $driver = $_ENV['DB_CONNECTION'] ?? 'sqlite';
+            $driver = $_ENV['DB_CONNECTION'] ?? getenv('DB_CONNECTION') ?: 'sqlite';
             
             try {
                 if ($driver === 'sqlite') {
-                    $configuredPath = $_ENV['DB_DATABASE'] ?? 'database/database.sqlite';
+                    $configuredPath = $_ENV['DB_DATABASE'] ?? getenv('DB_DATABASE') ?: 'database/database.sqlite';
                     if (str_starts_with($configuredPath, '/') || preg_match('/^[A-Za-z]:\\\\/', $configuredPath)) {
                         $dbPath = $configuredPath;
                     } else {
@@ -36,11 +36,11 @@ class Database
                     self::$instance->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
                     self::$instance->exec("PRAGMA foreign_keys = ON;");
                 } else {
-                    $host = $_ENV['DB_HOST'] ?? '127.0.0.1';
-                    $port = $_ENV['DB_PORT'] ?? '3306';
-                    $db   = $_ENV['DB_DATABASE'] ?? 'nuva';
-                    $user = $_ENV['DB_USERNAME'] ?? 'root';
-                    $pass = $_ENV['DB_PASSWORD'] ?? '';
+                    $host = $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?: '127.0.0.1';
+                    $port = $_ENV['DB_PORT'] ?? getenv('DB_PORT') ?: '3306';
+                    $db   = $_ENV['DB_DATABASE'] ?? getenv('DB_DATABASE') ?: 'nuva';
+                    $user = $_ENV['DB_USERNAME'] ?? getenv('DB_USERNAME') ?: 'root';
+                    $pass = $_ENV['DB_PASSWORD'] ?? getenv('DB_PASSWORD') ?: '';
 
                     $dsn = "mysql:host={$host};port={$port};dbname={$db};charset=utf8mb4";
                     self::$instance = new PDO($dsn, $user, $pass, [
@@ -60,7 +60,7 @@ class Database
 
     public static function query(string $sql, array $params = []): \PDOStatement
     {
-        $driver = $_ENV['DB_CONNECTION'] ?? 'sqlite';
+        $driver = $_ENV['DB_CONNECTION'] ?? getenv('DB_CONNECTION') ?: 'sqlite';
         if ($driver === 'mysql') {
             $sql = str_replace("datetime('now')", "NOW()", $sql);
         }

@@ -9,9 +9,12 @@ function handleNewsletter(event) {
   const originalHtml = btn.innerHTML;
   btn.innerHTML = '...';
 
-  fetch('backend/api.php', {
+  fetch('/newsletter/assinar', {
     method: 'POST',
-    body: formData
+    body: formData,
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest'
+    }
   })
   .then(res => res.json())
   .then(data => {
