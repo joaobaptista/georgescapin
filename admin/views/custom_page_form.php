@@ -1,20 +1,17 @@
 <?php
 $isEdit = !empty($page);
 $pageTitle = $isEdit ? 'Editar Página Personalizada' : 'Criar Nova Página';
+$activeTab = 'pages';
+$breadcrumbs = [
+    ['label' => 'Dashboard', 'url' => url('/admin')],
+    ['label' => 'Páginas do Site', 'url' => url('/admin/pages')],
+    ['label' => $pageTitle]
+];
+$pageActions = '<a href="' . url('/admin/pages') . '" class="btn-admin btn-secondary"><i data-lucide="arrow-left" size="14"></i> Voltar às Páginas</a>';
 ob_start();
 ?>
 
 <div class="admin-card">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
-    <div>
-      <h3 style="color: var(--gold-light); font-size: 1.3rem;"><?= $isEdit ? 'Editar Página Personalizada' : 'Criar Nova Página Institucional' ?></h3>
-      <p style="color: var(--text-muted); font-size: 0.85rem;">Crie landing pages, termos, eventos ou páginas de campanhas exclusivas com editor rico.</p>
-    </div>
-    <a href="<?= url('/admin/pages') ?>" class="btn-primary" style="padding: 8px 16px;">
-      <i data-lucide="arrow-left" size="16"></i> Voltar às Páginas
-    </a>
-  </div>
-
   <form method="POST" action="<?= $isEdit ? url('/admin/custom-pages/update/' . $page['id']) : url('/admin/custom-pages/store') ?>" enctype="multipart/form-data" id="customPageForm">
     <?= csrf_field() ?>
 
@@ -36,12 +33,12 @@ ob_start();
     </div>
 
     <!-- EDITOR DE TEXTO RICO (QUILL WYSIWYG) -->
-    <div class="form-group" style="margin-top: 25px;">
-      <label style="font-weight: 600; font-size: 1rem; color: var(--gold-light); margin-bottom: 10px; display: block;">
+    <div class="form-group" style="margin-top: 24px;">
+      <label style="font-weight: 600; font-size: 0.95rem; color: var(--text-main); margin-bottom: 8px; display: block;">
         Conteúdo da Página (Editor Visual Rico) *
       </label>
       
-      <div id="quill-page-editor">
+      <div id="quill-page-editor" style="min-height: 250px; background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: 0 0 var(--radius-sm) var(--radius-sm);">
         <?= $page['content'] ?? '' ?>
       </div>
       
@@ -53,15 +50,15 @@ ob_start();
     </div>
 
     <!-- BANNER DE CABEÇALHO -->
-    <div class="form-group" style="margin-top: 30px; background: rgba(197, 160, 89, 0.06); padding: 25px; border-radius: 10px; border: 1px solid var(--card-border);">
-      <label style="font-weight: 600; font-size: 1.05rem; color: var(--gold-light); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
-        <i data-lucide="image" size="20"></i> Imagem de Banner do Topo (Opcional)
+    <div class="form-group" style="margin-top: 30px; background: var(--bg-canvas); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+      <label style="font-weight: 600; font-size: 0.95rem; color: var(--text-main); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+        <i data-lucide="image" size="18" style="color: var(--pastel-blue-accent);"></i> Imagem de Banner do Topo (Opcional)
       </label>
 
-      <div style="display: flex; gap: 25px; align-items: flex-start; flex-wrap: wrap;">
+      <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
         <?php if (!empty($page['banner_image'])): ?>
-          <div style="text-align: center; background: var(--bg-light); padding: 14px; border-radius: 8px; border: 1px solid var(--card-border); max-width: 220px;">
-            <img src="<?= asset($page['banner_image']) ?>" alt="Banner" style="width: 180px; height: 100px; object-fit: cover; border-radius: 6px; border: 1px solid var(--card-border); display: block; margin: 0 auto 8px;">
+          <div style="text-align: center; background: var(--bg-surface); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-light); max-width: 220px;">
+            <img src="<?= asset($page['banner_image']) ?>" alt="Banner" style="width: 180px; height: 100px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); display: block; margin: 0 auto 8px;">
             <p style="font-size: 0.7rem; color: var(--text-muted); word-break: break-all; margin: 0;"><?= htmlspecialchars($page['banner_image']) ?></p>
           </div>
         <?php endif; ?>
@@ -77,28 +74,28 @@ ob_start();
     <!-- SEO Meta Description -->
     <div class="form-group" style="margin-top: 20px;">
       <label for="meta_description">Meta Description (Resumo para Google e Compartilhamento)</label>
-      <textarea id="meta_description" name="meta_description" class="form-control" rows="2" placeholder="Resumo de 1-2 frases"><?= htmlspecialchars($page['meta_description'] ?? '') ?></textarea>
+      <textarea id="meta_description" name="meta_description" class="form-control" rows="2" placeholder="Resumo de 1 a 2 frases"><?= htmlspecialchars($page['meta_description'] ?? '') ?></textarea>
     </div>
 
     <div class="form-group" style="margin-top: 20px;">
       <?php if (!$isEdit): ?>
-        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-main); margin-bottom: 10px;">
-          <input type="checkbox" name="add_to_menu" value="1" checked style="width: 18px; height: 18px;">
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-main); margin-bottom: 10px; font-weight: 500;">
+          <input type="checkbox" name="add_to_menu" value="1" checked style="width: 18px; height: 18px; accent-color: var(--pastel-blue-accent);">
           <strong>Adicionar link desta página automaticamente no Menu de Navegação</strong>
         </label>
       <?php endif; ?>
 
-      <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-main);">
-        <input type="checkbox" name="is_published" value="1" <?= (!isset($page['is_published']) || $page['is_published'] == 1) ? 'checked' : '' ?> style="width: 18px; height: 18px;">
+      <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-main); font-weight: 500;">
+        <input type="checkbox" name="is_published" value="1" <?= (!isset($page['is_published']) || $page['is_published'] == 1) ? 'checked' : '' ?> style="width: 18px; height: 18px; accent-color: var(--pastel-blue-accent);">
         Publicar Página no Site
       </label>
     </div>
 
-    <div style="display: flex; gap: 15px; margin-top: 35px;">
-      <button type="submit" class="btn-primary btn-solid" style="padding: 12px 35px;">
-        <i data-lucide="save" size="18"></i> Salvar Página
+    <div style="display: flex; gap: 12px; margin-top: 30px;">
+      <button type="submit" class="btn-primary" style="padding: 10px 24px;">
+        <i data-lucide="save" size="16"></i> Salvar Página
       </button>
-      <a href="<?= url('/admin/pages') ?>" class="btn-primary" style="padding: 12px 25px;">Cancelar</a>
+      <a href="<?= url('/admin/pages') ?>" class="btn-secondary" style="padding: 10px 20px;">Cancelar</a>
     </div>
   </form>
 </div>

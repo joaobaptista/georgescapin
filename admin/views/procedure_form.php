@@ -1,17 +1,19 @@
 <?php
 $isEdit = !empty($procedure);
-$pageTitle = $isEdit ? 'Editar Tratamento' : 'Novo Tratamento';
+$pageTitle = $isEdit ? 'Editar Procedimento' : 'Novo Procedimento';
+$activeTab = 'procedures';
+$breadcrumbs = [
+    ['label' => 'Dashboard', 'url' => url('/admin')],
+    ['label' => 'Procedimentos', 'url' => url('/admin/procedures')],
+    ['label' => $pageTitle]
+];
+$pageActions = '<a href="' . url('/admin/procedures') . '" class="btn-admin btn-secondary"><i data-lucide="arrow-left" size="14"></i> Voltar</a>';
 $currentIcon = $procedure['icon_name'] ?? 'sparkles';
 $popularIcons = ['sparkles', 'droplet', 'scan-face', 'heart', 'shield', 'award', 'activity', 'eye', 'clock', 'star'];
 ob_start();
 ?>
 
 <div class="admin-card">
-  <div style="margin-bottom: 25px;">
-    <h3 style="color: var(--gold-light); font-size: 1.3rem;"><?= $isEdit ? 'Editar Procedimento' : 'Cadastrar Novo Procedimento' ?></h3>
-    <p style="color: var(--text-muted); font-size: 0.85rem;">Preencha os dados do tratamento para exibição no site público.</p>
-  </div>
-
   <form method="POST" action="<?= $isEdit ? url('/admin/procedures/update/' . $procedure['id']) : url('/admin/procedures/store') ?>" enctype="multipart/form-data" id="procForm">
     <?= csrf_field() ?>
 
@@ -29,34 +31,34 @@ ob_start();
 
     <div class="form-group">
       <label for="short_description">Descrição Curta (Exibida no Card) *</label>
-      <textarea id="short_description" name="short_description" class="form-control" rows="3" required placeholder="Resumo em 1-2 frases para o card"><?= htmlspecialchars($procedure['short_description'] ?? '') ?></textarea>
+      <textarea id="short_description" name="short_description" class="form-control" rows="3" required placeholder="Resumo de 1 a 2 frases"><?= htmlspecialchars($procedure['short_description'] ?? '') ?></textarea>
     </div>
 
     <!-- EDITOR DE TEXTO RICO (QUILL WYSIWYG) -->
-    <div class="form-group" style="margin-top: 20px;">
-      <label style="font-weight: 600; font-size: 1rem; color: var(--gold-light); margin-bottom: 10px; display: block;">
+    <div class="form-group" style="margin-top: 24px;">
+      <label style="font-weight: 600; font-size: 0.95rem; color: var(--text-main); margin-bottom: 8px; display: block;">
         Descrição Completa / Detalhada (Editor Visual Rico)
       </label>
       
-      <div id="quill-proc-editor">
+      <div id="quill-proc-editor" style="min-height: 220px; background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: 0 0 var(--radius-sm) var(--radius-sm);">
         <?= $procedure['full_description'] ?? '' ?>
       </div>
       
       <textarea id="full_description" name="full_description" style="display: none;"><?= htmlspecialchars($procedure['full_description'] ?? '') ?></textarea>
       
       <small style="color: var(--text-muted); display: block; margin-top: 6px;">
-        <i data-lucide="sparkles" size="14" style="vertical-align: middle;"></i> Formate textos, listas e insira fotos explicativas diretamente no conteúdo com conversão automática para WebP.
+        <i data-lucide="sparkles" size="14" style="vertical-align: middle;"></i> Formate textos, tópicos e insira fotos explicativas diretamente no conteúdo com conversão automática para WebP.
       </small>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 25px;">
+    <div style="display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 20px; margin-top: 25px; align-items: flex-start;">
       <div class="form-group">
         <label for="icon_name">Ícone Lucide</label>
         <input type="text" id="icon_name" name="icon_name" class="form-control" value="<?= htmlspecialchars($currentIcon) ?>" placeholder="ex: sparkles">
-        <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+        <div style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;">
           <?php foreach ($popularIcons as $ic): ?>
-            <button type="button" onclick="document.getElementById('icon_name').value = '<?= $ic ?>'" style="background: rgba(197, 160, 89, 0.1); border: 1px solid var(--card-border); color: var(--gold-primary); padding: 4px 8px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 0.75rem;">
-              <i data-lucide="<?= $ic ?>" size="14"></i> <?= $ic ?>
+            <button type="button" onclick="document.getElementById('icon_name').value = '<?= $ic ?>'" style="background: var(--pastel-blue-bg); border: 1px solid var(--pastel-blue-border); color: var(--pastel-blue-text); padding: 4px 8px; border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 0.75rem;">
+              <i data-lucide="<?= $ic ?>" size="13"></i> <?= $ic ?>
             </button>
           <?php endforeach; ?>
         </div>
@@ -67,59 +69,58 @@ ob_start();
         <input type="number" id="sort_order" name="sort_order" class="form-control" value="<?= htmlspecialchars($procedure['sort_order'] ?? '0') ?>">
       </div>
 
-      <div class="form-group" style="display: flex; flex-direction: column; justify-content: center;">
-        <label style="margin-bottom: 10px;">Status de Visibilidade</label>
-        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-main);">
-          <input type="checkbox" name="is_active" value="1" <?= (!isset($procedure['is_active']) || $procedure['is_active'] == 1) ? 'checked' : '' ?> style="width: 20px; height: 20px;">
+      <div class="form-group" style="padding-top: 25px;">
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-main); font-weight: 500;">
+          <input type="checkbox" name="is_active" value="1" <?= (!isset($procedure['is_active']) || $procedure['is_active'] == 1) ? 'checked' : '' ?> style="width: 18px; height: 18px; accent-color: var(--pastel-blue-accent);">
           Exibir no Site Público
         </label>
       </div>
     </div>
 
     <!-- BOX DE GESTÃO DA IMAGEM -->
-    <div class="form-group" style="margin-top: 30px; background: rgba(197, 160, 89, 0.06); padding: 25px; border-radius: 10px; border: 1px solid var(--card-border);">
+    <div class="form-group" style="margin-top: 30px; background: var(--bg-canvas); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-        <label style="font-weight: 600; font-size: 1.05rem; color: var(--gold-light); margin: 0; display: flex; align-items: center; gap: 8px;">
-          <i data-lucide="image" size="20"></i> Imagem do Procedimento
+        <label style="font-weight: 600; font-size: 0.95rem; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 8px;">
+          <i data-lucide="image" size="18" style="color: var(--pastel-blue-accent);"></i> Imagem de Destaque do Procedimento
         </label>
 
         <?php if (!empty($procedure['image_url'])): ?>
-          <button type="button" onclick="document.getElementById('formRemoveProcImg').submit();" style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #ef4444; padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
-            <i data-lucide="trash-2" size="14"></i> Excluir Imagem Atual
+          <button type="button" onclick="document.getElementById('formRemoveProcImg').submit();" class="btn-danger" style="padding: 6px 12px; font-size: 0.8rem; border-radius: var(--radius-sm); display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+            <i data-lucide="trash-2" size="14"></i> Remover Imagem Atual
           </button>
         <?php endif; ?>
       </div>
       
-      <div style="display: flex; gap: 25px; align-items: flex-start; flex-wrap: wrap;">
+      <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
         <!-- Imagem Atual Cadastrada -->
         <?php if (!empty($procedure['image_url'])): ?>
-          <div id="currentProcImageWrapper" style="text-align: center; background: var(--bg-light); padding: 14px; border-radius: 8px; border: 1px solid var(--card-border); max-width: 220px;">
-            <div style="font-size: 0.75rem; color: var(--gold-primary); font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 4px;">
-              <i data-lucide="check-circle" size="14"></i> Imagem Vinculada
+          <div id="currentProcImageWrapper" style="text-align: center; background: var(--bg-surface); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-light); max-width: 220px;">
+            <div style="font-size: 0.75rem; color: var(--pastel-green-text); font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+              <i data-lucide="check-circle" size="14"></i> Imagem Atual
             </div>
-            <img src="<?= asset($procedure['image_url']) ?>" alt="Imagem Atual" style="width: 180px; height: 110px; object-fit: cover; border-radius: 6px; border: 1px solid var(--card-border); display: block; margin: 0 auto 8px;">
+            <img src="<?= asset($procedure['image_url']) ?>" alt="Imagem Atual" style="width: 180px; height: 110px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); display: block; margin: 0 auto 8px;">
             <p style="font-size: 0.7rem; color: var(--text-muted); word-break: break-all; margin: 0;"><?= htmlspecialchars($procedure['image_url']) ?></p>
           </div>
         <?php else: ?>
-          <div style="text-align: center; background: var(--bg-light); padding: 20px; border-radius: 8px; border: 1px dashed var(--card-border); width: 180px;">
+          <div style="text-align: center; background: var(--bg-surface); padding: 20px; border-radius: var(--radius-sm); border: 1px dashed var(--border-light); width: 180px;">
             <i data-lucide="image-off" size="32" style="color: var(--text-muted); margin-bottom: 8px;"></i>
-            <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Nenhuma imagem anexada</p>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Nenhuma imagem</p>
           </div>
         <?php endif; ?>
 
         <!-- Preview da Nova Imagem Selecionada -->
-        <div id="newProcImagePreviewWrapper" style="display: none; text-align: center; background: var(--bg-light); padding: 14px; border-radius: 8px; border: 2px solid var(--gold-primary); max-width: 220px;">
-          <div style="font-size: 0.75rem; color: #25D366; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 4px;">
-            <i data-lucide="upload-cloud" size="14"></i> Nova Imagem Pronta
+        <div id="newProcImagePreviewWrapper" style="display: none; text-align: center; background: var(--bg-surface); padding: 12px; border-radius: var(--radius-sm); border: 2px solid var(--pastel-blue-accent); max-width: 220px;">
+          <div style="font-size: 0.75rem; color: var(--pastel-blue-accent); font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+            <i data-lucide="upload-cloud" size="14"></i> Nova Imagem
           </div>
-          <img id="newProcImagePreview" src="" alt="Nova Imagem" style="width: 180px; height: 110px; object-fit: cover; border-radius: 6px; display: block; margin: 0 auto 8px;">
+          <img id="newProcImagePreview" src="" alt="Nova Imagem" style="width: 180px; height: 110px; object-fit: cover; border-radius: var(--radius-sm); display: block; margin: 0 auto 8px;">
           <p id="newProcImageInfo" style="font-size: 0.7rem; color: var(--text-main); margin: 0; font-weight: 500;"></p>
         </div>
 
         <!-- Input de Upload -->
         <div style="flex: 1; min-width: 260px;">
-          <label for="image_file" style="font-size: 0.9rem; color: var(--text-main); margin-bottom: 8px; display: block;">
-            <?= !empty($procedure['image_url']) ? 'Substituir por outra imagem do computador:' : 'Selecionar imagem do computador:' ?>
+          <label for="image_file" style="font-size: 0.85rem; color: var(--text-main); margin-bottom: 8px; display: block; font-weight: 500;">
+            <?= !empty($procedure['image_url']) ? 'Substituir imagem:' : 'Selecionar imagem:' ?>
           </label>
           <input type="file" id="image_file" name="image_file" class="form-control" accept="image/png, image/jpeg, image/webp, image/gif, image/svg+xml" onchange="previewProcUpload(this)">
           <input type="hidden" name="image_url" value="<?= htmlspecialchars($procedure['image_url'] ?? '') ?>">
@@ -132,11 +133,11 @@ ob_start();
       </div>
     </div>
 
-    <div style="display: flex; gap: 15px; margin-top: 30px;">
-      <button type="submit" class="btn-primary btn-solid" style="padding: 12px 35px;">
-        <i data-lucide="save" size="18"></i> Salvar Tratamento
+    <div style="display: flex; gap: 12px; margin-top: 30px;">
+      <button type="submit" class="btn-primary" style="padding: 10px 24px;">
+        <i data-lucide="save" size="16"></i> Salvar Procedimento
       </button>
-      <a href="<?= url('/admin/procedures') ?>" class="btn-primary" style="padding: 12px 25px;">Cancelar</a>
+      <a href="<?= url('/admin/procedures') ?>" class="btn-secondary" style="padding: 10px 20px;">Cancelar</a>
     </div>
   </form>
 

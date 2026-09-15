@@ -1,15 +1,17 @@
 <?php
 $isEdit = !empty($post);
 $pageTitle = $isEdit ? 'Editar Artigo' : 'Novo Artigo do Blog';
+$activeTab = 'posts';
+$breadcrumbs = [
+    ['label' => 'Dashboard', 'url' => url('/admin')],
+    ['label' => 'Artigos do Blog', 'url' => url('/admin/posts')],
+    ['label' => $pageTitle]
+];
+$pageActions = '<a href="' . url('/admin/posts') . '" class="btn-admin btn-secondary"><i data-lucide="arrow-left" size="14"></i> Voltar aos Artigos</a>';
 ob_start();
 ?>
 
 <div class="admin-card">
-  <div style="margin-bottom: 25px;">
-    <h3 style="color: var(--gold-light); font-size: 1.3rem;"><?= $isEdit ? 'Editar Artigo do Blog' : 'Publicar Novo Artigo' ?></h3>
-    <p style="color: var(--text-muted); font-size: 0.85rem;">Escreva artigos educativos para engajar pacientes e melhorar o SEO orgânico no Google.</p>
-  </div>
-
   <form method="POST" action="<?= $isEdit ? url('/admin/posts/update/' . $post['id']) : url('/admin/posts/store') ?>" enctype="multipart/form-data" id="postForm">
     <?= csrf_field() ?>
 
@@ -37,7 +39,7 @@ ob_start();
 
     <!-- EDITOR DE TEXTO RICO (QUILL WYSIWYG) -->
     <div class="form-group" style="margin-top: 25px;">
-      <label style="font-weight: 600; font-size: 1rem; color: var(--gold-light); margin-bottom: 10px; display: block;">
+      <label style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 8px; display: block;">
         Conteúdo Completo do Artigo (Editor Visual Rico) *
       </label>
       
@@ -47,81 +49,79 @@ ob_start();
       
       <input type="hidden" id="content" name="content" value="<?= htmlspecialchars($post['content'] ?? '') ?>">
       
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; flex-wrap: wrap; gap: 10px;">
-        <small style="color: var(--text-muted);">
-          <i data-lucide="sparkles" size="14" style="vertical-align: middle;"></i> Suporta títulos, listas, formatação, vídeos e <strong>inserção direta de fotos otimizadas em WebP</strong> no corpo do texto.
-        </small>
-      </div>
+      <p class="form-hint" style="margin-top: 6px;">
+        <i data-lucide="sparkles" size="14" style="vertical-align: middle; color: var(--pastel-blue-accent);"></i> Suporta títulos, listas, formatação, vídeos e <strong>inserção direta de fotos otimizadas em WebP</strong>.
+      </p>
     </div>
 
     <!-- BOX DE GESTÃO DA IMAGEM PRINCIPAL -->
-    <div class="form-group" style="margin-top: 30px; background: rgba(197, 160, 89, 0.06); padding: 25px; border-radius: 10px; border: 1px solid var(--card-border);">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-        <label style="font-weight: 600; font-size: 1.05rem; color: var(--gold-light); margin: 0; display: flex; align-items: center; gap: 8px;">
-          <i data-lucide="image" size="20"></i> Imagem de Capa Principal
+    <div class="form-group" style="margin-top: 30px; background: var(--bg-surface-hover); padding: 22px; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+        <label style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 8px;">
+          <i data-lucide="image" size="18" style="color: var(--pastel-blue-accent);"></i> Imagem de Capa Principal
         </label>
 
         <?php if (!empty($post['image_url'])): ?>
-          <button type="button" onclick="document.getElementById('formRemovePostImg').submit();" style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #ef4444; padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
-            <i data-lucide="trash-2" size="14"></i> Excluir Imagem Atual
+          <button type="button" onclick="document.getElementById('formRemovePostImg').submit();" class="btn-admin btn-sm" style="background: var(--pastel-red-bg); border-color: var(--pastel-red-border); color: var(--pastel-red-text);">
+            <i data-lucide="trash-2" size="13"></i> Excluir Capa Atual
           </button>
         <?php endif; ?>
       </div>
       
-      <div style="display: flex; gap: 25px; align-items: flex-start; flex-wrap: wrap;">
+      <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
         <!-- Imagem Atual Cadastrada -->
         <?php if (!empty($post['image_url'])): ?>
-          <div id="currentPostImageWrapper" style="text-align: center; background: var(--bg-light); padding: 14px; border-radius: 8px; border: 1px solid var(--card-border); max-width: 220px;">
-            <div style="font-size: 0.75rem; color: var(--gold-primary); font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+          <div id="currentPostImageWrapper" style="text-align: center; background: var(--bg-surface); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-light); max-width: 220px;">
+            <div style="font-size: 0.75rem; color: var(--pastel-blue-text); font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 4px;">
               <i data-lucide="check-circle" size="14"></i> Capa Vinculada
             </div>
-            <img src="<?= asset($post['image_url']) ?>" alt="Capa Atual" style="width: 180px; height: 110px; object-fit: cover; border-radius: 6px; border: 1px solid var(--card-border); display: block; margin: 0 auto 8px;">
+            <img src="<?= asset($post['image_url']) ?>" alt="Capa Atual" style="width: 180px; height: 110px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-light); display: block; margin: 0 auto 8px;">
             <p style="font-size: 0.7rem; color: var(--text-muted); word-break: break-all; margin: 0;"><?= htmlspecialchars($post['image_url']) ?></p>
           </div>
         <?php else: ?>
-          <div style="text-align: center; background: var(--bg-light); padding: 20px; border-radius: 8px; border: 1px dashed var(--card-border); width: 180px;">
-            <i data-lucide="image-off" size="32" style="color: var(--text-muted); margin-bottom: 8px;"></i>
-            <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Nenhuma capa anexada</p>
+          <div style="text-align: center; background: var(--bg-surface); padding: 18px; border-radius: var(--radius-sm); border: 1px dashed var(--border-light); width: 180px;">
+            <i data-lucide="image-off" size="28" style="color: var(--text-muted); margin-bottom: 6px;"></i>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Nenhuma capa</p>
           </div>
         <?php endif; ?>
 
         <!-- Preview da Nova Imagem Selecionada -->
-        <div id="newPostImagePreviewWrapper" style="display: none; text-align: center; background: var(--bg-light); padding: 14px; border-radius: 8px; border: 2px solid var(--gold-primary); max-width: 220px;">
-          <div style="font-size: 0.75rem; color: #25D366; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 4px;">
-            <i data-lucide="upload-cloud" size="14"></i> Nova Imagem Pronta
+        <div id="newPostImagePreviewWrapper" style="display: none; text-align: center; background: var(--bg-surface); padding: 12px; border-radius: var(--radius-sm); border: 2px solid var(--pastel-green-accent); max-width: 220px;">
+          <div style="font-size: 0.75rem; color: var(--pastel-green-text); font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+            <i data-lucide="upload-cloud" size="14"></i> Nova Capa Pronta
           </div>
-          <img id="newPostImagePreview" src="" alt="Nova Capa" style="width: 180px; height: 110px; object-fit: cover; border-radius: 6px; display: block; margin: 0 auto 8px;">
-          <p id="newPostImageInfo" style="font-size: 0.7rem; color: var(--text-main); margin: 0; font-weight: 500;"></p>
+          <img id="newPostImagePreview" src="" alt="Nova Capa" style="width: 180px; height: 110px; object-fit: cover; border-radius: var(--radius-sm); display: block; margin: 0 auto 8px;">
+          <p id="newPostImageInfo" style="font-size: 0.7rem; color: var(--text-primary); margin: 0; font-weight: 500;"></p>
         </div>
 
         <!-- Input de Upload -->
         <div style="flex: 1; min-width: 260px;">
-          <label for="image_file" style="font-size: 0.9rem; color: var(--text-main); margin-bottom: 8px; display: block;">
+          <label for="image_file" style="font-size: 0.88rem; color: var(--text-primary); margin-bottom: 8px; display: block; font-weight: 500;">
             <?= !empty($post['image_url']) ? 'Substituir por outra imagem do computador:' : 'Selecionar imagem de capa do computador:' ?>
           </label>
           <input type="file" id="image_file" name="image_file" class="form-control" accept="image/png, image/jpeg, image/webp, image/gif, image/svg+xml" onchange="previewPostUpload(this)">
           <input type="hidden" name="image_url" value="<?= htmlspecialchars($post['image_url'] ?? '') ?>">
           
-          <div style="margin-top: 8px; font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;">
+          <p class="form-hint" style="margin-top: 8px; line-height: 1.5;">
             Formatos aceitos: <strong>JPG, PNG, WebP, GIF, SVG</strong>.<br>
             A imagem será convertida automaticamente para <strong>WebP em alta definição</strong>.
-          </div>
+          </p>
         </div>
       </div>
     </div>
 
     <div class="form-group" style="margin-top: 20px;">
-      <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-main);">
-        <input type="checkbox" name="is_published" value="1" <?= (!isset($post['is_published']) || $post['is_published'] == 1) ? 'checked' : '' ?> style="width: 20px; height: 20px;">
+      <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-primary); font-size: 0.9rem;">
+        <input type="checkbox" name="is_published" value="1" <?= (!isset($post['is_published']) || $post['is_published'] == 1) ? 'checked' : '' ?> style="width: 18px; height: 18px; accent-color: var(--pastel-blue-accent);">
         Publicar Artigo Imediatamente no Site
       </label>
     </div>
 
-    <div style="display: flex; gap: 15px; margin-top: 30px;">
-      <button type="submit" class="btn-primary btn-solid" style="padding: 12px 35px;">
-        <i data-lucide="save" size="18"></i> Salvar Artigo
+    <div style="display: flex; gap: 12px; margin-top: 30px;">
+      <button type="submit" class="btn-admin btn-primary" style="padding: 12px 30px;">
+        <i data-lucide="save" size="16"></i> Salvar Artigo
       </button>
-      <a href="<?= url('/admin/posts') ?>" class="btn-primary" style="padding: 12px 25px;">Cancelar</a>
+      <a href="<?= url('/admin/posts') ?>" class="btn-admin btn-secondary" style="padding: 12px 20px;">Cancelar</a>
     </div>
   </form>
 
@@ -156,14 +156,13 @@ ob_start();
           image: imageUploadHandler
         }
       }
+    }
   });
 
-  // Sincroniza em tempo real sempre que o conteúdo for alterado
   quill.on('text-change', function() {
     document.getElementById('content').value = quill.root.innerHTML;
   });
 
-  // Sincroniza e valida antes do envio
   const postForm = document.getElementById('postForm');
   if (postForm) {
     postForm.addEventListener('submit', function(e) {
@@ -178,7 +177,6 @@ ob_start();
     });
   }
 
-  // Upload assíncrono de imagens dentro do corpo do texto (com conversão automática para WebP)
   function imageUploadHandler() {
     const input = document.createElement('input');
     input.setAttribute('type', 'file');
@@ -213,7 +211,6 @@ ob_start();
     };
   }
 
-  // Preview da Imagem de Capa
   function previewPostUpload(input) {
     const wrapper = document.getElementById('newPostImagePreviewWrapper');
     const img = document.getElementById('newPostImagePreview');

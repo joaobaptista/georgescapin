@@ -1,5 +1,6 @@
 <?php
-$pageTitle = 'Conteúdos Globais do Site & SEO';
+$pageTitle = 'Configurações & SEO';
+$activeTab = 'settings';
 ob_start();
 ?>
 
@@ -8,10 +9,10 @@ ob_start();
 
   <!-- 1. SEO & METATAGS -->
   <div class="admin-card">
-    <div style="margin-bottom: 20px;">
-      <h3 style="color: var(--gold-light); font-size: 1.3rem;">1. Configurações de SEO & Google</h3>
-      <p style="color: var(--text-muted); font-size: 0.85rem;">Palavras-chave e títulos indexados pelos mecanismos de busca.</p>
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">1. Configurações de SEO & Google</h3>
     </div>
+    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">Palavras-chave e títulos indexados pelos mecanismos de busca.</p>
 
     <div class="form-group">
       <label for="site_title">Título Global do Site (&lt;title&gt;)</label>
@@ -19,7 +20,7 @@ ob_start();
     </div>
 
     <div class="form-group">
-      <label for="meta_description">Meta Description (Resumo no Google)</label>
+      <label for="meta_description">Meta Description (Resumo exibido no Google)</label>
       <textarea id="meta_description" name="meta_description" class="form-control" rows="2"><?= htmlspecialchars($settings['meta_description'] ?? '') ?></textarea>
     </div>
 
@@ -31,10 +32,10 @@ ob_start();
 
   <!-- 2. CONTATO & ATENDIMENTO -->
   <div class="admin-card">
-    <div style="margin-bottom: 20px;">
-      <h3 style="color: var(--gold-light); font-size: 1.3rem;">2. Dados de Contato & Redes Sociais</h3>
-      <p style="color: var(--text-muted); font-size: 0.85rem;">Telefone, WhatsApp, endereço, horários de atendimento e link do Instagram.</p>
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">2. Dados de Contato & Redes Sociais</h3>
     </div>
+    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">Telefone, WhatsApp, endereço, horários de atendimento e link do Instagram.</p>
 
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
       <div class="form-group">
@@ -83,14 +84,14 @@ ob_start();
 
   <!-- 3. CABEÇALHOS DAS PÁGINAS PADRÃO -->
   <div class="admin-card">
-    <div style="margin-bottom: 20px;">
-      <h3 style="color: var(--gold-light); font-size: 1.3rem;">3. Cabeçalhos e Textos das Páginas Padrão</h3>
-      <p style="color: var(--text-muted); font-size: 0.85rem;">Personalize os títulos e introduções exibidos no topo de cada página pública.</p>
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">3. Cabeçalhos das Páginas Padrão</h3>
     </div>
+    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">Personalize os títulos e introduções exibidos no topo de cada página pública.</p>
 
     <!-- Procedimentos -->
-    <div style="background: var(--bg-light); padding: 16px; border-radius: 6px; border: 1px solid var(--card-border); margin-bottom: 15px;">
-      <h4 style="color: var(--gold-light); font-size: 0.95rem; margin-bottom: 10px;">Página de Procedimentos (/procedimentos)</h4>
+    <div style="background: var(--bg-surface-hover); padding: 18px; border-radius: var(--radius-sm); border: 1px solid var(--border-light); margin-bottom: 18px;">
+      <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">Página de Procedimentos (/procedimentos)</h4>
       <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px;">
         <div class="form-group" style="margin: 0;">
           <label for="procedures_page_title">Título da Página</label>
@@ -104,9 +105,9 @@ ob_start();
     </div>
 
     <!-- Blog -->
-    <div style="background: var(--bg-light); padding: 16px; border-radius: 6px; border: 1px solid var(--card-border); margin-bottom: 15px;">
-      <h4 style="color: var(--gold-light); font-size: 0.95rem; margin-bottom: 10px;">Página do Blog (/blog)</h4>
-      <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; margin-bottom: 10px;">
+    <div style="background: var(--bg-surface-hover); padding: 18px; border-radius: var(--radius-sm); border: 1px solid var(--border-light); margin-bottom: 18px;">
+      <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">Página do Blog (/blog)</h4>
+      <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; margin-bottom: 12px;">
         <div class="form-group" style="margin: 0;">
           <label for="blog_page_title">Título do Blog</label>
           <input type="text" id="blog_page_title" name="blog_page_title" class="form-control" value="<?= htmlspecialchars($settings['blog_page_title'] ?? 'Blog do Dr. George') ?>">
@@ -129,8 +130,8 @@ ob_start();
     </div>
 
     <!-- Contato -->
-    <div style="background: var(--bg-light); padding: 16px; border-radius: 6px; border: 1px solid var(--card-border);">
-      <h4 style="color: var(--gold-light); font-size: 0.95rem; margin-bottom: 10px;">Página de Contato (/contato)</h4>
+    <div style="background: var(--bg-surface-hover); padding: 18px; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
+      <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">Página de Contato (/contato)</h4>
       <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px;">
         <div class="form-group" style="margin: 0;">
           <label for="contact_page_title">Título da Página de Contato</label>
@@ -145,8 +146,8 @@ ob_start();
   </div>
 
   <div style="margin-top: 25px; margin-bottom: 50px;">
-    <button type="submit" class="btn-primary btn-solid" style="padding: 14px 40px; font-size: 1rem;">
-      <i data-lucide="check" size="20"></i> Salvar Todas as Configurações
+    <button type="submit" class="btn-admin btn-primary" style="padding: 12px 32px; font-size: 0.95rem;">
+      <i data-lucide="check" size="18"></i> Salvar Todas as Configurações
     </button>
   </div>
 </form>
