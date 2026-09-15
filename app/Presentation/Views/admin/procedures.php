@@ -1,5 +1,5 @@
 <?php
-$pageTitle = 'Tratamentos & Procedimentos';
+$pageTitle = 'Procedimentos';
 $activeTab = 'procedures';
 $pageActions = '<a href="' . url('/admin/procedures/create') . '" class="btn-admin btn-primary"><i data-lucide="plus" size="16"></i> Adicionar Tratamento</a>';
 ob_start();
@@ -11,7 +11,7 @@ ob_start();
       <tr>
         <th style="width: 70px;">Ordem</th>
         <th style="width: 80px;">Imagem</th>
-        <th>Título & Slug</th>
+        <th>Título</th>
         <th>Descrição Breve</th>
         <th>Status</th>
         <th style="text-align: right; width: 80px;">Ações</th>
@@ -40,8 +40,7 @@ ob_start();
             <td>
               <a href="<?= url('/admin/procedures/edit/' . $p['id']) ?>" style="color: var(--text-primary); font-weight: 600;">
                 <?= htmlspecialchars($p['title']) ?>
-              </a><br>
-              <small style="color: var(--text-muted); font-size: 0.78rem;">/<?= htmlspecialchars($p['slug']) ?></small>
+              </a>
             </td>
             <td style="max-width: 320px; color: var(--text-secondary);"><?= htmlspecialchars($p['short_description']) ?></td>
             <td>

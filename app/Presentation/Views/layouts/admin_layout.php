@@ -36,14 +36,19 @@
     }
   </script>
 
+  <div id="mobileSidebarOverlay" class="mobile-sidebar-overlay"></div>
+
   <div class="admin-wrapper">
     <!-- Sidebar -->
-    <aside class="admin-sidebar">
+    <aside class="admin-sidebar" id="adminSidebar">
       <div class="sidebar-logo">
         <a href="<?= url('/admin') ?>" class="logo-brand-container">
           <img src="<?= asset('assets/images/stackbox-icon.svg') ?>" alt="StackBOX" class="logo-brand-icon">
           <span class="logo-brand-text">Stack<strong>BOX</strong> <span class="logo-brand-sub">CMS</span></span>
         </a>
+        <button type="button" class="mobile-sidebar-close" id="mobileSidebarCloseBtn" aria-label="Fechar Menu">
+          <i data-lucide="x" size="18"></i>
+        </button>
       </div>
       
       <ul class="sidebar-nav">
@@ -53,8 +58,8 @@
           </a>
         </li>
         <li>
-          <a href="<?= url('/admin/leads') ?>" class="<?= ($activeTab ?? '') === 'leads' ? 'active' : '' ?>" title="Leads & Contatos">
-            <i data-lucide="users" size="18"></i> <span class="nav-text">Leads & Contatos</span>
+          <a href="<?= url('/admin/leads') ?>" class="<?= ($activeTab ?? '') === 'leads' ? 'active' : '' ?>" title="Leads">
+            <i data-lucide="users" size="18"></i> <span class="nav-text">Leads</span>
           </a>
         </li>
         <li>
@@ -63,33 +68,33 @@
           </a>
         </li>
         <li>
-          <a href="<?= url('/admin/pages') ?>" class="<?= ($activeTab ?? '') === 'pages' ? 'active' : '' ?>" title="Páginas do Site">
-            <i data-lucide="layout-template" size="18"></i> <span class="nav-text">Páginas do Site</span>
+          <a href="<?= url('/admin/pages') ?>" class="<?= ($activeTab ?? '') === 'pages' ? 'active' : '' ?>" title="Páginas">
+            <i data-lucide="layout-template" size="18"></i> <span class="nav-text">Páginas</span>
           </a>
         </li>
         <li>
-          <a href="<?= url('/admin/posts') ?>" class="<?= ($activeTab ?? '') === 'posts' ? 'active' : '' ?>" title="Artigos do Blog">
-            <i data-lucide="newspaper" size="18"></i> <span class="nav-text">Artigos do Blog</span>
+          <a href="<?= url('/admin/posts') ?>" class="<?= ($activeTab ?? '') === 'posts' ? 'active' : '' ?>" title="Blog">
+            <i data-lucide="newspaper" size="18"></i> <span class="nav-text">Blog</span>
           </a>
         </li>
         <li>
-          <a href="<?= url('/admin/menu') ?>" class="<?= ($activeTab ?? '') === 'menu' ? 'active' : '' ?>" title="Menu de Navegação">
-            <i data-lucide="menu" size="18"></i> <span class="nav-text">Menu de Navegação</span>
+          <a href="<?= url('/admin/menu') ?>" class="<?= ($activeTab ?? '') === 'menu' ? 'active' : '' ?>" title="Menu">
+            <i data-lucide="menu" size="18"></i> <span class="nav-text">Menu</span>
           </a>
         </li>
         <li>
-          <a href="<?= url('/admin/settings') ?>" class="<?= ($activeTab ?? '') === 'settings' ? 'active' : '' ?>" title="Configurações & SEO">
-            <i data-lucide="sliders" size="18"></i> <span class="nav-text">Configurações & SEO</span>
+          <a href="<?= url('/admin/settings') ?>" class="<?= ($activeTab ?? '') === 'settings' ? 'active' : '' ?>" title="Configurações">
+            <i data-lucide="sliders" size="18"></i> <span class="nav-text">Configurações</span>
           </a>
         </li>
       </ul>
 
       <div class="sidebar-footer">
         <div class="sidebar-footer-info">
-          <span class="sidebar-version">v2.5.0</span>
           <span class="sidebar-copyright">
             &copy; <?= date('Y') ?> <a href="https://stackbox.com.br/" target="_blank" rel="noopener noreferrer">Stack<strong>BOX</strong></a>
           </span>
+          <span class="sidebar-version">v1.0.0</span>
         </div>
         <button type="button" class="sidebar-toggle-btn" id="sidebarToggleBtn" title="Recolher / Expandir Menu" aria-label="Recolher / Expandir Menu">
           <i data-lucide="chevrons-left" size="18" class="toggle-icon-collapse"></i>
@@ -117,7 +122,9 @@
 
       <header class="admin-topbar">
         <div class="topbar-left">
-          <!-- Topbar limpo sem título -->
+          <button type="button" class="mobile-nav-toggle" id="mobileMenuToggleBtn" aria-label="Abrir Menu" title="Abrir Menu">
+            <i data-lucide="menu" size="20"></i>
+          </button>
         </div>
         
         <div class="topbar-right">
@@ -188,27 +195,35 @@
         }
         ?>
 
-        <?php if (!empty($breadcrumbs) || !empty($pageActions)): ?>
+        <?php if (!empty($breadcrumbs) || !empty($pageActions) || !empty($backUrl) || !empty($backButton)): ?>
           <div class="admin-page-header">
-            <?php if (!empty($breadcrumbs)): ?>
-              <nav class="admin-breadcrumb" aria-label="Caminho de navegação">
-                <ol class="breadcrumb-list">
-                  <?php foreach ($breadcrumbs as $index => $item): ?>
-                    <?php $isLast = ($index === count($breadcrumbs) - 1); ?>
-                    <li class="breadcrumb-item <?= $isLast ? 'active' : '' ?>">
-                      <?php if (!$isLast && !empty($item['url'])): ?>
-                        <a href="<?= $item['url'] ?>" class="breadcrumb-link"><?= htmlspecialchars($item['label']) ?></a>
-                        <span class="breadcrumb-separator">/</span>
-                      <?php else: ?>
-                        <span class="breadcrumb-current"><?= htmlspecialchars($item['label']) ?></span>
-                      <?php endif; ?>
-                    </li>
-                  <?php endforeach; ?>
-                </ol>
-              </nav>
-            <?php else: ?>
-              <div></div>
-            <?php endif; ?>
+            <div class="admin-page-header-left" style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+              <?php if (!empty($backButton)): ?>
+                <?= $backButton ?>
+              <?php elseif (!empty($backUrl)): ?>
+                <a href="<?= $backUrl ?>" class="btn-admin btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 0.85rem; font-weight: 500;">
+                  <i data-lucide="arrow-left" size="15"></i> Voltar
+                </a>
+              <?php endif; ?>
+
+              <?php if (!empty($breadcrumbs)): ?>
+                <nav class="admin-breadcrumb" aria-label="Caminho de navegação">
+                  <ol class="breadcrumb-list">
+                    <?php foreach ($breadcrumbs as $index => $item): ?>
+                      <?php $isLast = ($index === count($breadcrumbs) - 1); ?>
+                      <li class="breadcrumb-item <?= $isLast ? 'active' : '' ?>">
+                        <?php if (!$isLast && !empty($item['url'])): ?>
+                          <a href="<?= $item['url'] ?>" class="breadcrumb-link"><?= htmlspecialchars($item['label']) ?></a>
+                          <span class="breadcrumb-separator">/</span>
+                        <?php else: ?>
+                          <span class="breadcrumb-current"><?= htmlspecialchars($item['label']) ?></span>
+                        <?php endif; ?>
+                      </li>
+                    <?php endforeach; ?>
+                  </ol>
+                </nav>
+              <?php endif; ?>
+            </div>
 
             <?php if (!empty($pageActions)): ?>
               <div class="admin-page-actions">
@@ -412,7 +427,21 @@
         allDropdowns.forEach(d => {
           if (d !== currentDropdown) d.classList.remove('active');
         });
-        currentDropdown.classList.toggle('active');
+        
+        const isOpening = !currentDropdown.classList.contains('active');
+        if (isOpening) {
+          const rect = trigger.getBoundingClientRect();
+          const spaceBelow = window.innerHeight - rect.bottom;
+          if (spaceBelow < 200 && rect.top > 200) {
+            currentDropdown.classList.add('dropup');
+          } else {
+            currentDropdown.classList.remove('dropup');
+          }
+          currentDropdown.classList.add('active');
+        } else {
+          currentDropdown.classList.remove('active');
+        }
+        
         if (window.lucide) lucide.createIcons();
         return;
       }
@@ -427,7 +456,7 @@
       }
     });
 
-    // Sidebar Collapse / Expand Toggle
+    // Sidebar Collapse / Expand Toggle (Desktop)
     const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
     if (sidebarToggleBtn) {
       sidebarToggleBtn.addEventListener('click', () => {
@@ -438,6 +467,39 @@
         }
       });
     }
+
+    // Mobile Sidebar Drawer Toggle
+    const mobileMenuToggleBtn = document.getElementById('mobileMenuToggleBtn');
+    const mobileSidebarCloseBtn = document.getElementById('mobileSidebarCloseBtn');
+    const mobileSidebarOverlay = document.getElementById('mobileSidebarOverlay');
+
+    function openMobileSidebar() {
+      document.body.classList.add('mobile-sidebar-open');
+    }
+
+    function closeMobileSidebar() {
+      document.body.classList.remove('mobile-sidebar-open');
+    }
+
+    mobileMenuToggleBtn?.addEventListener('click', openMobileSidebar);
+    mobileSidebarCloseBtn?.addEventListener('click', closeMobileSidebar);
+    mobileSidebarOverlay?.addEventListener('click', closeMobileSidebar);
+
+    // Close mobile sidebar on link click
+    document.querySelectorAll('.sidebar-nav a').forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth <= 992) {
+          closeMobileSidebar();
+        }
+      });
+    });
+
+    // Close on window resize if larger than 992px
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 992 && document.body.classList.contains('mobile-sidebar-open')) {
+        closeMobileSidebar();
+      }
+    });
 
     lucide.createIcons();
   </script>

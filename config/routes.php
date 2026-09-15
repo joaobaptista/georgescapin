@@ -107,6 +107,8 @@ return [
 
         // CMS - Leads, Configurações e Perfil
         '/admin/leads/status/(?P<id>\d+)' => ['AdminController', 'updateLeadStatus'],
+        '/admin/leads/delete/(?P<id>\d+)' => ['AdminController', 'deleteLead'],
+        '/admin/newsletter/delete/(?P<id>\d+)' => ['AdminController', 'deleteNewsletterSubscriber'],
         '/admin/settings/update' => ['AdminController', 'updateSettings'],
         '/admin/profile/update' => ['AdminController', 'updateProfile'],
     ]

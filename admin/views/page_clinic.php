@@ -1,12 +1,12 @@
 <?php
 $pageTitle = 'Editar Página: George Scapin / Clínica';
 $activeTab = 'pages';
+$backUrl = url('/admin/pages');
 $breadcrumbs = [
     ['label' => 'Dashboard', 'url' => url('/admin')],
-    ['label' => 'Páginas do Site', 'url' => url('/admin/pages')],
+    ['label' => 'Páginas', 'url' => url('/admin/pages')],
     ['label' => 'A Clínica']
 ];
-$pageActions = '<a href="' . url('/admin/pages') . '" class="btn-admin btn-secondary"><i data-lucide="arrow-left" size="14"></i> Voltar</a>';
 ob_start();
 ?>
 
@@ -18,7 +18,7 @@ ob_start();
       <h3 class="admin-card-title">1. Informações Principais & Cabeçalho</h3>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+    <div class="admin-grid-2col" style="gap: 20px;">
       <div class="form-group">
         <label for="clinic_title">Título da Página (Nome do Profissional) *</label>
         <input type="text" id="clinic_title" name="clinic_title" class="form-control" required value="<?= htmlspecialchars($clinic['title'] ?? 'Dr. George Scapin') ?>">
@@ -30,7 +30,7 @@ ob_start();
       </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px;">
+    <div class="admin-grid-2col" style="gap: 20px; margin-top: 10px;">
       <div class="form-group">
         <label for="clinic_section_title">Título do Bloco Lateral (Frase Principal)</label>
         <input type="text" id="clinic_section_title" name="clinic_section_title" class="form-control" value="<?= htmlspecialchars($settings['clinic_section_title'] ?? 'Ciência, Precisão e<br>Sensibilidade Artística.') ?>">

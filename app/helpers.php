@@ -156,22 +156,22 @@ if (!function_exists('render_pagination')) {
             return $path . '?' . http_build_query($params);
         };
 
-        $html = '<nav aria-label="Paginação" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:25px;">';
+        $html = '<nav aria-label="Paginação" style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:auto;padding:18px 20px;">';
 
         if ($currentPage > 1) {
-            $html .= '<a href="' . htmlspecialchars($buildUrl($currentPage - 1)) . '" class="btn-primary" style="padding:6px 12px;font-size:0.8rem;display:inline-flex;align-items:center;gap:4px;"><i data-lucide="chevron-left" size="14"></i> Anterior</a>';
+            $html .= '<a href="' . htmlspecialchars($buildUrl($currentPage - 1)) . '" class="btn-admin btn-secondary" style="padding:6px 12px;font-size:0.82rem;display:inline-flex;align-items:center;gap:4px;"><i data-lucide="chevron-left" size="14"></i> Anterior</a>';
         }
 
         for ($i = 1; $i <= $totalPages; $i++) {
             if ($i === $currentPage) {
-                $html .= '<span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;background:var(--gold-primary);color:#fff;font-weight:600;border-radius:4px;font-size:0.85rem;">' . $i . '</span>';
+                $html .= '<span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--color-primary);color:#fff;font-weight:600;border-radius:var(--radius-sm);font-size:0.84rem;">' . $i . '</span>';
             } else {
-                $html .= '<a href="' . htmlspecialchars($buildUrl($i)) . '" style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border:1px solid var(--card-border);color:var(--text-main);text-decoration:none;border-radius:4px;font-size:0.85rem;">' . $i . '</a>';
+                $html .= '<a href="' . htmlspecialchars($buildUrl($i)) . '" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid var(--border-light);background:var(--bg-surface);color:var(--text-primary);text-decoration:none;border-radius:var(--radius-sm);font-size:0.84rem;transition:all 0.15s ease;">' . $i . '</a>';
             }
         }
 
         if ($currentPage < $totalPages) {
-            $html .= '<a href="' . htmlspecialchars($buildUrl($currentPage + 1)) . '" class="btn-primary" style="padding:6px 12px;font-size:0.8rem;display:inline-flex;align-items:center;gap:4px;">Próximo <i data-lucide="chevron-right" size="14"></i></a>';
+            $html .= '<a href="' . htmlspecialchars($buildUrl($currentPage + 1)) . '" class="btn-admin btn-secondary" style="padding:6px 12px;font-size:0.82rem;display:inline-flex;align-items:center;gap:4px;">Próximo <i data-lucide="chevron-right" size="14"></i></a>';
         }
 
         $html .= '</nav>';

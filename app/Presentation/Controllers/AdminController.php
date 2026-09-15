@@ -421,19 +421,33 @@ class AdminController
     {
         $user = Auth::user();
         
+        $currentTab = $_GET['tab'] ?? 'contacts';
+        if (!in_array($currentTab, ['contacts', 'newsletter'], true)) {
+            $currentTab = 'contacts';
+        }
+
+        $searchContacts = trim($_GET['q_contacts'] ?? ($_GET['q'] ?? ''));
+        $searchNews = trim($_GET['q_news'] ?? ($_GET['q'] ?? ''));
+
+        // Se estiver na aba contacts, usa searchContacts; se estiver na newsletter, usa searchNews
+        $contactsSearchParam = ($currentTab === 'contacts') ? $searchContacts : trim($_GET['q_contacts'] ?? '');
+        $newsSearchParam = ($currentTab === 'newsletter') ? $searchNews : trim($_GET['q_news'] ?? '');
+
         $contactsPage = max(1, (int)($_GET['contacts_page'] ?? 1));
-        $contactsPagination = $this->leadRepo->getContactsPaginated($contactsPage, 5);
+        $contactsPagination = $this->leadRepo->getContactsPaginated($contactsPage, 10, $contactsSearchParam);
         $contacts = $contactsPagination['data'];
         $contactsCurrentPage = $contactsPagination['current_page'];
         $contactsTotalPages = $contactsPagination['last_page'];
         $contactsTotal = $contactsPagination['total'];
 
         $newsPage = max(1, (int)($_GET['news_page'] ?? 1));
-        $newsPagination = $this->leadRepo->getNewsletterPaginated($newsPage, 5);
+        $newsPagination = $this->leadRepo->getNewsletterPaginated($newsPage, 10, $newsSearchParam);
         $subscribers = $newsPagination['data'];
         $newsCurrentPage = $newsPagination['current_page'];
         $newsTotalPages = $newsPagination['last_page'];
         $newsTotal = $newsPagination['total'];
+
+        $newLeadsCount = $this->leadRepo->countNewLeads();
 
         $activeTab = 'leads';
         require admin_view_path('leads');
@@ -444,8 +458,23 @@ class AdminController
         $status = $_POST['status'] ?? 'novo';
         $this->leadRepo->updateContactStatus($id, $status);
         flash('success', 'Status do contato atualizado!');
-        redirect('admin/leads');
+        redirect('admin/leads?tab=contacts');
     }
+
+    public function deleteLead(int $id): void
+    {
+        $this->leadRepo->deleteContact($id);
+        flash('success', 'Mensagem de lead excluída com sucesso.');
+        redirect('admin/leads?tab=contacts');
+    }
+
+    public function deleteNewsletterSubscriber(int $id): void
+    {
+        $this->leadRepo->deleteNewsletterSubscriber($id);
+        flash('success', 'E-mail removido da lista de newsletter com sucesso.');
+        redirect('admin/leads?tab=newsletter');
+    }
+
 
     public function exportLeadsCsv(): void
     {

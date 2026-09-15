@@ -1,25 +1,3 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
-  <defs>
-    <linearGradient id="adminBlueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0C66E4"/>
-      <stop offset="100%" stop-color="#0047B3"/>
-    </linearGradient>
-    <filter id="softGlow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#002966" flood-opacity="0.3"/>
-    </filter>
-  </defs>
-  
-  <!-- Base Squircle Azul Jira -->
-  <rect x="16" y="16" width="480" height="480" rx="120" fill="url(#adminBlueGrad)" filter="url(#softGlow)"/>
-  <rect x="24" y="24" width="464" height="464" rx="112" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-opacity="0.25"/>
-  
-  <!-- Detalhe Superior de Destaque (Barra / Indicador Admin) -->
-  <circle cx="390" cy="120" r="28" fill="#FFFFFF" opacity="0.95"/>
-  <path d="M390 102 L390 138 M372 120 L408 120" stroke="#0C66E4" stroke-width="8" stroke-linecap="round"/>
-
-  <!-- Monograma GS em Branco Puro e Tipografia Sans Moderna -->
-  <text x="242" y="325" font-family="-apple-system, BlinkMacSystemFont, 'Roboto', 'Segoe UI', sans-serif" font-size="200" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="-8">GS</text>
-  
-  <!-- Barra Inferior de Status Admin -->
-  <rect x="140" y="375" width="232" height="14" rx="7" fill="#FFFFFF" opacity="0.8"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35 33" width="32" height="32">
+  <path d="M35 3.18164H27.5752V5.30273H35V8.48438H21.2129V10.6064H35V13.7939H14.8486V15.916H35V19.0977H9.5459V21.2188H35V24.4023H6.36328V26.5234H35V29.707H4.24219V31.8281H35V32.8789H0V0H35V3.18164Z" fill="#000000"/>
 </svg>
