@@ -1,29 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
   <defs>
-    <linearGradient id="adminBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#18221c"/>
-      <stop offset="100%" stop-color="#080c0a"/>
+    <linearGradient id="adminBlueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0C66E4"/>
+      <stop offset="100%" stop-color="#0047B3"/>
     </linearGradient>
-    <linearGradient id="adminGold" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#fae7be"/>
-      <stop offset="50%" stop-color="#d4af65"/>
-      <stop offset="100%" stop-color="#8c6b28"/>
-    </linearGradient>
-    <linearGradient id="adminShieldFill" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="rgba(212,175,101,0.25)"/>
-      <stop offset="100%" stop-color="rgba(212,175,101,0.05)"/>
-    </linearGradient>
+    <filter id="softGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#002966" flood-opacity="0.3"/>
+    </filter>
   </defs>
   
-  <!-- Base Squircle -->
-  <rect width="512" height="512" rx="128" fill="url(#adminBg)" stroke="url(#adminGold)" stroke-width="16"/>
+  <!-- Base Squircle Azul Jira -->
+  <rect x="16" y="16" width="480" height="480" rx="120" fill="url(#adminBlueGrad)" filter="url(#softGlow)"/>
+  <rect x="24" y="24" width="464" height="464" rx="112" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-opacity="0.25"/>
   
-  <!-- Escudo Protetor do Painel Admin -->
-  <path d="M256 80 L395 130 V255 C395 345 256 425 256 425 C256 425 117 345 117 255 V130 Z" fill="url(#adminShieldFill)" stroke="url(#adminGold)" stroke-width="14" stroke-linejoin="round"/>
+  <!-- Detalhe Superior de Destaque (Barra / Indicador Admin) -->
+  <circle cx="390" cy="120" r="28" fill="#FFFFFF" opacity="0.95"/>
+  <path d="M390 102 L390 138 M372 120 L408 120" stroke="#0C66E4" stroke-width="8" stroke-linecap="round"/>
+
+  <!-- Monograma GS em Branco Puro e Tipografia Sans Moderna -->
+  <text x="242" y="325" font-family="-apple-system, BlinkMacSystemFont, 'Roboto', 'Segoe UI', sans-serif" font-size="200" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="-8">GS</text>
   
-  <!-- Monograma GS no Escudo -->
-  <text x="256" y="295" font-family="'Playfair Display', 'Georgia', serif" font-size="140" font-weight="700" fill="url(#adminGold)" text-anchor="middle">GS</text>
-  
-  <!-- Ícone de Chave / Cadeado / Estrela Superior -->
-  <circle cx="256" cy="175" r="14" fill="url(#adminGold)"/>
+  <!-- Barra Inferior de Status Admin -->
+  <rect x="140" y="375" width="232" height="14" rx="7" fill="#FFFFFF" opacity="0.8"/>
 </svg>

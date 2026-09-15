@@ -1,134 +1,123 @@
 <?php
 $pageTitle = 'Design System & Guia de Estilo';
+$pageActions = '<a href="' . asset('assets/css/admin-design-system.css') . '" target="_blank" class="btn-admin btn-primary"><i data-lucide="file-code" size="16"></i> Ver CSS Puro</a>';
 ob_start();
 ?>
 
-<!-- CABEÇALHO DO DESIGN SYSTEM -->
-<div class="admin-card" style="background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-surface-container) 100%); border-left: 4px solid var(--color-primary);">
-  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-    <div>
-      <span class="badge" style="background: var(--color-primary-container); color: var(--color-primary); margin-bottom: 8px;">
-        Material Design 3 • Clean Architecture
-      </span>
-      <h2 style="font-size: 1.6rem; color: var(--text-main); font-weight: 700; margin-bottom: 6px;">
-        Design System do Painel Administrativo
-      </h2>
-      <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 750px;">
-        Arquitetura visual padronizada, moderna e minimalista para este CMS e projetos futuros. Cores neutras, tipografia elegante, sombras suaves e suporte nativo a temas Claro e Escuro.
-      </p>
-    </div>
-    <a href="<?= asset('assets/css/admin-design-system.css') ?>" target="_blank" class="btn btn-solid" style="padding: 10px 20px;">
-      <i data-lucide="file-code" size="16"></i> Ver CSS Puro
-    </a>
-  </div>
-</div>
-
-<!-- SEÇÃO 1: PALETA DE CORES NEUTRA E FUNCIONAL -->
+<!-- SEÇÃO 1: PALETA DE CORES & TOKENS -->
 <div class="admin-card">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-    <div>
-      <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 10px;">
-        <i data-lucide="palette" size="20" style="color: var(--color-primary);"></i> 1. Tokens de Cores e Superfícies
-      </h3>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">Paleta neutra sofisticada com contraste calibrado para acessibilidade.</p>
-    </div>
+  <div style="margin-bottom: 20px;">
+    <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 10px;">
+      <i data-lucide="palette" size="20" style="color: var(--pastel-blue-accent);"></i> 1. Cores de Ação, Ícones & Superfícies
+    </h3>
+    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">Cores funcionais calibradas para foco, ergonomia visual e contraste WCAG AAA.</p>
   </div>
 
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-    <div style="background: var(--color-primary); color: var(--color-on-primary); padding: 18px; border-radius: var(--radius-md); box-shadow: var(--elevation-1);">
-      <strong style="display: block; font-size: 0.9rem;">Primary Brand</strong>
-      <code style="font-size: 0.75rem; opacity: 0.9;">--color-primary</code>
-      <div style="font-size: 0.75rem; margin-top: 8px;">Gold / Acento Principal</div>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px;">
+    <div style="background: var(--color-primary); border: 1px solid var(--color-primary); color: #ffffff; padding: 18px; border-radius: var(--radius-md);">
+      <strong style="display: block; font-size: 0.9rem;">Jira Blue (Botão Primário)</strong>
+      <code style="font-size: 0.75rem; opacity: 0.9;">#0C66E4 • --color-primary</code>
+      <div style="font-size: 0.75rem; margin-top: 8px;">Botões principais e ícones ativos</div>
     </div>
 
-    <div style="background: var(--bg-surface); border: 1px solid var(--border-strong); padding: 18px; border-radius: var(--radius-md); box-shadow: var(--elevation-1);">
-      <strong style="display: block; font-size: 0.9rem; color: var(--text-main);">Surface</strong>
-      <code style="font-size: 0.75rem; color: var(--text-muted);">--bg-surface</code>
-      <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 8px;">Cards e Modais</div>
+    <div style="background: var(--pastel-blue-bg); border: 1px solid var(--pastel-blue-border); color: var(--pastel-blue-text); padding: 18px; border-radius: var(--radius-md);">
+      <strong style="display: block; font-size: 0.9rem;">Soft Blue (Container / Badge)</strong>
+      <code style="font-size: 0.75rem;">#E9F2FF • --pastel-blue-bg</code>
+      <div style="font-size: 0.75rem; margin-top: 8px;">Cards de métricas e fundos de ícones</div>
     </div>
 
-    <div style="background: var(--bg-surface-container); border: 1px solid var(--border-subtle); padding: 18px; border-radius: var(--radius-md);">
-      <strong style="display: block; font-size: 0.9rem; color: var(--text-main);">Surface Container</strong>
-      <code style="font-size: 0.75rem; color: var(--text-muted);">--bg-surface-container</code>
-      <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 8px;">Inputs e Fundos</div>
+    <div style="background: var(--pastel-green-bg); border: 1px solid var(--pastel-green-border); color: var(--pastel-green-text); padding: 18px; border-radius: var(--radius-md);">
+      <strong style="display: block; font-size: 0.9rem;">Jira Green (Sucesso)</strong>
+      <code style="font-size: 0.75rem;">#E3FCEF • --pastel-green-bg</code>
+      <div style="font-size: 0.75rem; margin-top: 8px;">Itens publicados e novos leads</div>
     </div>
 
-    <div style="background: var(--color-success-container); border: 1px solid var(--color-success); color: var(--color-success); padding: 18px; border-radius: var(--radius-md);">
-      <strong style="display: block; font-size: 0.9rem;">Success (Emerald)</strong>
-      <code style="font-size: 0.75rem;">--color-success</code>
-      <div style="font-size: 0.75rem; margin-top: 8px;">Confirmações e Ativos</div>
+    <div style="background: var(--pastel-amber-bg); border: 1px solid var(--pastel-amber-border); color: var(--pastel-amber-text); padding: 18px; border-radius: var(--radius-md);">
+      <strong style="display: block; font-size: 0.9rem;">Jira Amber (Alerta / Pendente)</strong>
+      <code style="font-size: 0.75rem;">#FFFAE6 • --pastel-amber-bg</code>
+      <div style="font-size: 0.75rem; margin-top: 8px;">Pendências e mensagens</div>
     </div>
 
-    <div style="background: var(--color-error-container); border: 1px solid var(--color-error); color: var(--color-error); padding: 18px; border-radius: var(--radius-md);">
-      <strong style="display: block; font-size: 0.9rem;">Danger (Rose)</strong>
-      <code style="font-size: 0.75rem;">--color-error</code>
-      <div style="font-size: 0.75rem; margin-top: 8px;">Exclusões e Erros</div>
+    <div style="background: var(--pastel-red-bg); border: 1px solid var(--pastel-red-border); color: var(--pastel-red-text); padding: 18px; border-radius: var(--radius-md);">
+      <strong style="display: block; font-size: 0.9rem;">Jira Red (Perigo / Exclusão)</strong>
+      <code style="font-size: 0.75rem;">#FFEBE6 • --pastel-red-bg</code>
+      <div style="font-size: 0.75rem; margin-top: 8px;">Desativados e botões de exclusão</div>
     </div>
 
-    <div style="background: var(--color-warning-container); border: 1px solid var(--color-warning); color: var(--color-warning); padding: 18px; border-radius: var(--radius-md);">
-      <strong style="display: block; font-size: 0.9rem;">Warning (Amber)</strong>
-      <code style="font-size: 0.75rem;">--color-warning</code>
-      <div style="font-size: 0.75rem; margin-top: 8px;">Pendências e Avisos</div>
+    <div style="background: var(--bg-surface); border: 1px solid var(--border-light); padding: 18px; border-radius: var(--radius-md); box-shadow: var(--shadow-xs);">
+      <strong style="display: block; font-size: 0.9rem; color: var(--text-primary);">Surface (Card Branco)</strong>
+      <code style="font-size: 0.75rem; color: var(--text-muted);">#FFFFFF • --bg-surface</code>
+      <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Cards, modais e tabelas</div>
     </div>
   </div>
 </div>
 
-<!-- SEÇÃO 2: TIPOGRAFIA -->
+<!-- SEÇÃO 2: TIPOGRAFIA DE ALTA RESOLUÇÃO -->
 <div class="admin-card">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-    <div>
-      <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 10px;">
-        <i data-lucide="type" size="20" style="color: var(--color-primary);"></i> 2. Escala Tipográfica
-      </h3>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">Plus Jakarta Sans para interface limpa e Playfair Display para títulos nobres.</p>
-    </div>
+  <div style="margin-bottom: 20px;">
+    <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 10px;">
+      <i data-lucide="type" size="20" style="color: var(--pastel-blue-accent);"></i> 2. Tipografia & Escrita em Grafite/Preto de Alta Resolução
+    </h3>
+    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">Contraste profundo com preto e cinza escuro para excelente nitidez e conforto de leitura prolongada.</p>
   </div>
 
-  <div style="display: flex; flex-direction: column; gap: 16px; background: var(--bg-surface-container); padding: 24px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+  <div style="display: flex; flex-direction: column; gap: 16px; background: var(--bg-canvas); padding: 24px; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
     <div style="display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
-      <span style="font-family: var(--font-serif); font-size: 2rem; color: var(--color-primary);">Título Serif (Playfair Display)</span>
-      <code style="font-size: 0.8rem; color: var(--text-muted);">2rem / 32px • Serif</code>
+      <span style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">Título Principal (H1 - 24px / #091E42)</span>
+      <code style="font-size: 0.8rem; color: var(--text-muted);">--text-primary • #091E42 (Preto Escuro)</code>
     </div>
     <div style="display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
-      <span style="font-size: 1.4rem; font-weight: 700; color: var(--text-main);">Headline 1 (Plus Jakarta Sans)</span>
-      <code style="font-size: 0.8rem; color: var(--text-muted);">1.4rem / 22px • Bold</code>
+      <span style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary);">Título de Seção / Card (H2 - 19px)</span>
+      <code style="font-size: 0.8rem; color: var(--text-muted);">--text-primary • #091E42 (Preto Escuro)</code>
     </div>
     <div style="display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
-      <span style="font-size: 1.1rem; font-weight: 600; color: var(--text-main);">Headline 2 (Subtitle)</span>
-      <code style="font-size: 0.8rem; color: var(--text-muted);">1.1rem / 18px • SemiBold</code>
+      <span style="font-size: 0.95rem; font-weight: 600; color: var(--text-secondary);">Labels de Formulário & Cabeçalhos de Tabela (15px)</span>
+      <code style="font-size: 0.8rem; color: var(--text-muted);">--text-secondary • #172B4D (Grafite)</code>
     </div>
     <div style="display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
-      <span style="font-size: 0.95rem; color: var(--text-secondary);">Body Text (Texto Corrido do Sistema)</span>
-      <code style="font-size: 0.8rem; color: var(--text-muted);">0.95rem / 15px • Regular</code>
+      <span style="font-size: 0.9rem; color: var(--text-secondary);">Texto Geral do Painel e Células de Tabela (14px)</span>
+      <code style="font-size: 0.8rem; color: var(--text-muted);">--text-secondary • #172B4D (Alta Leitura)</code>
     </div>
     <div style="display: flex; align-items: baseline; justify-content: space-between;">
-      <span style="font-size: 0.8rem; color: var(--text-muted);">Caption / Subtext / Labels</span>
-      <code style="font-size: 0.8rem; color: var(--text-muted);">0.8rem / 13px • Medium</code>
+      <span style="font-size: 0.8rem; color: var(--text-muted);">Metadados / Legendas / Informações Auxiliares (13px)</span>
+      <code style="font-size: 0.8rem; color: var(--text-muted);">--text-muted • #44546F (Cinza Escuro)</code>
     </div>
   </div>
 </div>
 
-<!-- SEÇÃO 3: BOTÕES & INTERAÇÕES -->
+<!-- SEÇÃO 3: BOTÕES & BADGES -->
 <div class="admin-card">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-    <div>
-      <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 10px;">
-        <i data-lucide="mouse-pointer" size="20" style="color: var(--color-primary);"></i> 3. Botões & Ações
-      </h3>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">Variantes: Filled, Outlined, Danger e Tamanhos.</p>
-    </div>
+  <div style="margin-bottom: 20px;">
+    <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 10px;">
+      <i data-lucide="mouse-pointer" size="20" style="color: var(--pastel-blue-accent);"></i> 3. Botões no Padrão Jira, Ações e Badges
+    </h3>
+    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">Botão primário em Azul Jira (#0C66E4), botões secundários neutros e ícones em azul de destaque.</p>
   </div>
 
-  <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center;">
-    <button type="button" class="btn btn-solid">
-      <i data-lucide="check" size="16"></i> Botão Filled (Primary)
+  <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-bottom: 20px;">
+    <button type="button" class="btn-primary">
+      <i data-lucide="check" size="16"></i> Salvar Alterações (Azul Jira)
     </button>
-    <button type="button" class="btn">
-      <i data-lucide="edit" size="16"></i> Botão Outlined (Neutral)
+    <button type="button" class="btn-secondary">
+      <i data-lucide="arrow-left" size="16"></i> Cancelar / Voltar (Neutro)
     </button>
-    <button type="button" class="btn btn-danger">
-      <i data-lucide="trash-2" size="16"></i> Botão Danger (Excluir)
+    <button type="button" class="btn-danger">
+      <i data-lucide="trash-2" size="16"></i> Excluir (Perigo)
     </button>
+    <button type="button" class="btn-action edit" title="Editar">
+      <i data-lucide="edit-3" size="14"></i>
+    </button>
+    <button type="button" class="btn-action btn-action-delete" title="Excluir">
+      <i data-lucide="trash-2" size="14"></i>
+    </button>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+    <span class="badge badge-pastel-green"><i data-lucide="check-circle" size="12"></i> Publicado</span>
+    <span class="badge badge-pastel-amber"><i data-lucide="clock" size="12"></i> Pendente</span>
+    <span class="badge badge-pastel-red"><i data-lucide="x-circle" size="12"></i> Inativo</span>
+    <span class="badge badge-pastel-blue"><i data-lucide="star" size="12"></i> Destaque</span>
+    <span class="badge badge-pastel-purple"><i data-lucide="tag" size="12"></i> Categoria</span>
   </div>
 </div>
 

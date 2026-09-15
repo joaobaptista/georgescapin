@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design System — Painel Administrativo | Dr. George Scapin</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="favicon-admin.svg">
+  
+  <!-- Google Fonts: Roboto -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    :root {
+      /* LIGHT THEME (Padrão Jira / Atlassian Standard) */
+      --bg-canvas: #f7f8f9;
+      --bg-surface: #ffffff;
+      --bg-surface-hover: #f1f2f4;
+      --bg-card: #ffffff;
+      --bg-input: #ffffff;
+
+      --border-subtle: #ebecf0;
+      --border-light: #dfe1e6;
+      --border-strong: #c1c7d0;
+      --border-focus: #0c66e4;
+      --card-border: #dfe1e6;
+
+      --text-primary: #091e42;       /* Preto/Grafite Profundo */
+      --text-secondary: #172b4d;     /* Alta Leitura */
+      --text-muted: #44546f;         /* Metadados */
+      --text-light: #626f86;
+
+      --color-primary: #0c66e4;      /* Jira Blue */
+      --color-primary-hover: #0052cc;
+      --color-primary-container: #e9f2ff;
+
+      --pastel-blue-bg: #e9f2ff;
+      --pastel-blue-border: #cce0ff;
+      --pastel-blue-text: #0052cc;
+      --pastel-blue-accent: #0c66e4;
+
+      --pastel-green-bg: #e3fcef;
+      --pastel-green-border: #abf5d1;
+      --pastel-green-text: #006644;
+      --pastel-green-accent: #36b37e;
+
+      --pastel-amber-bg: #fffae6;
+      --pastel-amber-border: #ffe380;
+      --pastel-amber-text: #974f00;
+      --pastel-amber-accent: #ffab00;
+
+      --pastel-red-bg: #ffebe6;
+      --pastel-red-border: #ffbdad;
+      --pastel-red-text: #bf2600;
+      --pastel-red-accent: #de350b;
+
+      --pastel-purple-bg: #f3f0ff;
+      --pastel-purple-border: #d8ccf6;
+      --pastel-purple-text: #5243aa;
+      --pastel-purple-accent: #6554c0;
+
+      --shadow-xs: 0 1px 2px rgba(9, 30, 66, 0.08);
+      --shadow-sm: 0 1px 3px rgba(9, 30, 66, 0.12);
+      --shadow-md: 0 4px 8px -2px rgba(9, 30, 66, 0.14);
+      --shadow-lg: 0 8px 16px -4px rgba(9, 30, 66, 0.16);
+
+      --font-sans: 'Roboto', -apple-system, sans-serif;
+    }
+
+    [data-theme="dark"] {
+      --bg-canvas: #1d2125;
+      --bg-surface: #22272b;
+      --bg-surface-hover: #2c333a;
+      --bg-card: #22272b;
+      --bg-input: #1d2125;
+
+      --border-subtle: #2c333a;
+      --border-light: #38414a;
+      --border-strong: #596773;
+      --card-border: #38414a;
+
+      --text-primary: #f1f2f4;
+      --text-secondary: #c7d1db;
+      --text-muted: #9fadbc;
+      --text-light: #738496;
+
+      --color-primary: #579dff;
+      --color-primary-hover: #85b8ff;
+      --color-primary-container: rgba(87, 157, 255, 0.2);
+
+      --pastel-blue-bg: rgba(87, 157, 255, 0.15);
+      --pastel-blue-border: rgba(87, 157, 255, 0.35);
+      --pastel-blue-text: #85b8ff;
+      --pastel-blue-accent: #579dff;
+
+      --pastel-green-bg: rgba(75, 196, 134, 0.15);
+      --pastel-green-border: rgba(75, 196, 134, 0.35);
+      --pastel-green-text: #7ee2b8;
+      --pastel-green-accent: #4bc486;
+
+      --pastel-amber-bg: rgba(245, 205, 71, 0.15);
+      --pastel-amber-border: rgba(245, 205, 71, 0.35);
+      --pastel-amber-text: #f5cd47;
+      --pastel-amber-accent: #f5cd47;
+
+      --pastel-red-bg: rgba(248, 113, 113, 0.15);
+      --pastel-red-border: rgba(248, 113, 113, 0.35);
+      --pastel-red-text: #fca5a5;
+      --pastel-red-accent: #f87171;
+
+      --pastel-purple-bg: rgba(159, 142, 240, 0.15);
+      --pastel-purple-border: rgba(159, 142, 240, 0.35);
+      --pastel-purple-text: #b8acf6;
+      --pastel-purple-accent: #9f8ef0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-canvas);
+      color: var(--text-secondary);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      padding-bottom: 80px;
+    }
+
+    /* Top Nav */
+    .ds-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-light);
+      padding: 14px 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .ds-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-primary);
+    }
+
+    .ds-brand h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .ds-badge {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: var(--pastel-blue-bg);
+      color: var(--pastel-blue-text);
+      border: 1px solid var(--pastel-blue-border);
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+
+    .theme-toggle-btn {
+      background: var(--bg-surface-hover);
+      border: 1px solid var(--border-light);
+      color: var(--text-secondary);
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .theme-toggle-btn:hover {
+      background: var(--border-light);
+      color: var(--text-primary);
+    }
+
+    .ds-container {
+      max-width: 1200px;
+      margin: 30px auto 0;
+      padding: 0 24px;
+    }
+
+    .ds-hero {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 36px;
+      margin-bottom: 36px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .ds-hero h2 {
+      font-size: 1.8rem;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .ds-hero p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      max-width: 800px;
+    }
+
+    .ds-section {
+      margin-bottom: 40px;
+    }
+
+    .ds-section-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 10px;
+    }
+
+    /* Color Grid */
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .color-card {
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border-light);
+      background: var(--bg-surface);
+      box-shadow: var(--shadow-xs);
+    }
+
+    .color-swatch {
+      height: 90px;
+      display: flex;
+      align-items: flex-end;
+      padding: 12px;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    .color-info {
+      padding: 14px;
+    }
+
+    .color-info h4 {
+      font-size: 0.92rem;
+      font-weight: 700;
+      margin-bottom: 2px;
+      color: var(--text-primary);
+    }
+
+    .color-info code {
+      font-size: 0.75rem;
+      color: var(--color-primary);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .color-info p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Typography */
+    .type-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 24px;
+    }
+
+    .type-row {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .type-row:last-child {
+      border-bottom: none;
+    }
+
+    /* Buttons */
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 24px;
+    }
+
+    .btn-primary {
+      background-color: var(--color-primary);
+      color: #ffffff;
+      border: 1px solid var(--color-primary);
+      padding: 9px 20px;
+      border-radius: 4px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--color-primary-hover);
+      border-color: var(--color-primary-hover);
+    }
+
+    .btn-secondary {
+      background-color: var(--bg-surface-hover);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-light);
+      padding: 9px 20px;
+      border-radius: 4px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--border-light);
+      color: var(--text-primary);
+    }
+
+    .btn-danger {
+      background-color: var(--pastel-red-accent);
+      color: #ffffff;
+      border: 1px solid var(--pastel-red-accent);
+      padding: 9px 20px;
+      border-radius: 4px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn-danger:hover {
+      background-color: #b91c1c;
+    }
+
+    .btn-action {
+      color: var(--pastel-blue-accent);
+      background: var(--pastel-blue-bg);
+      border: 1px solid var(--pastel-blue-border);
+      width: 34px;
+      height: 34px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-action:hover {
+      background: var(--color-primary);
+      color: #ffffff;
+    }
+
+    /* Cards */
+    .dashboard-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .stat-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 6px;
+      background: var(--pastel-blue-bg);
+      color: var(--pastel-blue-accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .stat-val {
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.1;
+    }
+
+    .stat-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    /* Jira / Atlassian Cards & Information Areas */
+    .atlassian-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+      margin-bottom: 12px;
+    }
+
+    .atlassian-section-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .atlassian-section-link {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--color-primary);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.15s ease;
+    }
+
+    .atlassian-section-link:hover {
+      color: var(--color-primary-hover);
+    }
+
+    .atlassian-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .atlassian-app-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: var(--shadow-xs);
+      cursor: pointer;
+    }
+
+    .atlassian-app-card:hover {
+      border-color: var(--color-primary);
+      background-color: var(--bg-surface);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm), 0 0 0 1px var(--color-primary);
+    }
+
+    .atlassian-app-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 1.15rem;
+      transition: transform 0.2s ease;
+    }
+
+    .atlassian-app-card:hover .atlassian-app-icon {
+      transform: scale(1.05);
+    }
+
+    .atlassian-app-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .atlassian-app-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.25;
+      margin-bottom: 2px;
+    }
+
+    .atlassian-app-meta {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.25;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .atlassian-grey-banner {
+      background-color: var(--bg-surface-hover);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+      margin-bottom: 24px;
+    }
+
+    .atlassian-grey-banner i {
+      color: var(--color-primary);
+      flex-shrink: 0;
+    }
+
+    .atlassian-pill-tabs {
+      display: inline-flex;
+      background-color: var(--bg-surface-hover);
+      padding: 3px;
+      border-radius: 6px;
+      gap: 3px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .atlassian-pill-tab {
+      padding: 5px 14px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      border-radius: 4px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .atlassian-pill-tab:hover {
+      color: var(--text-primary);
+    }
+
+    .atlassian-pill-tab.active {
+      background-color: var(--bg-surface);
+      color: var(--text-primary);
+      font-weight: 600;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .atlassian-pill-badge {
+      background: var(--pastel-purple-bg);
+      color: var(--pastel-purple-accent);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 10px;
+    }
+
+    /* Header de Página & Breadcrumbs */
+    .admin-page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      min-height: 38px;
+    }
+
+    .admin-breadcrumb {
+      margin-bottom: 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .breadcrumb-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    .breadcrumb-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .breadcrumb-link {
+      color: var(--pastel-blue-text);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+
+    .breadcrumb-link:hover {
+      color: var(--color-primary-hover);
+      text-decoration: underline;
+    }
+
+    .breadcrumb-separator {
+      color: var(--text-muted);
+      font-weight: 400;
+      font-size: 0.95rem;
+      user-select: none;
+    }
+
+    .breadcrumb-current {
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    .admin-page-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: auto;
+    }
+
+    /* Table Preview */
+    .table-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .admin-table th {
+      background: var(--bg-canvas);
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 12px 18px;
+      border-bottom: 2px solid var(--border-light);
+      text-align: left;
+    }
+
+    .admin-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+    }
+
+    .admin-table tr:hover td {
+      background: var(--bg-surface-hover);
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    .badge-green { background: var(--pastel-green-bg); color: var(--pastel-green-text); border: 1px solid var(--pastel-green-border); }
+    .badge-amber { background: var(--pastel-amber-bg); color: var(--pastel-amber-text); border: 1px solid var(--pastel-amber-border); }
+    .badge-red { background: var(--pastel-red-bg); color: var(--pastel-red-text); border: 1px solid var(--pastel-red-border); }
+    .badge-blue { background: var(--pastel-blue-bg); color: var(--pastel-blue-text); border: 1px solid var(--pastel-blue-border); }
+  </style>
+</head>
+<body>
+
+  <header class="ds-nav">
+    <a href="/admin" class="ds-brand">
+      <img src="assets/images/stackbox-icon.svg" alt="StackBOX" style="width: 24px; height: 24px;">
+      <h1>Stack<strong>BOX</strong> CMS</h1>
+      <span class="ds-badge">Design System • Azure & Atlassian Standard</span>
+    </a>
+
+    <button class="theme-toggle-btn" id="themeBtn">
+      <i data-lucide="moon" size="16"></i> Alternar Modo Claro / Escuro
+    </button>
+  </header>
+
+  <div class="ds-container">
+    <div class="ds-hero">
+      <h2>Guia Visual do Painel Administrativo</h2>
+      <p>Padrão corporativo inspirado no Jira / Atlassian Design System. Botões em Azul Jira (#0C66E4), ícones em azul de destaque, tipografia Roboto em preto/grafite de alto contraste para leitura intensiva.</p>
+    </div>
+
+    <!-- SEÇÃO 1: CORES -->
+    <section class="ds-section">
+      <h3 class="ds-section-title"><i data-lucide="palette" size="22"></i> 1. Cores de Ação, Ícones & Superfícies</h3>
+      <div class="color-grid">
+        <div class="color-card">
+          <div class="color-swatch" style="background: #0C66E4; color: #fff;">#0C66E4</div>
+          <div class="color-info">
+            <h4>Jira Blue (Ação Principal)</h4>
+            <code>--color-primary</code>
+            <p>Botões principais, links ativos e ícones em destaque.</p>
+          </div>
+        </div>
+
+        <div class="color-card">
+          <div class="color-swatch" style="background: #E9F2FF; color: #0052CC; border-bottom: 1px solid #cce0ff;">#E9F2FF</div>
+          <div class="color-info">
+            <h4>Soft Blue Container</h4>
+            <code>--pastel-blue-bg</code>
+            <p>Cards de métricas, avatar de usuário e fundos de ícones.</p>
+          </div>
+        </div>
+
+        <div class="color-card">
+          <div class="color-swatch" style="background: #E3FCEF; color: #006644; border-bottom: 1px solid #abf5d1;">#E3FCEF</div>
+          <div class="color-info">
+            <h4>Jira Green (Sucesso)</h4>
+            <code>--pastel-green-bg</code>
+            <p>Procedimentos ativos, posts publicados e confirmações.</p>
+          </div>
+        </div>
+
+        <div class="color-card">
+          <div class="color-swatch" style="background: #FFFAE6; color: #974F00; border-bottom: 1px solid #ffe380;">#FFFAE6</div>
+          <div class="color-info">
+            <h4>Jira Amber (Alerta)</h4>
+            <code>--pastel-amber-bg</code>
+            <p>Contatos pendentes, rascunhos e mensagens não lidas.</p>
+          </div>
+        </div>
+
+        <div class="color-card">
+          <div class="color-swatch" style="background: #FFEBE6; color: #BF2600; border-bottom: 1px solid #ffbdad;">#FFEBE6</div>
+          <div class="color-info">
+            <h4>Jira Red (Perigo)</h4>
+            <code>--pastel-red-bg</code>
+            <p>Ações destrutivas, modais de exclusão e status inativo.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 2: TIPOGRAFIA -->
+    <section class="ds-section">
+      <h3 class="ds-section-title"><i data-lucide="type" size="22"></i> 2. Tipografia Roboto em Alta Resolução</h3>
+      
+      <div class="type-card">
+        <div class="type-row">
+          <span style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">Título Principal (H1 - 24px)</span>
+          <span style="color: var(--text-muted); font-size: 0.8rem;">Roboto 700 • #091E42</span>
+        </div>
+
+        <div class="type-row">
+          <span style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary);">Título de Card / Seção (H2 - 19px)</span>
+          <span style="color: var(--text-muted); font-size: 0.8rem;">Roboto 700 • #091E42</span>
+        </div>
+
+        <div class="type-row">
+          <span style="font-size: 0.95rem; font-weight: 600; color: var(--text-secondary);">Labels de Formulário e Cabeçalho de Tabela (15px)</span>
+          <span style="color: var(--text-muted); font-size: 0.8rem;">Roboto 600 • #172B4D</span>
+        </div>
+
+        <div class="type-row">
+          <span style="font-size: 0.9rem; color: var(--text-secondary);">Texto de Leitura e Dados de Tabela (14px). Informações organizadas e legíveis.</span>
+          <span style="color: var(--text-muted); font-size: 0.8rem;">Roboto 400 • #172B4D</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 3: CABEÇALHO PADRÃO (BREADCRUMBS + AÇÕES NA MESMA LINHA) -->
+    <section class="ds-section">
+      <h3 class="ds-section-title"><i data-lucide="navigation" size="22"></i> 3. Header Padrão: Caminho de Navegação & Ações</h3>
+      
+      <div style="display: flex; flex-direction: column; gap: 16px; background: var(--bg-surface); padding: 20px; border-radius: 8px; border: 1px solid var(--border-light);">
+        <div>
+          <div style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">Página Principal com Ação Primária (ex: Páginas do Site / Procedimentos)</div>
+          <div class="admin-page-header" style="margin-bottom: 0; background: var(--bg-surface-hover); padding: 10px 14px; border-radius: var(--radius-md);">
+            <nav class="admin-breadcrumb">
+              <ol class="breadcrumb-list">
+                <li class="breadcrumb-item">
+                  <a href="#" class="breadcrumb-link">Dashboard</a>
+                  <span class="breadcrumb-separator">/</span>
+                </li>
+                <li class="breadcrumb-item active">
+                  <span class="breadcrumb-current">Páginas do Site</span>
+                </li>
+              </ol>
+            </nav>
+            <div class="admin-page-actions">
+              <button type="button" class="btn-primary" style="padding: 6px 14px; font-size: 0.85rem;">
+                <i data-lucide="plus" size="14"></i> Nova Página
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px;">
+          <div style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">Sub-página com Botão Voltar (ex: Formulário de Procedimento)</div>
+          <div class="admin-page-header" style="margin-bottom: 0; background: var(--bg-surface-hover); padding: 10px 14px; border-radius: var(--radius-md);">
+            <nav class="admin-breadcrumb">
+              <ol class="breadcrumb-list">
+                <li class="breadcrumb-item">
+                  <a href="#" class="breadcrumb-link">Dashboard</a>
+                  <span class="breadcrumb-separator">/</span>
+                </li>
+                <li class="breadcrumb-item">
+                  <a href="#" class="breadcrumb-link">Procedimentos</a>
+                  <span class="breadcrumb-separator">/</span>
+                </li>
+                <li class="breadcrumb-item active">
+                  <span class="breadcrumb-current">Novo Procedimento</span>
+                </li>
+              </ol>
+            </nav>
+            <div class="admin-page-actions">
+              <button type="button" class="btn-secondary" style="padding: 6px 14px; font-size: 0.85rem;">
+                <i data-lucide="arrow-left" size="14"></i> Voltar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 4: BOTÕES -->
+    <section class="ds-section">
+      <h3 class="ds-section-title"><i data-lucide="mouse-pointer" size="22"></i> 4. Botões & Ações</h3>
+      <div class="btn-group">
+        <button type="button" class="btn-primary">
+          <i data-lucide="check" size="16"></i> Salvar Alterações (Azul Jira)
+        </button>
+        <button type="button" class="btn-secondary">
+          <i data-lucide="arrow-left" size="16"></i> Cancelar / Voltar
+        </button>
+        <button type="button" class="btn-danger">
+          <i data-lucide="trash-2" size="16"></i> Excluir Registro
+        </button>
+        <button type="button" class="btn-action" title="Editar">
+          <i data-lucide="edit-3" size="14"></i>
+        </button>
+        <button type="button" class="btn-action" style="color: var(--pastel-red-accent); background: var(--pastel-red-bg);" title="Excluir">
+          <i data-lucide="trash-2" size="14"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 4: CARDS DE MÉTRICAS -->
+    <section class="ds-section">
+      <h3 class="ds-section-title"><i data-lucide="bar-chart-2" size="22"></i> 4. Cards de Métricas & Dashboard</h3>
+      <div class="dashboard-cards">
+        <div class="stat-card">
+          <div class="stat-icon"><i data-lucide="users" size="22"></i></div>
+          <div>
+            <div class="stat-label">Mensagens de Contato</div>
+            <div class="stat-val">28</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background: var(--pastel-green-bg); color: var(--pastel-green-accent);"><i data-lucide="sparkles" size="22"></i></div>
+          <div>
+            <div class="stat-label">Procedimentos Ativos</div>
+            <div class="stat-val">12</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background: var(--pastel-amber-bg); color: var(--pastel-amber-accent);"><i data-lucide="file-text" size="22"></i></div>
+          <div>
+            <div class="stat-label">Artigos Publicados</div>
+            <div class="stat-val">16</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 5: CARDS DE APLICATIVOS & ÁREAS INFORMATIVAS (PADRÃO JIRA / ATLASSIAN) -->
+    <section class="ds-section">
+      <h3 class="ds-section-title"><i data-lucide="layout-grid" size="22"></i> 5. Cards de Apps & Áreas Informativas Cinzas (Padrão Jira)</h3>
+      
+      <div class="atlassian-section-header" style="margin-top: 0;">
+        <div class="atlassian-section-title">Seus Apps & Módulos</div>
+        <a href="#" class="atlassian-section-link">Visualizar todos os apps <i data-lucide="arrow-right" size="14"></i></a>
+      </div>
+
+      <div class="atlassian-cards-grid">
+        <div class="atlassian-app-card">
+          <div class="atlassian-app-icon" style="background: var(--pastel-blue-bg); color: var(--pastel-blue-accent);">
+            <i data-lucide="sparkles" size="20"></i>
+          </div>
+          <div class="atlassian-app-info">
+            <div class="atlassian-app-title">Procedimentos</div>
+            <div class="atlassian-app-meta">12 tratamentos ativos</div>
+          </div>
+        </div>
+
+        <div class="atlassian-app-card">
+          <div class="atlassian-app-icon" style="background: var(--pastel-green-bg); color: var(--pastel-green-accent);">
+            <i data-lucide="message-square" size="20"></i>
+          </div>
+          <div class="atlassian-app-info">
+            <div class="atlassian-app-title">Leads & Contatos</div>
+            <div class="atlassian-app-meta">28 mensagens recebidas</div>
+          </div>
+        </div>
+
+        <div class="atlassian-app-card">
+          <div class="atlassian-app-icon" style="background: var(--pastel-purple-bg); color: var(--pastel-purple-accent);">
+            <i data-lucide="layout-template" size="20"></i>
+          </div>
+          <div class="atlassian-app-info">
+            <div class="atlassian-app-title">Páginas do Site</div>
+            <div class="atlassian-app-meta">Home, Clínica, Harmonização...</div>
+          </div>
+        </div>
+
+        <div class="atlassian-app-card">
+          <div class="atlassian-app-icon" style="background: var(--pastel-amber-bg); color: var(--pastel-amber-accent);">
+            <i data-lucide="newspaper" size="20"></i>
+          </div>
+          <div class="atlassian-app-info">
+            <div class="atlassian-app-title">Artigos do Blog</div>
+            <div class="atlassian-app-meta">16 publicações ativas</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="atlassian-section-header">
+        <div class="atlassian-section-title">Visitado com frequência / Status</div>
+      </div>
+
+      <div class="atlassian-grey-banner">
+        <i data-lucide="check-circle" size="20" style="color: var(--pastel-green-accent);"></i>
+        <div style="flex: 1;">
+          Você ainda não visitou nenhum lugar hoje. Visite e visualize os módulos da sua equipe para começar a ver seu trabalho.
+        </div>
+        <button class="btn-primary" style="padding: 6px 14px; font-size: 0.82rem;">Ver Módulos</button>
+      </div>
+
+      <div class="atlassian-section-header">
+        <div class="atlassian-section-title">O que vem a seguir?</div>
+        <div class="atlassian-pill-tabs">
+          <button class="atlassian-pill-tab active">Trabalhos recentes</button>
+          <button class="atlassian-pill-tab">Visualizado</button>
+          <button class="atlassian-pill-tab">Starred <span class="atlassian-pill-badge">Novo</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 6: TABELA DE DADOS & MENU DE AÇÕES -->
+    <section class="ds-section">
+      <h3 class="ds-section-title"><i data-lucide="table" size="22"></i> 6. Tabelas, Badges & Menu de Ações (3 Pontinhos)</h3>
+      <div class="table-card">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Procedimento</th>
+              <th>Status</th>
+              <th>Ordem</th>
+              <th style="text-align: right; width: 80px;">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Harmonização Facial</strong></td>
+              <td><span class="badge badge-green"><i data-lucide="check" size="12"></i> Publicado</span></td>
+              <td>1</td>
+              <td style="text-align: right;">
+                <div class="table-action-dropdown">
+                  <button type="button" class="table-action-trigger" title="Mais Ações">
+                    <i data-lucide="more-horizontal" size="18"></i>
+                  </button>
+                  <div class="table-action-menu">
+                    <a href="#" class="table-action-item"><i data-lucide="edit-3" size="15"></i> Editar</a>
+                    <a href="#" class="table-action-item"><i data-lucide="eye" size="15"></i> Ver no Site</a>
+                    <div class="table-action-divider"></div>
+                    <button type="button" class="table-action-item danger"><i data-lucide="trash-2" size="15"></i> Excluir</button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Toxina Botulínica</strong></td>
+              <td><span class="badge badge-amber"><i data-lucide="clock" size="12"></i> Pendente</span></td>
+              <td>2</td>
+              <td style="text-align: right;">
+                <div class="table-action-dropdown">
+                  <button type="button" class="table-action-trigger" title="Mais Ações">
+                    <i data-lucide="more-horizontal" size="18"></i>
+                  </button>
+                  <div class="table-action-menu">
+                    <a href="#" class="table-action-item"><i data-lucide="edit-3" size="15"></i> Editar</a>
+                    <a href="#" class="table-action-item"><i data-lucide="eye" size="15"></i> Ver no Site</a>
+                    <div class="table-action-divider"></div>
+                    <button type="button" class="table-action-item danger"><i data-lucide="trash-2" size="15"></i> Excluir</button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Protocolo Anti-Aging 40+</strong></td>
+              <td><span class="badge badge-red"><i data-lucide="x" size="12"></i> Inativo</span></td>
+              <td>3</td>
+              <td style="text-align: right;">
+                <div class="table-action-dropdown">
+                  <button type="button" class="table-action-trigger" title="Mais Ações">
+                    <i data-lucide="more-horizontal" size="18"></i>
+                  </button>
+                  <div class="table-action-menu">
+                    <a href="#" class="table-action-item"><i data-lucide="edit-3" size="15"></i> Editar</a>
+                    <a href="#" class="table-action-item"><i data-lucide="eye" size="15"></i> Ver no Site</a>
+                    <div class="table-action-divider"></div>
+                    <button type="button" class="table-action-item danger"><i data-lucide="trash-2" size="15"></i> Excluir</button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    // Dropdown de Ações das Tabelas (Menu 3 Pontinhos)
+    document.addEventListener('click', (e) => {
+      const trigger = e.target.closest('.table-action-trigger');
+      const allDropdowns = document.querySelectorAll('.table-action-dropdown.active');
+
+      if (trigger) {
+        e.preventDefault();
+        e.stopPropagation();
+        const currentDropdown = trigger.closest('.table-action-dropdown');
+        allDropdowns.forEach(d => {
+          if (d !== currentDropdown) d.classList.remove('active');
+        });
+        currentDropdown.classList.toggle('active');
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
+
+      if (e.target.closest('.table-action-item')) {
+        allDropdowns.forEach(d => d.classList.remove('active'));
+        return;
+      }
+
+      if (!e.target.closest('.table-action-dropdown')) {
+        allDropdowns.forEach(d => d.classList.remove('active'));
+      }
+    });
+
+    const themeBtn = document.getElementById('themeBtn');
+    themeBtn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      const next = current === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+    });
+  </script>
+</body>
+</html>

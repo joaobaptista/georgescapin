@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design System — Site Institucional | Dr. George Scapin</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  
+  <!-- Google Fonts: Playfair Display & Montserrat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    :root {
+      /* DARK THEME (Padrão do Site Público) */
+      --bg-color: #060907;
+      --bg-light: #121814;
+      --bg-input: #1a221c;
+      --gold-primary: #C5A059;
+      --gold-light: #E0C38C;
+      --gold-dark: #9C7A31;
+      --text-main: #F4F4F4;
+      --text-muted: #A0A0A0;
+      
+      --header-bg: rgba(6, 9, 7, 0.95);
+      --header-border: rgba(197, 160, 89, 0.15);
+      --card-border: rgba(197, 160, 89, 0.15);
+      --card-border-hover: rgba(197, 160, 89, 0.5);
+      --card-bg: #121814;
+      
+      --font-serif: 'Playfair Display', Georgia, serif;
+      --font-sans: 'Montserrat', -apple-system, sans-serif;
+    }
+
+    [data-theme="light"] {
+      --bg-color: #F8F9FA;
+      --bg-light: #FFFFFF;
+      --bg-input: #FFFFFF;
+      --gold-primary: #9C7A31;
+      --gold-light: #111612;
+      --gold-dark: #7A5E20;
+      --text-main: #222222;
+      --text-muted: #666666;
+
+      --header-bg: rgba(248, 249, 250, 0.95);
+      --header-border: rgba(156, 122, 49, 0.2);
+      --card-border: rgba(156, 122, 49, 0.2);
+      --card-border-hover: rgba(156, 122, 49, 0.6);
+      --card-bg: #FFFFFF;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      padding-bottom: 80px;
+    }
+
+    /* Top Nav of Design System */
+    .ds-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--header-bg);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--header-border);
+      padding: 16px 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .ds-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-main);
+    }
+
+    .ds-brand h1 {
+      font-family: var(--font-serif);
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--gold-primary);
+    }
+
+    .ds-badge {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: rgba(197, 160, 89, 0.15);
+      color: var(--gold-primary);
+      border: 1px solid var(--gold-primary);
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+
+    .theme-toggle-btn {
+      background: rgba(197, 160, 89, 0.1);
+      border: 1px solid var(--card-border);
+      color: var(--gold-primary);
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .theme-toggle-btn:hover {
+      background: var(--gold-primary);
+      color: #000;
+    }
+
+    .ds-container {
+      max-width: 1200px;
+      margin: 40px auto 0;
+      padding: 0 24px;
+    }
+
+    .ds-hero {
+      text-align: center;
+      padding: 50px 20px 40px;
+      border-bottom: 1px solid var(--header-border);
+      margin-bottom: 50px;
+    }
+
+    .ds-hero h2 {
+      font-family: var(--font-serif);
+      font-size: 2.5rem;
+      color: var(--gold-primary);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .ds-hero p {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .ds-section {
+      margin-bottom: 60px;
+    }
+
+    .ds-section-title {
+      font-family: var(--font-serif);
+      font-size: 1.6rem;
+      color: var(--gold-primary);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 12px;
+    }
+
+    /* Color Grid */
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .color-card {
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .color-swatch {
+      height: 110px;
+      display: flex;
+      align-items: flex-end;
+      padding: 12px;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    .color-info {
+      padding: 16px;
+    }
+
+    .color-info h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--text-main);
+    }
+
+    .color-info code {
+      font-size: 0.78rem;
+      color: var(--gold-primary);
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .color-info p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Typography Showcase */
+    .type-row {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    /* Buttons */
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 30px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 32px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: var(--font-sans);
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold-light), var(--gold-primary));
+      color: #060907;
+      border: none;
+      box-shadow: 0 4px 15px rgba(197, 160, 89, 0.3);
+    }
+
+    .btn-gold:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 22px rgba(197, 160, 89, 0.5);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--gold-primary);
+      border: 1px solid var(--gold-primary);
+    }
+
+    .btn-outline:hover {
+      background: rgba(197, 160, 89, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .btn-whatsapp {
+      background: #25D366;
+      color: #FFFFFF;
+      border: none;
+      box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+    }
+
+    .btn-whatsapp:hover {
+      background: #20BA5A;
+      transform: translateY(-2px);
+    }
+
+    /* Cards Showcase */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+
+    .procedure-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 30px;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .procedure-card:hover {
+      border-color: var(--card-border-hover);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+
+    .card-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+      background: rgba(197, 160, 89, 0.12);
+      color: var(--gold-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .procedure-card h3 {
+      font-family: var(--font-serif);
+      font-size: 1.35rem;
+      color: var(--gold-primary);
+      margin-bottom: 12px;
+    }
+
+    .procedure-card p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Form Preview */
+    .form-preview {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 30px;
+      max-width: 600px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--gold-primary);
+      margin-bottom: 8px;
+    }
+
+    .form-control {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .form-control:focus {
+      border-color: var(--gold-primary);
+      box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="ds-nav">
+    <a href="/" class="ds-brand">
+      <i data-lucide="sparkles" size="24" style="color: var(--gold-primary);"></i>
+      <h1>Dr. George Scapin</h1>
+      <span class="ds-badge">Design System • Site Público</span>
+    </a>
+
+    <button class="theme-toggle-btn" id="themeBtn">
+      <i data-lucide="sun" size="16"></i> Alternar Modo Claro / Escuro
+    </button>
+  </header>
+
+  <div class="ds-container">
+    <div class="ds-hero">
+      <h2>Guia Visual do Site Institucional</h2>
+      <p>Padrão nobre de alta estética para a presença digital da clínica. Combinação de tons Esmeralda Escuro, Ouro Real e tipografia editorial sofisticada.</p>
+    </div>
+
+    <!-- SEÇÃO 1: CORES -->
+    <section class="ds-section">
+      <h3 class="ds-section-title"><i data-lucide="palette" size="22"></i> 1. Paleta de Cores Nobre (Gold & Emerald)</h3>
+      <div class="color-grid">
+        <div class="color-card">
+          <div class="color-swatch" style="background: #C5A059; color: #000;">#C5A059</div>
+          <div class="color-info">
+            <h4>Gold Primary</h4>
+            <code>--gold-primary</code>
+            <p>Cor principal da marca, detalhes nobres e botões de destaque.</p>
+          </div>
+        </div>
+
+        <div class="color-card">
+          <div class="color-swatch" style="background: #E0C38C; color: #000;">#E0C38C</div>
+          <div class="color-info">
+            <h4>Gold Light</h4>
+            <code>--gold-light</code>
+            <p>Gradientes superiores e realces em títulos.</p>
+          </div>
+        </div>
+
+        <div class="color-card">
+          <div class="color-swatch" style="background: #060907; color: #fff; border-bottom: 1px solid #222;">#060907</div>
+          <div class="color-info">
+            <h4>Deep Emerald Black</h4>
+            <code>--bg-color (Dark)</code>
+            <p>Fundo base elegante e imersivo no tema escuro.</p>
+          </div>
+        </div>
+
+        <div class="color-card">
+          <div class="color-swatch" style="background: #121814; color: #fff; border-bottom: 1px solid #222;">#121814</div>
+          <div class="color-info">
+            <h4>Surface Emerald</h4>
+            <code>--bg-light / --card-bg</code>
+            <p>Fundo dos cards, cabeçalho e superfícies destacadas.</p>
+          </div>
+        </div>
+
+        <div class="color-card">
+          <div class="color-swatch" style="background: #25D366; color: #fff;">#25D366</div>
+          <div class="color-info">
+            <h4>WhatsApp Action</h4>
+            <code>--color-whatsapp</code>
+            <p>Botões de agendamento direto e atendimento humanizado.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 2: TIPOGRAFIA -->
+    <section class="ds-section">
+      <h3 class="ds-section-title"><i data-lucide="type" size="22"></i> 2. Escala Tipográfica</h3>
+      
+      <div class="type-row">
+        <span style="font-family: var(--font-serif); font-size: 2.4rem; color: var(--gold-primary);">Playfair Display (Títulos & Destaques)</span>
+        <span style="color: var(--text-muted); font-size: 0.85rem;">Serifada • Elegância e Autoridade Médica</span>
+      </div>
+
+      <div class="type-row">
+        <span style="font-family: var(--font-sans); font-size: 1.15rem; font-weight: 600; color: var(--text-main);">Montserrat SemiBold (Subtítulos & Menus)</span>
+        <span style="color: var(--text-muted); font-size: 0.85rem;">Sans-Serif • 600 Weight</span>
+      </div>
+
+      <div class="type-row">
+        <span style="font-family: var(--font-sans); font-size: 0.95rem; color: var(--text-main); max-width: 600px;">Montserrat Regular (Corpo de Texto). Harmonização facial personalizada e procedimentos de alta precisão com foco em naturalidade.</span>
+        <span style="color: var(--text-muted); font-size: 0.85rem;">Sans-Serif • 400 Weight • 1.6 Line Height</span>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 3: BOTÕES -->
+    <section class="ds-section">
+      <h3 class="ds-section-title"><i data-lucide="mouse-pointer" size="22"></i> 3. Botões & Chamadas de Ação (CTA)</h3>
+      <div class="btn-group">
+        <a href="javascript:void(0)" class="btn btn-gold">
+          <i data-lucide="sparkles" size="18"></i> Agendar Consulta
+        </a>
+        <a href="javascript:void(0)" class="btn btn-outline">
+          <i data-lucide="info" size="18"></i> Conhecer Tratamentos
+        </a>
+        <a href="javascript:void(0)" class="btn btn-whatsapp">
+          <i data-lucide="message-circle" size="18"></i> Falar no WhatsApp
+        </a>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 4: CARDS DE PROCEDIMENTO -->
+    <section class="ds-section">
+      <h3 class="ds-section-title"><i data-lucide="layers" size="22"></i> 4. Cards de Tratamentos e Clínicos</h3>
+      <div class="cards-grid">
+        <div class="procedure-card">
+          <div class="card-icon"><i data-lucide="sparkles" size="24"></i></div>
+          <h3>Harmonização Facial</h3>
+          <p>Realce os traços naturais da sua face com procedimentos minimamente invasivos e produtos de alta tecnologia mundial.</p>
+        </div>
+
+        <div class="procedure-card">
+          <div class="card-icon"><i data-lucide="droplet" size="24"></i></div>
+          <h3>Bioestimuladores de Colágeno</h3>
+          <p>Recupere a firmeza, tônus e viço da pele com estímulo biológico progressivo e duradouro.</p>
+        </div>
+
+        <div class="procedure-card">
+          <div class="card-icon"><i data-lucide="scan-face" size="24"></i></div>
+          <h3>Toxina Botulínica</h3>
+          <p>Suavize linhas de expressão com acabamento natural e preservação da sua identidade expressiva.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 5: FORMULÁRIOS -->
+    <section class="ds-section">
+      <h3 class="ds-section-title"><i data-lucide="edit-3" size="22"></i> 5. Formulários & Controles</h3>
+      <div class="form-preview">
+        <div class="form-group">
+          <label>Nome Completo</label>
+          <input type="text" class="form-control" placeholder="Seu nome completo" value="Maria da Silva">
+        </div>
+        <div class="form-group">
+          <label>WhatsApp / Telefone</label>
+          <input type="text" class="form-control" placeholder="(51) 99999-9999" value="(51) 99824-4379">
+        </div>
+        <button class="btn btn-gold" style="width: 100%; margin-top: 10px;">
+          <i data-lucide="send" size="18"></i> Enviar Mensagem
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const themeBtn = document.getElementById('themeBtn');
+    themeBtn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+    });
+  </script>
+</body>
+</html>
