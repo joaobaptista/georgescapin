@@ -22,9 +22,9 @@ ob_start();
       <input type="email" id="email" name="email" class="form-control" required value="<?= htmlspecialchars($userData['email'] ?? $user['email']) ?>">
     </div>
 
-    <hr style="border: 0; border-top: 1px solid var(--card-border); margin: 30px 0;">
+    <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin: 30px 0;">
 
-    <h4 style="color: var(--gold-light); margin-bottom: 15px; font-family: var(--font-serif);">Alterar Senha</h4>
+    <h4 style="color: var(--text-main); font-weight: 600; margin-bottom: 8px;">Alterar Senha</h4>
     <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 15px;">Deixe em branco caso não deseje alterar sua senha atual.</p>
 
     <div class="form-group">
