@@ -73,8 +73,8 @@ Para o guia passo a passo completo de produção, consulte [DEPLOYMENT.md](DEPLO
 
 ## 🔑 Credenciais do Painel Administrativo
 
-- **E-mail:** `admin@drgeorgescapin.com.br`
-- **Senha:** `admin123`
+- **Administrador Padrão:** `admin@admin.com` | **Senha:** `123`
+- **Dr. George Scapin:** `admin@drgeorgescapin.com.br` | **Senha:** `123`
 
 ---
 

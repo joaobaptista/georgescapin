@@ -134,13 +134,13 @@
       <?= csrf_field() ?>
       <div class="form-group">
         <label for="email">E-mail de Acesso</label>
-        <input type="email" id="email" name="email" class="form-control" required placeholder="admin@drgeorgescapin.com.br" value="admin@drgeorgescapin.com.br" autofocus>
+        <input type="email" id="email" name="email" class="form-control" required placeholder="seu-email@exemplo.com" autofocus>
       </div>
 
       <div class="form-group">
         <label for="password">Senha</label>
         <div class="password-wrapper">
-          <input type="password" id="password" name="password" class="form-control" required placeholder="••••••••" value="admin123">
+          <input type="password" id="password" name="password" class="form-control" required placeholder="Sua senha">
           <button type="button" class="toggle-password" id="togglePasswordBtn" aria-label="Mostrar ou ocultar senha">
             <i id="togglePasswordIcon" data-lucide="eye" size="18"></i>
           </button>

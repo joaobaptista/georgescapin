@@ -16,7 +16,9 @@ class Auth
 
         if ($user && password_verify($password, $user['password'])) {
             // Regenera o ID da sessão para prevenir Session Fixation
-            session_regenerate_id(true);
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                session_regenerate_id(true);
+            }
 
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['user_name'] = $user['name'];
@@ -45,6 +47,8 @@ class Auth
     public static function logout(): void
     {
         unset($_SESSION['user_id'], $_SESSION['user_name'], $_SESSION['user_email']);
-        session_destroy();
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_destroy();
+        }
     }
 }
