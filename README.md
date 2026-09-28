@@ -73,8 +73,10 @@ Para o guia passo a passo completo de produção, consulte [DEPLOYMENT.md](DEPLO
 
 ## 🔑 Credenciais do Painel Administrativo
 
-- **Administrador Padrão:** `admin@admin.com` | **Senha:** `123`
-- **Dr. George Scapin:** `admin@drgeorgescapin.com.br` | **Senha:** `123`
+- **Administrador Padrão:** `admin@admin.com` | **Senha:** `123` (fallback compatível: `admin123`)
+- **Dr. George Scapin:** `admin@drgeorgescapin.com.br` | **Senha:** `123` (fallback compatível: `admin123`)
+- **Atalho no Login:** Você pode digitar apenas `admin` no campo de e-mail/usuário.
+- **Diagnóstico / Recuperação de Senhas:** Execute `php scripts/auth-doctor.php` via terminal.
 
 ---
 
@@ -86,7 +88,7 @@ georgescapin/
 │   ├── Infrastructure/
 │   │   ├── Database/Connection.php        ← Conexão PDO Singleton MySQL (utf8mb4)
 │   │   ├── Repositories/                  ← Repositórios MySQL (Tratamentos, Posts, Leads, Configs, Menu)
-│   │   ├── Security/Auth.php              ← Gerenciador de Sessão e Autenticação BCRYPT
+│   │   ├── Security/Auth.php              ← Gerenciador de Sessão e Autenticação Adaptativa BCRYPT
 │   │   └── Services/ImageOptimizer.php    ← Otimizador e conversor de imagens para WebP
 │   ├── Presentation/
 │   │   ├── Controllers/                   ← SiteController, AdminController, AuthController
@@ -109,6 +111,8 @@ georgescapin/
 │   ├── assets/                            ← CSS, JS, Fonts e Imagens da clínica
 │   └── uploads/                           ← Diretório para upload de fotos pelo CMS
 ├── scripts/
+│   ├── auth-doctor.php                    ← Especialista em login, diagnóstico de sessões e redefinição de senhas
+│   ├── backup-database.php                ← Script de backup automatizado do MySQL (timestamped + latest)
 │   ├── build-release.php                  ← Script automatizado de build e empacotamento ZIP
 │   ├── run-all-tests.php                  ← Runner unificado das 9 baterias de testes
 │   ├── qa-security-audit.php              ← Auditoria especialista em QA, Segurança e Usabilidade

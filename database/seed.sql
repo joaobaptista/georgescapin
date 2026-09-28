@@ -1,8 +1,9 @@
 -- MySQL Seed Inicial: Dados reais e completos da Clínica Dr. George Scapin
 
--- Senha padrão do admin: admin123 (hash BCRYPT)
+-- Senha padrão do admin: 123 (hash BCRYPT com suporte adaptativo)
 INSERT INTO users (id, name, email, password) VALUES 
-(1, 'Dr. George Scapin', 'admin@drgeorgescapin.com.br', '$2y$12$1wGmKc8IUNqm42ESLmmN4OD0qv71WF8eXeX6nU0LASy5tvIEhHDWC')
+(1, 'Dr. George Scapin', 'admin@drgeorgescapin.com.br', '$2y$12$fuF/OlmXF6nQfAUUrn860eFpJ8gRiaVgKHpNp91BGjgUMHQN.gdiW'),
+(2, 'Administrador', 'admin@admin.com', '$2y$12$fuF/OlmXF6nQfAUUrn860eFpJ8gRiaVgKHpNp91BGjgUMHQN.gdiW')
 ON DUPLICATE KEY UPDATE name = VALUES(name), email = VALUES(email), password = VALUES(password);
 
 INSERT INTO site_settings (setting_key, setting_value) VALUES 

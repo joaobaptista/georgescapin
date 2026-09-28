@@ -90,6 +90,34 @@ DB_CHARSET=utf8mb4
 
 > ⚠️ **Importante:** Nunca versione ou compartilhe o arquivo `.env` com dados de produção.
 
+### 4.3 Backup Automatizado do Banco de Dados
+Para gerar uma cópia de segurança completa e consistente do banco MySQL a qualquer momento:
+
+```bash
+php scripts/backup-database.php
+```
+
+> O script gera tanto o arquivo de referência direta (`backup_clinica_george.sql`) quanto uma cópia carimbada com data/hora (`backup_clinica_george_YYYYMMDD_HHMMSS.sql`), com contagem detalhada de tabelas e registros.
+
+### 4.4 Diagnóstico e Gestão de Login / Senhas no Servidor (Auth Doctor)
+Caso encontre qualquer dificuldade de acesso ao painel administrativo no servidor de produção:
+
+```bash
+# Executa o diagnóstico completo de sessões, HTTPS, MySQL e testa as credenciais
+php scripts/auth-doctor.php
+
+# Sincroniza e garante os dois administradores com a senha padrão '123'
+php scripts/auth-doctor.php --sync-seeds
+
+# Redefine a senha de um administrador específico
+php scripts/auth-doctor.php --reset-password=minhasenha --email=admin@drgeorgescapin.com.br
+```
+
+> **Credenciais Padrão:**
+> - **Dr. George Scapin:** `admin@drgeorgescapin.com.br` | Senha: `123` (ou fallback `admin123`)
+> - **Administrador:** `admin@admin.com` | Senha: `123` (ou fallback `admin123`)
+> - **Atalho:** Pode digitar apenas `admin` no campo de e-mail/usuário.
+
 ---
 
 ## 🌐 5. Configuração do Servidor Web

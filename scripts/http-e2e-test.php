@@ -353,11 +353,6 @@ runHttpTest("POST /admin/login com credenciais válidas autentica com sucesso", 
         throw new RuntimeException("Nenhum usuário no banco para autenticação");
     }
 
-    // Atualiza a senha temporariamente para teste se necessário ou usa senha padrão
-    $testPassword = 'AdminSecretPassword' . time() . '!';
-    $newHash = password_hash($testPassword, PASSWORD_BCRYPT);
-    $pdo->prepare("UPDATE users SET password = ? WHERE id = ?")->execute([$newHash, $user['id']]);
-
     // Obtém CSRF
     $loginPage = httpRequest($baseUrl . '/admin/login');
     preg_match('/name="csrf_token" value="([^"]+)"/', $loginPage['body'], $m);
@@ -365,16 +360,13 @@ runHttpTest("POST /admin/login com credenciais válidas autentica com sucesso", 
 
     $res = httpRequest($baseUrl . '/admin/login', 'POST', [
         'email' => $user['email'],
-        'password' => $testPassword,
+        'password' => '123',
         'csrf_token' => $csrfToken
     ]);
 
     if (!in_array($res['status'], [302, 303])) {
         throw new RuntimeException("Esperado redirect 302 para /admin após login bem-sucedido, recebido {$res['status']}");
     }
-
-    // Restaura hash original
-    $pdo->prepare("UPDATE users SET password = ? WHERE id = ?")->execute([$user['password'], $user['id']]);
 });
 
 // =========================================================================

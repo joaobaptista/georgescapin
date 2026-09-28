@@ -1,6 +1,6 @@
 <?php
 
-// Carregador automático de variáveis de ambiente do arquivo .env
+// Carregador automático de variáveis de ambiente do arquivo .env (não sobrescreve variáveis reais do servidor)
 (function() {
     $envFile = __DIR__ . '/../.env';
     if (file_exists($envFile)) {
@@ -14,9 +14,15 @@
                 $value = trim($value);
                 // Remove aspas simples ou duplas envolventes
                 $value = trim($value, "\"'");
-                putenv("{$name}={$value}");
-                $_ENV[$name] = $value;
-                $_SERVER[$name] = $value;
+                if (getenv($name) === false) {
+                    putenv("{$name}={$value}");
+                }
+                if (!isset($_ENV[$name])) {
+                    $_ENV[$name] = $value;
+                }
+                if (!isset($_SERVER[$name])) {
+                    $_SERVER[$name] = $value;
+                }
             }
         }
     }
@@ -93,8 +99,82 @@ if (!function_exists('admin_view_path')) {
     }
 }
 
+if (!function_exists('is_https_request')) {
+    /**
+     * Detecta se a requisição atual trafega em HTTPS com suporte amplo
+     * a proxies reversos (Nginx, Cloudflare, cPanel EA-Nginx, AWS, Load Balancers).
+     */
+    function is_https_request(): bool {
+        if (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off') {
+            return true;
+        }
+        if (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443) {
+            return true;
+        }
+        if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower((string)$_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https') {
+            return true;
+        }
+        if (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && strtolower((string)$_SERVER['HTTP_X_FORWARDED_SSL']) === 'on') {
+            return true;
+        }
+        if (!empty($_SERVER['HTTP_CF_VISITOR']) && strpos((string)$_SERVER['HTTP_CF_VISITOR'], '"scheme":"https"') !== false) {
+            return true;
+        }
+        $appUrl = getenv('APP_URL') ?: ($_ENV['APP_URL'] ?? '');
+        if (!empty($appUrl) && str_starts_with(strtolower((string)$appUrl), 'https://')) {
+            $host = $_SERVER['HTTP_HOST'] ?? '';
+            if ($host !== 'localhost' && $host !== '127.0.0.1' && !str_starts_with($host, '127.0.0.1:')) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+if (!function_exists('init_session')) {
+    /**
+     * Inicializa a sessão PHP de forma adaptativa, garantindo:
+     * 1. Diretório de sessões gravável (com fallback automático para storage/sessions)
+     * 2. Cookies de sessão sem parâmetros malformados (evita 'domain' vazio que quebra Chrome/Safari)
+     * 3. Configurações de segurança HttpOnly e SameSite=Lax
+     */
+    function init_session(): bool {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            return true;
+        }
+
+        if (!headers_sent()) {
+            // Garante que o diretório de sessões seja gravável no servidor (fallback para storage/sessions)
+            $defaultSavePath = session_save_path();
+            if (empty($defaultSavePath) || !is_dir($defaultSavePath) || !is_writable($defaultSavePath)) {
+                $storageDir = dirname(__DIR__) . '/storage/sessions';
+                if (!is_dir($storageDir)) {
+                    @mkdir($storageDir, 0700, true);
+                }
+                if (is_dir($storageDir) && is_writable($storageDir)) {
+                    @session_save_path($storageDir);
+                }
+            }
+
+            $isHttps = is_https_request();
+
+            // Configuração compatível e adaptativa de cookies
+            session_set_cookie_params([
+                'lifetime' => 0,
+                'path'     => '/',
+                'secure'   => $isHttps,
+                'httponly' => true,
+                'samesite' => 'Lax'
+            ]);
+        }
+
+        return @session_start();
+    }
+}
+
 if (!function_exists('csrf_token')) {
     function csrf_token(): string {
+        init_session();
         if (empty($_SESSION['csrf_token'])) {
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
         }
@@ -110,8 +190,20 @@ if (!function_exists('csrf_field')) {
 
 if (!function_exists('verify_csrf')) {
     function verify_csrf(): bool {
+        init_session();
         $token = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
-        return !empty($token) && hash_equals($_SESSION['csrf_token'] ?? '', $token);
+        $sessionToken = $_SESSION['csrf_token'] ?? '';
+        
+        if (!empty($token) && !empty($sessionToken) && hash_equals($sessionToken, $token)) {
+            return true;
+        }
+
+        // Suporte a token anterior caso a sessão tenha sido rotacionada recentemente
+        if (!empty($token) && !empty($_SESSION['prev_csrf_token']) && hash_equals($_SESSION['prev_csrf_token'], $token)) {
+            return true;
+        }
+
+        return false;
     }
 }
 
@@ -123,6 +215,7 @@ if (!function_exists('sanitize')) {
 
 if (!function_exists('flash')) {
     function flash(string $key, ?string $message = null) {
+        init_session();
         if ($message !== null) {
             $_SESSION['flash'][$key] = $message;
             return;
@@ -220,9 +313,7 @@ if (!function_exists('slugify')) {
 
 if (!function_exists('generate_captcha')) {
     function generate_captcha(): array {
-        if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
-            session_start();
-        }
+        init_session();
         $n1 = rand(2, 9);
         $n2 = rand(1, 9);
         $_SESSION['captcha_answer'] = $n1 + $n2;

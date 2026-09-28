@@ -8,19 +8,11 @@ if (php_sapi_name() === 'cli-server') {
     }
 }
 
-// Configuração segura de cookies de sessão
-if (session_status() === PHP_SESSION_NONE) {
-    $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
-    session_set_cookie_params([
-        'lifetime' => 0,
-        'path' => '/',
-        'domain' => '',
-        'secure' => $isSecure,
-        'httponly' => true,
-        'samesite' => 'Lax'
-    ]);
-    session_start();
-}
+require_once __DIR__ . '/../app/helpers.php';
+
+// Inicialização adaptativa de sessão e detecção de HTTPS
+init_session();
+$isSecure = is_https_request();
 
 // Headers Globais de Segurança HTTP
 @header_remove('X-Powered-By');
@@ -33,25 +25,6 @@ header('Permissions-Policy: geolocation=(), camera=(), microphone=()');
 if ($isSecure) {
     header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
 }
-
-// Autoloader PSR-4 para o namespace App\
-spl_autoload_register(function ($class) {
-    $prefix = 'App\\';
-    $base_dir = __DIR__ . '/../app/';
-    
-    $len = strlen($prefix);
-    if (strncmp($prefix, $class, $len) !== 0) {
-        return;
-    }
-    
-    $relative_class = substr($class, $len);
-    $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
-    if (file_exists($file)) {
-        require_once $file;
-    }
-});
-
-require_once __DIR__ . '/../app/helpers.php';
 
 $routes = require __DIR__ . '/../config/routes.php';
 

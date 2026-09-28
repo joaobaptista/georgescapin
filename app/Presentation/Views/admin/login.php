@@ -133,14 +133,14 @@
     <form method="POST" action="<?= url('/admin/login') ?>">
       <?= csrf_field() ?>
       <div class="form-group">
-        <label for="email">E-mail de Acesso</label>
-        <input type="email" id="email" name="email" class="form-control" required placeholder="seu-email@exemplo.com" autofocus>
+        <label for="email">E-mail ou Usuário</label>
+        <input type="text" id="email" name="email" class="form-control" required placeholder="admin@admin.com ou admin" autocomplete="username" autofocus>
       </div>
 
       <div class="form-group">
         <label for="password">Senha</label>
         <div class="password-wrapper">
-          <input type="password" id="password" name="password" class="form-control" required placeholder="Sua senha">
+          <input type="password" id="password" name="password" class="form-control" required placeholder="Sua senha" autocomplete="current-password">
           <button type="button" class="toggle-password" id="togglePasswordBtn" aria-label="Mostrar ou ocultar senha">
             <i id="togglePasswordIcon" data-lucide="eye" size="18"></i>
           </button>
