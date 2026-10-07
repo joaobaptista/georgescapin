@@ -4,6 +4,15 @@ const state = {
   renderId: 0,
   user: readStoredUser(),
   token: localStorage.getItem('auth_token'),
+  agenda: {
+    viewDate: new Date(),
+    calendarDate: new Date(),
+    viewMode: 'week',
+    statusFilter: 'all',
+    procedureFilter: 'all',
+    modalOpen: false,
+    modalSlot: null,
+  },
   cache: {
     appointment: null,
     procedure: null,
@@ -164,16 +173,25 @@ function authLayout(content) {
 
 function loginView() {
   return authLayout(`
-    <header class="auth-header" style="text-align:center; margin-bottom: 2rem;">
-      <p class="brand-logo" style="justify-content:center; margin-bottom:.6rem;">Nüva<span class="brand-dot">.</span></p>
+    <header class="auth-header" style="text-align:center; margin-bottom: 1.75rem;">
+      <p class="brand-logo" style="justify-content:center; margin-bottom:.5rem;">Nüva<span class="brand-dot">.</span></p>
       <h1>Bem-vindo de volta</h1>
       <p class="auth-subtitle">Acesse sua conta para continuar.</p>
     </header>
     <form class="auth-form" data-form="login">
-      <div class="form-group"><label for="login-email">E-mail</label><input id="login-email" name="email" type="email" autocomplete="email" required placeholder="seu@email.com"></div>
-      <div class="form-group"><label for="login-password">Senha</label><div class="password-field"><input id="login-password" name="password" type="password" autocomplete="current-password" required placeholder="Sua senha"><button type="button" class="password-toggle" data-action="toggle-password" data-target="login-password" aria-label="Mostrar senha"><i class="ph ph-eye"></i></button></div></div>
+      <div class="form-group">
+        <label for="login-email">E-mail</label>
+        <input id="login-email" name="email" type="email" autocomplete="email" required placeholder="seu@email.com">
+      </div>
+      <div class="form-group">
+        <label for="login-password">Senha</label>
+        <div class="password-field">
+          <input id="login-password" name="password" type="password" autocomplete="current-password" required placeholder="Sua senha">
+          <button type="button" class="password-toggle" data-action="toggle-password" data-target="login-password" aria-label="Mostrar senha"><i class="ph ph-eye"></i></button>
+        </div>
+      </div>
       <p class="form-help"><a href="/recuperar-senha" data-nav>Esqueceu a senha?</a></p>
-      <button class="load-btn" type="submit">Entrar</button>
+      <button class="load-btn auth-submit-btn" type="submit">Entrar</button>
     </form>
     <p class="switch-link">Ainda não tem uma conta? <a href="/cadastro" data-nav>Crie uma agora.</a></p>
   `);
@@ -182,17 +200,21 @@ function loginView() {
 function registerView() {
   return authLayout(`
     <header class="auth-header" style="text-align:center; margin-bottom: 1.5rem;">
-      <p class="brand-logo" style="justify-content:center; margin-bottom:.6rem;">Nüva<span class="brand-dot">.</span></p>
+      <p class="brand-logo" style="justify-content:center; margin-bottom:.5rem;">Nüva<span class="brand-dot">.</span></p>
       <h1>Crie sua conta</h1>
       <p class="auth-subtitle">Escolha seu perfil e comece a usar o portal.</p>
     </header>
     <form class="auth-form" data-form="register">
-      <fieldset class="role-selector"><legend>Como você usará o Nüva?</legend><label class="role-card active"><input type="radio" name="role" value="patient" checked><i class="ph-fill ph-user"></i><span><strong>Sou paciente</strong><small>Busco profissionais e acompanho meus tratamentos.</small></span></label><label class="role-card"><input type="radio" name="role" value="professional"><i class="ph-fill ph-stethoscope"></i><span><strong>Sou profissional</strong><small>Gerencio agenda, pacientes e procedimentos.</small></span></label></fieldset>
+      <fieldset class="role-selector">
+        <legend>Como você usará o Nüva?</legend>
+        <label class="role-card active"><input type="radio" name="role" value="patient" checked><i class="ph-fill ph-user"></i><span><strong>Sou paciente</strong><small>Busco profissionais e acompanho meus tratamentos.</small></span></label>
+        <label class="role-card"><input type="radio" name="role" value="professional"><i class="ph-fill ph-stethoscope"></i><span><strong>Sou profissional</strong><small>Gerencio agenda, pacientes e procedimentos.</small></span></label>
+      </fieldset>
       <div class="form-group"><label for="register-name">Nome</label><input id="register-name" name="name" required autocomplete="name" placeholder="Seu nome completo"></div>
       <div class="form-group"><label for="register-email">E-mail</label><input id="register-email" name="email" type="email" required autocomplete="email" placeholder="seu@email.com"></div>
       <div class="form-group"><label for="register-password">Senha</label><div class="password-field"><input id="register-password" name="password" type="password" required minlength="8" autocomplete="new-password" placeholder="Mínimo de 8 caracteres"><button type="button" class="password-toggle" data-action="toggle-password" data-target="register-password" aria-label="Mostrar senha"><i class="ph ph-eye"></i></button></div></div>
       <div class="form-group"><label for="register-confirmation">Confirme a senha</label><input id="register-confirmation" name="password_confirmation" type="password" required minlength="8" autocomplete="new-password" placeholder="Repita a senha"></div>
-      <button class="load-btn" type="submit">Criar conta</button>
+      <button class="load-btn auth-submit-btn" type="submit">Criar conta</button>
     </form>
     <p class="switch-link">Já possui uma conta? <a href="/login" data-nav>Fazer login</a></p>
   `);
@@ -234,12 +256,12 @@ function navButton(path, active, icon, label) {
 
 function professionalLayout(active, title, content) {
   const name = escapeHtml(state.user?.name || 'Profissional');
-  return `<main class="app"><aside class="sidebar"><button class="menu-btn" data-action="toggle-sidebar" id="mobileToggle" title="Menu lateral"><i class="ph ph-list"></i><span class="menu-label">Menu</span></button>${navButton('/', active, 'ph-fill ph-house', 'Início')}${navButton('/pro', active, 'ph ph-calendar-blank', 'Agenda')}${navButton('/pro/pacientes', active, 'ph ph-users', 'Pacientes')}${navButton('/pro/procedimentos', active, 'ph ph-magic-wand', 'Procedimentos')}${navButton('/configuracoes', active, 'ph ph-gear', 'Ajustes')}<div class="menu-bottom"><button class="menu-btn" data-action="toggle-theme" title="Alternar tema"><i class="ph ph-moon"></i><span class="menu-label">Tema</span></button></div></aside><section class="content"><header class="content-top"><nav class="breadcrumb" aria-label="Navegação"><span>Clínica</span> / <strong>${escapeHtml(title)}</strong></nav><div class="top-actions"><span class="user-name">${name}</span><button class="profile" data-action="logout" title="Sair da conta">${initials(state.user?.name)}</button></div></header><div class="content-body">${content}</div></section></main>`;
+  return `<main class="app"><aside class="sidebar"><button class="menu-btn" data-action="toggle-sidebar" id="mobileToggle" title="Menu lateral"><i class="ph ph-list"></i><span class="menu-label">Recolher menu</span></button>${navButton('/', active, 'ph-fill ph-house', 'Início')}${navButton('/pro', active, 'ph ph-calendar-blank', 'Agenda')}${navButton('/pro/pacientes', active, 'ph ph-users', 'Pacientes')}${navButton('/pro/procedimentos', active, 'ph ph-magic-wand', 'Procedimentos')}${navButton('/configuracoes', active, 'ph ph-gear', 'Ajustes')}<div class="menu-bottom"><button class="menu-btn" data-action="toggle-theme" title="Alternar tema"><i class="ph ph-moon"></i><span class="menu-label">Tema</span></button></div></aside><section class="content"><header class="content-top"><nav class="breadcrumb" aria-label="Navegação"><button class="menu-btn mobile-menu-trigger" data-action="toggle-sidebar" title="Menu"><i class="ph ph-list"></i></button><span>Clínica</span> / <strong>${escapeHtml(title)}</strong></nav><div class="top-actions"><span class="user-name">${name}</span><button class="profile" data-action="logout" title="Sair da conta">${initials(state.user?.name)}</button></div></header><div class="content-body">${content}</div></section></main>`;
 }
 
-function patientLayout(title, content) {
+function patientLayout(active, title, content) {
   const name = escapeHtml(state.user?.name || 'Paciente');
-  return `<main><header class="patient-nav"><a href="/paciente" data-nav class="brand-logo">Nüva<span class="brand-dot">.</span></a><nav class="patient-nav-links" aria-label="Portal do paciente"><a href="/paciente" data-nav>Início</a><a href="/paciente/busca" data-nav>Buscar profissional</a><a href="/paciente/prontuario" data-nav>Prontuário</a><a href="/paciente/perfil" data-nav>Meu perfil</a></nav><div class="nav-profile"><span>${name}</span><button class="avatar-small" data-action="logout" title="Sair">${initials(state.user?.name)}</button></div></header><section class="patient-container"><div class="discover-section"><p class="breadcrumb"><span>Portal do paciente</span> / <strong>${escapeHtml(title)}</strong></p>${content}</div></section></main>`;
+  return `<main class="patient-app"><header class="patient-nav"><div class="patient-nav-left"><a href="/paciente" data-nav class="brand-logo">Nüva<span class="brand-dot">.</span></a><nav class="patient-nav-links" aria-label="Portal do paciente"><a href="/paciente" data-nav class="${active === '/paciente' ? 'active' : ''}"><i class="ph ph-house"></i> Início</a><a href="/paciente/busca" data-nav class="${active === '/paciente/busca' ? 'active' : ''}"><i class="ph ph-magnifying-glass"></i> Buscar profissional</a><a href="/paciente/prontuario" data-nav class="${active === '/paciente/prontuario' ? 'active' : ''}"><i class="ph ph-file-text"></i> Prontuário</a><a href="/paciente/perfil" data-nav class="${active === '/paciente/perfil' ? 'active' : ''}"><i class="ph ph-user"></i> Meu perfil</a></nav></div><div class="nav-profile"><button class="menu-btn theme-toggle-btn" data-action="toggle-theme" title="Alternar tema"><i class="ph ph-moon"></i></button><span class="patient-user-name">${name}</span><button class="avatar-small" data-action="logout" title="Sair da conta">${initials(state.user?.name)}</button></div></header><section class="patient-container"><div class="discover-section"><p class="breadcrumb"><span>Portal do paciente</span> / <strong>${escapeHtml(title)}</strong></p>${content}</div></section></main>`;
 }
 
 function appointmentRows(appointments, options = {}) {
@@ -273,6 +295,84 @@ async function professionalDashboardView() {
   return professionalLayout('/', 'Início', `<section class="page-header"><h1 class="section-title">Olá, ${escapeHtml(name)}</h1><p class="page-intro">Acompanhe sua operação clínica em um painel leve e nativo.</p></section><div class="three-columns"><article class="page-panel"><span class="muted">Agendamentos hoje</span><p class="metric-value">${todayAppointments.length}</p></article><article class="page-panel"><span class="muted">Atendimentos concluídos</span><p class="metric-value">${completeCount}</p></article><article class="page-panel"><span class="muted">Especialidade</span><p class="metric-value" style="font-size:1.25rem">${escapeHtml(dashboard?.specialty || 'Não informada')}</p></article></div><section class="page-panel"><div class="toolbar" style="justify-content:space-between"><div><h2>Próximos atendimentos</h2><p class="muted">Dados carregados da API clínica.</p></div><a class="action-btn outline" href="/pro" data-nav>Ver agenda</a></div>${appointmentRows(appointments.slice(0, 5), { emptyMessage: 'Nenhum agendamento futuro.' })}</section>`);
 }
 
+const MONTH_NAMES = [
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+];
+const WEEKDAY_SHORT_PT = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+
+function formatDateISO(d) {
+  const date = new Date(d);
+  if (Number.isNaN(date.getTime())) return '';
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function getWeekDays(baseDate) {
+  const date = new Date(baseDate);
+  const day = date.getDay(); // 0 is Sun, 1 is Mon
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+  const monday = new Date(date.setDate(diff));
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const next = new Date(monday);
+    next.setDate(monday.getDate() + i);
+    days.push(next);
+  }
+  return days;
+}
+
+function renderMiniCalendar(calendarDate, selectedDate) {
+  const cal = new Date(calendarDate);
+  const year = cal.getFullYear();
+  const month = cal.getMonth();
+  const firstDay = new Date(year, month, 1).getDay(); // 0 is Sun
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const prevMonthDays = new Date(year, month, 0).getDate();
+
+  const todayISO = formatDateISO(new Date());
+  const selISO = formatDateISO(selectedDate);
+
+  let grid = '';
+  const headers = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((h) => `<span class="mc-day-name">${h}</span>`).join('');
+
+  for (let i = firstDay - 1; i >= 0; i--) {
+    grid += `<span class="mc-day disabled">${prevMonthDays - i}</span>`;
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const curDate = new Date(year, month, d);
+    const curISO = formatDateISO(curDate);
+    const isToday = curISO === todayISO;
+    const isActive = curISO === selISO;
+    grid += `<button type="button" class="mc-day ${isActive ? 'active' : ''} ${isToday ? 'today' : ''}" data-action="select-calendar-date" data-date="${curISO}" title="${d}/${month + 1}/${year}">${d}</button>`;
+  }
+
+  const totalRendered = firstDay + daysInMonth;
+  const remaining = (7 - (totalRendered % 7)) % 7;
+  for (let i = 1; i <= remaining; i++) {
+    grid += `<span class="mc-day disabled">${i}</span>`;
+  }
+
+  return `
+    <div class="mini-calendar-wrapper">
+      <div class="mc-header">
+        <span class="mc-month">${MONTH_NAMES[month]} ${year}</span>
+        <div class="agenda-nav-arrows">
+          <button type="button" class="btn-icon" data-action="mc-prev-month" title="Mês anterior"><i class="ph ph-caret-left"></i></button>
+          <button type="button" class="btn-icon" data-action="mc-next-month" title="Próximo mês"><i class="ph ph-caret-right"></i></button>
+        </div>
+      </div>
+      <div class="mini-calendar">
+        ${headers}
+        ${grid}
+      </div>
+    </div>
+  `;
+}
+
 async function agendaView() {
   const [appointmentPayload, proceduresPayload, patientsPayload] = await Promise.all([
     api('/api/appointments'),
@@ -283,13 +383,290 @@ async function agendaView() {
   const procedures = apiList(proceduresPayload);
   const patients = apiList(patientsPayload);
   state.cache.appointments = appointments;
+  state.cache.procedures = procedures;
+  state.cache.patients = patients;
+
+  const viewMode = state.agenda.viewMode || 'week';
+  const viewDate = new Date(state.agenda.viewDate || new Date());
+  const calendarDate = new Date(state.agenda.calendarDate || viewDate);
+  const statusFilter = state.agenda.statusFilter || 'all';
+
+  // Filter appointments
+  let filteredAppointments = appointments;
+  if (statusFilter !== 'all') {
+    filteredAppointments = filteredAppointments.filter((item) => item.status === statusFilter);
+  }
+
+  const weekDays = getWeekDays(viewDate);
+  const startDay = weekDays[0];
+  const endDay = weekDays[6];
+  const todayISO = formatDateISO(new Date());
+  const selectedDayISO = formatDateISO(viewDate);
+
+  let rangeTitle = '';
+  if (viewMode === 'week') {
+    const sm = startDay.getMonth() === endDay.getMonth() ? '' : ` de ${MONTH_NAMES[startDay.getMonth()]}`;
+    rangeTitle = `${startDay.getDate()}${sm} a ${endDay.getDate()} de ${MONTH_NAMES[endDay.getMonth()]} de ${endDay.getFullYear()}`;
+  } else if (viewMode === 'day') {
+    rangeTitle = `${viewDate.getDate()} de ${MONTH_NAMES[viewDate.getMonth()]} de ${viewDate.getFullYear()}`;
+  } else {
+    rangeTitle = 'Todos os Agendamentos';
+  }
+
+  // Count metrics
+  const countScheduled = appointments.filter((a) => a.status === 'scheduled').length;
+  const countConfirmed = appointments.filter((a) => a.status === 'confirmed').length;
+  const countCompleted = appointments.filter((a) => a.status === 'completed').length;
+  const countCanceled = appointments.filter((a) => a.status === 'canceled').length;
+
+  // Mini calendar component
+  const miniCalendarHtml = renderMiniCalendar(calendarDate, viewDate);
+
+  // Filters component
+  const filtersHtml = `
+    <div class="agenda-filters">
+      <div class="filters-header">
+        <h3>Filtros</h3>
+        <button type="button" class="clear-filters" data-action="clear-agenda-filters">Limpar</button>
+      </div>
+      <div class="filter-group">
+        <label>Status</label>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <button type="button" class="action-btn outline ${statusFilter === 'all' ? 'active-filter' : ''}" style="justify-content:space-between; width:100%; text-align:left;" data-action="filter-agenda-status" data-status="all">
+            <span>Todos</span><strong>${appointments.length}</strong>
+          </button>
+          <button type="button" class="action-btn outline ${statusFilter === 'scheduled' ? 'active-filter' : ''}" style="justify-content:space-between; width:100%; text-align:left;" data-action="filter-agenda-status" data-status="scheduled">
+            <span>Agendados</span><strong>${countScheduled}</strong>
+          </button>
+          <button type="button" class="action-btn outline ${statusFilter === 'confirmed' ? 'active-filter' : ''}" style="justify-content:space-between; width:100%; text-align:left;" data-action="filter-agenda-status" data-status="confirmed">
+            <span>Confirmados</span><strong>${countConfirmed}</strong>
+          </button>
+          <button type="button" class="action-btn outline ${statusFilter === 'completed' ? 'active-filter' : ''}" style="justify-content:space-between; width:100%; text-align:left;" data-action="filter-agenda-status" data-status="completed">
+            <span>Concluídos</span><strong>${countCompleted}</strong>
+          </button>
+          <button type="button" class="action-btn outline ${statusFilter === 'canceled' ? 'active-filter' : ''}" style="justify-content:space-between; width:100%; text-align:left;" data-action="filter-agenda-status" data-status="canceled">
+            <span>Cancelados</span><strong>${countCanceled}</strong>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Top header for agenda main
+  const topHeaderHtml = `
+    <div class="agenda-top-header">
+      <div class="agenda-nav-left">
+        <button type="button" class="btn-hoje" data-action="agenda-today">Hoje</button>
+        <div class="agenda-nav-arrows">
+          <button type="button" class="btn-icon" data-action="agenda-prev" title="Anterior"><i class="ph ph-caret-left"></i></button>
+          <button type="button" class="btn-icon" data-action="agenda-next" title="Próximo"><i class="ph ph-caret-right"></i></button>
+        </div>
+        <span class="agenda-date-range">${rangeTitle}</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div class="view-switcher-group">
+          <button type="button" class="view-switcher-btn ${viewMode === 'week' ? 'active' : ''}" data-action="set-agenda-view" data-view="week">Semana</button>
+          <button type="button" class="view-switcher-btn ${viewMode === 'day' ? 'active' : ''}" data-action="set-agenda-view" data-view="day">Dia</button>
+          <button type="button" class="view-switcher-btn ${viewMode === 'list' ? 'active' : ''}" data-action="set-agenda-view" data-view="list">Lista</button>
+        </div>
+        <button type="button" class="load-btn" data-action="open-appointment-modal" style="padding: 8px 16px; font-size: 13px;">
+          <i class="ph ph-plus"></i> Novo agendamento
+        </button>
+      </div>
+    </div>
+  `;
+
+  // Hours to render in grid
+  const hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+
+  let mainBodyHtml = '';
+
+  if (viewMode === 'week') {
+    // Week view columns
+    const weekHeadersHtml = weekDays.map((d, i) => {
+      const dISO = formatDateISO(d);
+      const isToday = dISO === todayISO;
+      return `
+        <div class="day-col ${isToday ? 'today-col' : ''}">
+          <span>${WEEKDAY_SHORT_PT[i]}</span>
+          <strong class="${isToday ? 'active-badge' : ''}">${d.getDate()}</strong>
+        </div>
+      `;
+    }).join('');
+
+    const gridRowsHtml = hours.map((hour) => {
+      const hourStr = String(hour).padStart(2, '0');
+      const cellsHtml = weekDays.map((d) => {
+        const dISO = formatDateISO(d);
+        const cellAppointments = filteredAppointments.filter((a) => {
+          const aDate = String(a.scheduled_at || '');
+          if (!aDate.startsWith(dISO)) return false;
+          const aHour = parseInt(aDate.slice(11, 13), 10);
+          return aHour === hour;
+        });
+
+        const cardsHtml = cellAppointments.map((a) => {
+          const patientName = a.patient?.name || 'Consulta';
+          const procedureName = a.procedure?.name || 'Consulta clínica';
+          const time = String(a.scheduled_at || '').slice(11, 16);
+          return `
+            <div class="appointment-grid-card status-${escapeHtml(a.status)}" data-action="edit-appointment" data-id="${Number(a.id)}" title="${escapeHtml(patientName)} - ${escapeHtml(procedureName)} (${time})">
+              <span class="card-time">${time}</span>
+              <strong class="card-patient">${escapeHtml(patientName)}</strong>
+              <span class="card-procedure">${escapeHtml(procedureName)}</span>
+            </div>
+          `;
+        }).join('');
+
+        return `<div class="grid-cell" data-action="open-appointment-modal" data-slot="${dISO}T${hourStr}:00">${cardsHtml}</div>`;
+      }).join('');
+
+      return `
+        <div class="grid-row">
+          <div class="time-label">${hourStr}:00</div>
+          ${cellsHtml}
+        </div>
+      `;
+    }).join('');
+
+    mainBodyHtml = `
+      <div class="weekly-grid-container">
+        <div class="weekly-header">
+          <div class="time-col-spacer"></div>
+          ${weekHeadersHtml}
+        </div>
+        <div class="weekly-body">
+          ${gridRowsHtml}
+        </div>
+      </div>
+    `;
+  } else if (viewMode === 'day') {
+    // Day view timeline
+    const dayAppointments = filteredAppointments.filter((a) => String(a.scheduled_at || '').startsWith(selectedDayISO));
+
+    const dayRowsHtml = hours.map((hour) => {
+      const hourStr = String(hour).padStart(2, '0');
+      const cellAppointments = dayAppointments.filter((a) => {
+        const aHour = parseInt(String(a.scheduled_at || '').slice(11, 13), 10);
+        return aHour === hour;
+      });
+
+      const cardsHtml = cellAppointments.map((a) => {
+        const patientName = a.patient?.name || 'Consulta';
+        const procedureName = a.procedure?.name || 'Consulta clínica';
+        const time = String(a.scheduled_at || '').slice(11, 16);
+        return `
+          <div class="page-panel" style="margin: 4px 0; padding: 12px 16px; border-left: 4px solid var(--md-sys-color-primary);">
+            <div class="toolbar" style="justify-content:space-between">
+              <div>
+                <strong>${time} — ${escapeHtml(patientName)}</strong>
+                <p class="muted" style="margin:2px 0 0">${escapeHtml(procedureName)}${a.notes ? ` · <em>${escapeHtml(a.notes)}</em>` : ''}</p>
+              </div>
+              <div class="toolbar">
+                ${statusBadge(a.status)}
+                <button class="action-btn outline" data-action="edit-appointment" data-id="${Number(a.id)}">Editar</button>
+                <button class="action-btn outline" data-action="appointment-status" data-id="${Number(a.id)}" data-status="confirmed">Confirmar</button>
+                <button class="action-btn outline danger-button" data-action="delete-appointment" data-id="${Number(a.id)}">Excluir</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div style="display:flex; border-bottom: 1px dashed var(--md-sys-color-outline-variant); min-height: 54px; padding: 4px 0;">
+          <div style="width: 70px; font-size: 12px; font-weight: 600; color: var(--md-sys-color-outline); display:flex; align-items:flex-start; padding-top: 6px;">${hourStr}:00</div>
+          <div style="flex:1;">
+            ${cardsHtml || `<button type="button" style="width:100%; height:100%; min-height:36px; border:none; background:transparent; cursor:pointer;" data-action="open-appointment-modal" data-slot="${selectedDayISO}T${hourStr}:00" title="Adicionar agendamento neste horário"></button>`}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    mainBodyHtml = `
+      <div style="padding: 16px 24px; overflow-y: auto; flex: 1;">
+        ${dayRowsHtml}
+      </div>
+    `;
+  } else {
+    // List view
+    mainBodyHtml = `
+      <div style="padding: 20px 24px; overflow-y: auto; flex: 1;">
+        ${appointmentRows(filteredAppointments, { emptyMessage: 'Nenhum agendamento encontrado para o filtro selecionado.' })}
+      </div>
+    `;
+  }
+
+  // Modal dialog if open or editing
   const editing = state.cache.appointment;
+  const isModalOpen = state.agenda.modalOpen || Boolean(editing);
+  let modalHtml = '';
 
-  const patientOptions = patients.map((patient) => `<option value="${Number(patient.id)}" ${Number(editing?.patient_id) === Number(patient.id) ? 'selected' : ''}>${escapeHtml(patient.name || 'Paciente sem nome')}</option>`).join('');
-  const procedureOptions = procedures.map((procedure) => `<option value="${Number(procedure.id)}" ${Number(editing?.procedure_id) === Number(procedure.id) ? 'selected' : ''}>${escapeHtml(procedure.name)}</option>`).join('');
-  const formTitle = editing ? 'Editar agendamento' : 'Novo agendamento';
+  if (isModalOpen) {
+    const patientOptions = patients.map((p) => `<option value="${Number(p.id)}" ${Number(editing?.patient_id) === Number(p.id) ? 'selected' : ''}>${escapeHtml(p.name || 'Paciente sem nome')}</option>`).join('');
+    const procedureOptions = procedures.map((p) => `<option value="${Number(p.id)}" ${Number(editing?.procedure_id) === Number(p.id) ? 'selected' : ''}>${escapeHtml(p.name)}</option>`).join('');
+    const defaultDateTime = editing ? asDateTimeInput(editing.scheduled_at) : (state.agenda.modalSlot || `${todayISO}T09:00`);
 
-  return professionalLayout('/pro', 'Agenda', `<section class="page-header"><h1 class="section-title">Agenda</h1><p class="page-intro">Crie, atualize, confirme ou exclua os atendimentos da sua clínica.</p></section><div class="two-columns"><section class="page-panel"><h2>${formTitle}</h2><form data-form="appointment" data-id="${editing ? Number(editing.id) : ''}"><div class="form-group"><label for="appointment-patient">Paciente</label><select id="appointment-patient" name="patient_id" required ${editing ? 'disabled' : ''}><option value="">Selecione um paciente</option>${patientOptions}</select></div><div class="form-group"><label for="appointment-procedure">Procedimento</label><select id="appointment-procedure" name="procedure_id"><option value="">Consulta clínica</option>${procedureOptions}</select></div><div class="form-group"><label for="appointment-date">Data e horário</label><input id="appointment-date" name="scheduled_at" type="datetime-local" required value="${asDateTimeInput(editing?.scheduled_at)}"></div><div class="form-group"><label for="appointment-notes">Observações</label><textarea id="appointment-notes" name="notes" placeholder="Informações para o atendimento">${escapeHtml(editing?.notes || '')}</textarea></div><div class="form-actions"><button class="load-btn" type="submit">${editing ? 'Salvar alterações' : 'Agendar'}</button>${editing ? '<button class="action-btn outline" type="button" data-action="cancel-appointment-edit">Cancelar edição</button>' : ''}</div></form></section><section class="page-panel"><h2>Resumo</h2><p class="muted">${appointments.length} agendamento(s) cadastrado(s).</p><p class="muted">Os dados são protegidos pelo token da sessão em cada chamada.</p></section></div><section class="page-panel"><div class="toolbar" style="justify-content:space-between"><h2>Todos os agendamentos</h2><span class="muted">${appointments.length} itens</span></div>${appointmentRows(appointments)}</section>`);
+    modalHtml = `
+      <div class="modal-backdrop" data-action="close-appointment-modal">
+        <div class="agenda-modal" onclick="event.stopPropagation()">
+          <div class="agenda-modal-header">
+            <h2>${editing ? 'Editar Agendamento' : 'Novo Agendamento'}</h2>
+            <button type="button" class="modal-close-btn" data-action="close-appointment-modal" title="Fechar"><i class="ph ph-x"></i></button>
+          </div>
+          <div class="agenda-modal-body">
+            <form data-form="appointment" data-id="${editing ? Number(editing.id) : ''}">
+              <div class="form-group" style="margin-bottom: 14px;">
+                <label for="modal-patient">Paciente</label>
+                <select id="modal-patient" name="patient_id" required ${editing ? 'disabled' : ''}>
+                  <option value="">Selecione um paciente</option>
+                  ${patientOptions}
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom: 14px;">
+                <label for="modal-procedure">Procedimento</label>
+                <select id="modal-procedure" name="procedure_id">
+                  <option value="">Consulta clínica</option>
+                  ${procedureOptions}
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom: 14px;">
+                <label for="modal-date">Data e Horário</label>
+                <input id="modal-date" name="scheduled_at" type="datetime-local" required value="${defaultDateTime}">
+              </div>
+              <div class="form-group" style="margin-bottom: 18px;">
+                <label for="modal-notes">Observações</label>
+                <textarea id="modal-notes" name="notes" placeholder="Detalhes do atendimento, orientações...">${escapeHtml(editing?.notes || '')}</textarea>
+              </div>
+              <div class="form-actions" style="justify-content: flex-end; gap: 8px;">
+                <button type="button" class="action-btn outline" data-action="close-appointment-modal">Cancelar</button>
+                ${editing ? `<button type="button" class="action-btn outline danger-button" data-action="delete-appointment" data-id="${Number(editing.id)}">Excluir</button>` : ''}
+                <button class="load-btn" type="submit">${editing ? 'Salvar alterações' : 'Confirmar agendamento'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  return professionalLayout('/pro', 'Agenda', `
+    <div class="agenda-full-layout" style="height: calc(100vh - 72px);">
+      <aside class="agenda-sidebar">
+        <button type="button" class="load-btn" data-action="open-appointment-modal" style="width: 100%; margin-bottom: 20px;">
+          <i class="ph ph-plus"></i> Novo agendamento
+        </button>
+        ${miniCalendarHtml}
+        <hr class="form-divider" style="margin: 20px 0;">
+        ${filtersHtml}
+      </aside>
+      <section class="agenda-main">
+        ${topHeaderHtml}
+        ${mainBodyHtml}
+      </section>
+    </div>
+    ${modalHtml}
+  `);
 }
 
 async function proceduresView() {
@@ -325,24 +702,24 @@ async function settingsView() {
 async function patientDashboardView() {
   const appointments = apiList(await api('/api/patient/appointments'));
   state.cache.patientAppointments = appointments;
-  return patientLayout('Início', `<section class="page-header"><h1 class="section-title">Meus agendamentos</h1><p class="page-intro">Acompanhe seus próximos atendimentos e o histórico da clínica.</p></section><div class="two-columns"><section class="page-panel"><h2>Próximos atendimentos</h2>${appointmentRows(appointments, { patient: true, emptyMessage: 'Você ainda não possui agendamentos.' })}</section><aside class="page-panel"><h2>Atalhos</h2><p class="muted">Encontre um profissional, consulte seu prontuário ou atualize seus dados.</p><div class="action-row"><a class="load-btn" href="/paciente/busca" data-nav>Buscar profissional</a><a class="action-btn outline" href="/paciente/prontuario" data-nav>Ver prontuário</a></div></aside></div>`);
+  return patientLayout('/paciente', 'Início', `<section class="page-header"><h1 class="section-title">Meus agendamentos</h1><p class="page-intro">Acompanhe seus próximos atendimentos e o histórico da clínica.</p></section><div class="two-columns"><section class="page-panel"><h2>Próximos atendimentos</h2>${appointmentRows(appointments, { patient: true, emptyMessage: 'Você ainda não possui agendamentos.' })}</section><aside class="page-panel"><h2>Atalhos</h2><p class="muted">Encontre um profissional, consulte seu prontuário ou atualize seus dados.</p><div class="action-row"><a class="load-btn" href="/paciente/busca" data-nav>Buscar profissional</a><a class="action-btn outline" href="/paciente/prontuario" data-nav>Ver prontuário</a></div></aside></div>`);
 }
 
 async function patientSearchView() {
   const results = state.cache.professionalSearch || [];
   const selected = state.cache.selectedProfessional;
-  return patientLayout('Buscar profissional', `<section class="page-header"><h1 class="section-title">Encontrar profissional</h1><p class="page-intro">Pesquise por nome, especialidade, cidade ou registro profissional.</p></section><section class="page-panel"><form data-form="professional-search" class="toolbar"><label class="form-group" style="flex:1; margin:0"><span class="sr-only">Buscar profissional</span><input name="query" required minlength="2" placeholder="Ex.: dermatologista, São Paulo ou nome"></label><button class="load-btn" type="submit">Buscar</button></form>${results.length ? `<ul class="data-list">${results.map((professional) => `<li><div class="data-row-main"><strong>${escapeHtml(professional.name)}</strong><span>${escapeHtml(professional.specialty || 'Especialidade não informada')} · ${escapeHtml(professional.city || 'Cidade não informada')}</span></div><button class="action-btn outline" data-action="select-professional" data-id="${Number(professional.id)}">Agendar</button></li>`).join('')}</ul>` : '<p class="muted" style="margin-top:1rem">Digite ao menos dois caracteres para pesquisar.</p>'}</section>${selected ? `<section class="page-panel"><div class="toolbar" style="justify-content:space-between"><div><h2>Agendar com ${escapeHtml(selected.name)}</h2><p class="muted">${escapeHtml(selected.specialty || '')}</p></div><button class="action-btn outline" data-action="clear-professional">Trocar profissional</button></div><form data-form="patient-booking"><div class="two-columns"><div class="form-group"><label for="booking-at">Data e horário</label><input id="booking-at" name="scheduled_at" type="datetime-local" required></div><div class="form-group"><label for="booking-notes">Observações</label><input id="booking-notes" name="notes" placeholder="Opcional"></div></div><button class="load-btn" type="submit">Solicitar agendamento</button></form></section>` : ''}`);
+  return patientLayout('/paciente/busca', 'Buscar profissional', `<section class="page-header"><h1 class="section-title">Encontrar profissional</h1><p class="page-intro">Pesquise por nome, especialidade, cidade ou registro profissional.</p></section><section class="page-panel"><form data-form="professional-search" class="toolbar"><label class="form-group" style="flex:1; margin:0"><span class="sr-only">Buscar profissional</span><input name="query" required minlength="2" placeholder="Ex.: dermatologista, São Paulo ou nome"></label><button class="load-btn" type="submit">Buscar</button></form>${results.length ? `<ul class="data-list">${results.map((professional) => `<li><div class="data-row-main"><strong>${escapeHtml(professional.name)}</strong><span>${escapeHtml(professional.specialty || 'Especialidade não informada')} · ${escapeHtml(professional.city || 'Cidade não informada')}</span></div><button class="action-btn outline" data-action="select-professional" data-id="${Number(professional.id)}">Agendar</button></li>`).join('')}</ul>` : '<p class="muted" style="margin-top:1rem">Digite ao menos dois caracteres para pesquisar.</p>'}</section>${selected ? `<section class="page-panel"><div class="toolbar" style="justify-content:space-between"><div><h2>Agendar com ${escapeHtml(selected.name)}</h2><p class="muted">${escapeHtml(selected.specialty || '')}</p></div><button class="action-btn outline" data-action="clear-professional">Trocar profissional</button></div><form data-form="patient-booking"><div class="two-columns"><div class="form-group"><label for="booking-at">Data e horário</label><input id="booking-at" name="scheduled_at" type="datetime-local" required></div><div class="form-group"><label for="booking-notes">Observações</label><input id="booking-notes" name="notes" placeholder="Opcional"></div></div><button class="load-btn" type="submit">Solicitar agendamento</button></form></section>` : ''}`);
 }
 
 async function patientRecordsView() {
   const records = apiList(await api('/api/patient/medical-records'));
-  return patientLayout('Prontuário', `<section class="page-header"><h1 class="section-title">Meu prontuário</h1><p class="page-intro">Registros clínicos disponibilizados pelo profissional responsável.</p></section><section class="page-panel">${records.length ? `<ul class="data-list">${records.map((record) => `<li><div class="data-row-main"><strong>${formatDateTime(record.created_at)}</strong><span>${escapeHtml(record.clinical_notes || 'Sem notas clínicas')}</span>${record.prescription ? `<span>Prescrição: ${escapeHtml(record.prescription)}</span>` : ''}</div></li>`).join('')}</ul>` : emptyState('Nenhum registro clínico está disponível.')}</section>`);
+  return patientLayout('/paciente/prontuario', 'Prontuário', `<section class="page-header"><h1 class="section-title">Meu prontuário</h1><p class="page-intro">Registros clínicos disponibilizados pelo profissional responsável.</p></section><section class="page-panel">${records.length ? `<ul class="data-list">${records.map((record) => `<li><div class="data-row-main"><strong>${formatDateTime(record.created_at)}</strong><span>${escapeHtml(record.clinical_notes || 'Sem notas clínicas')}</span>${record.prescription ? `<span>Prescrição: ${escapeHtml(record.prescription)}</span>` : ''}</div></li>`).join('')}</ul>` : emptyState('Nenhum registro clínico está disponível.')}</section>`);
 }
 
 async function patientProfileView() {
   const user = state.user || await loadCurrentUser();
   const patient = user.patient || {};
-  return patientLayout('Meu perfil', `<section class="page-header"><h1 class="section-title">Meu perfil</h1><p class="page-intro">Mantenha seus dados de contato atualizados.</p></section><div class="two-columns"><section class="page-panel"><h2>Dados pessoais</h2><form data-form="profile"><div class="form-group"><label for="patient-profile-name">Nome</label><input id="patient-profile-name" name="name" required value="${escapeHtml(user.name || '')}"></div><div class="form-group"><label for="patient-profile-email">E-mail</label><input id="patient-profile-email" name="email" type="email" required value="${escapeHtml(user.email || '')}"></div><div class="two-columns"><div class="form-group"><label for="patient-profile-phone">Telefone</label><input id="patient-profile-phone" name="phone" value="${escapeHtml(patient.phone || '')}"></div><div class="form-group"><label for="patient-profile-cpf">CPF</label><input id="patient-profile-cpf" name="cpf" value="${escapeHtml(patient.cpf || '')}"></div></div><div class="form-group"><label for="patient-profile-birth">Nascimento</label><input id="patient-profile-birth" name="birth_date" type="date" value="${escapeHtml(patient.birth_date || '')}"></div><button class="load-btn" type="submit">Salvar dados</button></form></section><section class="page-panel"><h2>Senha</h2><form data-form="password"><div class="form-group"><label for="patient-current-password">Senha atual</label><input id="patient-current-password" name="current_password" type="password" required autocomplete="current-password"></div><div class="form-group"><label for="patient-new-password">Nova senha</label><input id="patient-new-password" name="password" type="password" required minlength="8" autocomplete="new-password"></div><div class="form-group"><label for="patient-password-confirmation">Confirme a nova senha</label><input id="patient-password-confirmation" name="password_confirmation" type="password" required minlength="8" autocomplete="new-password"></div><button class="load-btn" type="submit">Atualizar senha</button></form></section></div>`);
+  return patientLayout('/paciente/perfil', 'Meu perfil', `<section class="page-header"><h1 class="section-title">Meu perfil</h1><p class="page-intro">Mantenha seus dados de contato atualizados.</p></section><div class="two-columns"><section class="page-panel"><h2>Dados pessoais</h2><form data-form="profile"><div class="form-group"><label for="patient-profile-name">Nome</label><input id="patient-profile-name" name="name" required value="${escapeHtml(user.name || '')}"></div><div class="form-group"><label for="patient-profile-email">E-mail</label><input id="patient-profile-email" name="email" type="email" required value="${escapeHtml(user.email || '')}"></div><div class="two-columns"><div class="form-group"><label for="patient-profile-phone">Telefone</label><input id="patient-profile-phone" name="phone" value="${escapeHtml(patient.phone || '')}"></div><div class="form-group"><label for="patient-profile-cpf">CPF</label><input id="patient-profile-cpf" name="cpf" value="${escapeHtml(patient.cpf || '')}"></div></div><div class="form-group"><label for="patient-profile-birth">Nascimento</label><input id="patient-profile-birth" name="birth_date" type="date" value="${escapeHtml(patient.birth_date || '')}"></div><button class="load-btn" type="submit">Salvar dados</button></form></section><section class="page-panel"><h2>Senha</h2><form data-form="password"><div class="form-group"><label for="patient-current-password">Senha atual</label><input id="patient-current-password" name="current_password" type="password" required autocomplete="current-password"></div><div class="form-group"><label for="patient-new-password">Nova senha</label><input id="patient-new-password" name="password" type="password" required minlength="8" autocomplete="new-password"></div><div class="form-group"><label for="patient-password-confirmation">Confirme a nova senha</label><input id="patient-password-confirmation" name="password_confirmation" type="password" required minlength="8" autocomplete="new-password"></div><button class="load-btn" type="submit">Atualizar senha</button></form></section></div>`);
 }
 
 function activationView() {
@@ -521,6 +898,8 @@ async function submitAppointment(form) {
       body,
     });
     state.cache.appointment = null;
+    state.agenda.modalOpen = false;
+    state.agenda.modalSlot = null;
     showToast(appointmentId ? 'Agendamento atualizado.' : 'Agendamento criado.');
     render();
   } catch (error) {
@@ -719,14 +1098,100 @@ async function handleAction(action, element) {
     return;
   }
 
+  if (action === 'open-appointment-modal') {
+    state.agenda.modalOpen = true;
+    state.agenda.modalSlot = element.dataset.slot || null;
+    state.cache.appointment = null;
+    render();
+    return;
+  }
+
+  if (action === 'close-appointment-modal') {
+    state.agenda.modalOpen = false;
+    state.agenda.modalSlot = null;
+    state.cache.appointment = null;
+    render();
+    return;
+  }
+
+  if (action === 'set-agenda-view') {
+    state.agenda.viewMode = element.dataset.view;
+    render();
+    return;
+  }
+
+  if (action === 'agenda-today') {
+    state.agenda.viewDate = new Date();
+    state.agenda.calendarDate = new Date();
+    render();
+    return;
+  }
+
+  if (action === 'agenda-prev') {
+    const vd = new Date(state.agenda.viewDate || new Date());
+    if (state.agenda.viewMode === 'day') vd.setDate(vd.getDate() - 1);
+    else vd.setDate(vd.getDate() - 7);
+    state.agenda.viewDate = vd;
+    state.agenda.calendarDate = new Date(vd);
+    render();
+    return;
+  }
+
+  if (action === 'agenda-next') {
+    const vd = new Date(state.agenda.viewDate || new Date());
+    if (state.agenda.viewMode === 'day') vd.setDate(vd.getDate() + 1);
+    else vd.setDate(vd.getDate() + 7);
+    state.agenda.viewDate = vd;
+    state.agenda.calendarDate = new Date(vd);
+    render();
+    return;
+  }
+
+  if (action === 'mc-prev-month') {
+    const cd = new Date(state.agenda.calendarDate || new Date());
+    cd.setMonth(cd.getMonth() - 1);
+    state.agenda.calendarDate = cd;
+    render();
+    return;
+  }
+
+  if (action === 'mc-next-month') {
+    const cd = new Date(state.agenda.calendarDate || new Date());
+    cd.setMonth(cd.getMonth() + 1);
+    state.agenda.calendarDate = cd;
+    render();
+    return;
+  }
+
+  if (action === 'select-calendar-date') {
+    state.agenda.viewDate = new Date(element.dataset.date + 'T12:00:00');
+    render();
+    return;
+  }
+
+  if (action === 'filter-agenda-status') {
+    state.agenda.statusFilter = element.dataset.status;
+    render();
+    return;
+  }
+
+  if (action === 'clear-agenda-filters') {
+    state.agenda.statusFilter = 'all';
+    state.agenda.procedureFilter = 'all';
+    render();
+    return;
+  }
+
   if (action === 'edit-appointment') {
     state.cache.appointment = state.cache.appointments?.find((item) => Number(item.id) === id) || null;
+    state.agenda.modalOpen = true;
     render();
     return;
   }
 
   if (action === 'cancel-appointment-edit') {
     state.cache.appointment = null;
+    state.agenda.modalOpen = false;
     render();
     return;
   }
@@ -747,6 +1212,7 @@ async function handleAction(action, element) {
     try {
       await api(`/api/appointments/${id}`, { method: 'DELETE' });
       state.cache.appointment = null;
+      state.agenda.modalOpen = false;
       showToast('Agendamento excluído.');
       render();
     } catch (error) {
