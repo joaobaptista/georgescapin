@@ -3,7 +3,8 @@
 O projeto foi consolidado como uma aplicação sem framework no backend e no
 frontend.
 
-- **Backend:** PHP 8.2+, PDO, roteador próprio, controllers e middlewares.
+- **Backend:** PHP 8.2+ em Arquitetura Limpa com DDD (domínio, casos de uso,
+  infraestrutura PDO e HTTP); detalhes em [ARQUITETURA.md](ARQUITETURA.md).
 - **Frontend:** `public/index.html`, `public/assets/css/app.css` e
   `public/assets/js/app.js`.
 - **Navegação:** History API no navegador; o servidor entrega o shell estático
@@ -40,7 +41,7 @@ HTML, CSS ou JavaScript.
 
 O JavaScript centraliza as chamadas `fetch`, injeta o token Bearer e limpa a
 sessão em respostas `401`. A API mantém os controles no servidor
-(`App\Core\ClinicalAccess`):
+(`App\Domain\Clinical\ClinicalAccess`; ver [ARQUITETURA.md](ARQUITETURA.md)):
 
 - Um profissional só vê, lista, busca ou abre o prontuário de pacientes
   vinculados a ele: cadastrados por ele ou com agendamento com ele.

@@ -264,18 +264,23 @@ function statusBadge(status = 'scheduled') {
   return `<span class="status-badge ${escapeHtml(status)}">${escapeHtml(STATUS_LABELS[status] || status)}</span>`;
 }
 
-// Professional actions follow the appointment lifecycle:
-// agendado → confirmado → concluído, with cancelamento while still open.
+function isOpenAppointment(appointment) {
+  return appointment?.status === 'scheduled' || appointment?.status === 'confirmed';
+}
+
+// Professional actions mirror the server's lifecycle rules:
+// agendado → confirmado → concluído, cancelamento while open; completed
+// appointments are clinical history (no edit, no delete).
 function appointmentActions(appointment) {
   const id = Number(appointment.id);
-  const open = appointment.status === 'scheduled' || appointment.status === 'confirmed';
+  const open = isOpenAppointment(appointment);
   const statusButton = (status, label, extra = '') => `<button class="action-btn outline${extra}" data-action="appointment-status" data-id="${id}" data-status="${status}">${label}</button>`;
   return [
-    `<button class="action-btn outline" data-action="edit-appointment" data-id="${id}">Editar</button>`,
+    open ? `<button class="action-btn outline" data-action="edit-appointment" data-id="${id}">Editar</button>` : '',
     appointment.status === 'scheduled' ? statusButton('confirmed', 'Confirmar') : '',
     open ? statusButton('completed', 'Concluir') : '',
     open ? statusButton('canceled', 'Cancelar', ' danger-button') : '',
-    `<button class="action-btn outline danger-button" data-action="delete-appointment" data-id="${id}">Excluir</button>`,
+    appointment.status !== 'completed' ? `<button class="action-btn outline danger-button" data-action="delete-appointment" data-id="${id}">Excluir</button>` : '',
   ].join('');
 }
 
@@ -744,7 +749,7 @@ async function patientRecordView(patientId) {
 
 async function settingsView() {
   const user = state.user || await loadCurrentUser();
-  return professionalLayout('/configuracoes', 'Configurações', `<section class="page-header"><h1 class="section-title">Configurações</h1><p class="page-intro">Atualize seu nome, e-mail de acesso e senha.</p></section><div class="two-columns"><section class="page-panel"><h2>Meu perfil</h2><form data-form="profile"><div class="form-group"><label for="profile-name">Nome</label><input id="profile-name" name="name" required value="${escapeHtml(user.name || '')}"></div><div class="form-group"><label for="profile-email">E-mail</label><input id="profile-email" name="email" type="email" required value="${escapeHtml(user.email || '')}"></div><button class="load-btn" type="submit">Salvar perfil</button></form></section><section class="page-panel"><h2>Alterar senha</h2><form data-form="password"><div class="form-group"><label for="current-password">Senha atual</label><input id="current-password" name="current_password" type="password" required autocomplete="current-password"></div><div class="form-group"><label for="new-password">Nova senha</label><input id="new-password" name="password" type="password" required minlength="8" autocomplete="new-password"></div><div class="form-group"><label for="new-password-confirmation">Confirme a nova senha</label><input id="new-password-confirmation" name="password_confirmation" type="password" required minlength="8" autocomplete="new-password"></div><button class="load-btn" type="submit">Atualizar senha</button></form></section></div>`);
+  return professionalLayout('/configuracoes', 'Configurações', `<section class="page-header"><h1 class="section-title">Configurações</h1><p class="page-intro">Atualize seu nome, e-mail de acesso e senha.</p></section><div class="two-columns"><section class="page-panel"><h2>Meu perfil</h2><form data-form="profile"><div class="form-group"><label for="profile-name">Nome</label><input id="profile-name" name="name" required value="${escapeHtml(user.name || '')}"></div><div class="form-group"><label for="profile-email">E-mail</label><input id="profile-email" name="email" type="email" required value="${escapeHtml(user.email || '')}"></div><div class="form-group"><label for="profile-current-password">Senha atual <span class="muted">(só para alterar o e-mail)</span></label><input id="profile-current-password" name="current_password" type="password" autocomplete="current-password"></div><button class="load-btn" type="submit">Salvar perfil</button></form></section><section class="page-panel"><h2>Alterar senha</h2><form data-form="password"><div class="form-group"><label for="current-password">Senha atual</label><input id="current-password" name="current_password" type="password" required autocomplete="current-password"></div><div class="form-group"><label for="new-password">Nova senha</label><input id="new-password" name="password" type="password" required minlength="8" autocomplete="new-password"></div><div class="form-group"><label for="new-password-confirmation">Confirme a nova senha</label><input id="new-password-confirmation" name="password_confirmation" type="password" required minlength="8" autocomplete="new-password"></div><button class="load-btn" type="submit">Atualizar senha</button></form></section></div>`);
 }
 
 async function patientDashboardView() {
@@ -774,7 +779,7 @@ async function patientRecordsView() {
 async function patientProfileView() {
   const user = state.user || await loadCurrentUser();
   const patient = user.patient || {};
-  return patientLayout('/paciente/perfil', 'Meu perfil', `<section class="page-header"><h1 class="section-title">Meu perfil</h1><p class="page-intro">Mantenha seus dados de contato atualizados.</p></section><div class="two-columns"><section class="page-panel"><h2>Dados pessoais</h2><form data-form="profile"><div class="form-group"><label for="patient-profile-name">Nome</label><input id="patient-profile-name" name="name" required value="${escapeHtml(user.name || '')}"></div><div class="form-group"><label for="patient-profile-email">E-mail</label><input id="patient-profile-email" name="email" type="email" required value="${escapeHtml(user.email || '')}"></div><div class="two-columns"><div class="form-group"><label for="patient-profile-phone">Telefone</label><input id="patient-profile-phone" name="phone" value="${escapeHtml(patient.phone || '')}"></div><div class="form-group"><label for="patient-profile-cpf">CPF</label><input id="patient-profile-cpf" name="cpf" value="${escapeHtml(patient.cpf || '')}"></div></div><div class="form-group"><label for="patient-profile-birth">Nascimento</label><input id="patient-profile-birth" name="birth_date" type="date" value="${escapeHtml(patient.birth_date || '')}"></div><button class="load-btn" type="submit">Salvar dados</button></form></section><section class="page-panel"><h2>Senha</h2><form data-form="password"><div class="form-group"><label for="patient-current-password">Senha atual</label><input id="patient-current-password" name="current_password" type="password" required autocomplete="current-password"></div><div class="form-group"><label for="patient-new-password">Nova senha</label><input id="patient-new-password" name="password" type="password" required minlength="8" autocomplete="new-password"></div><div class="form-group"><label for="patient-password-confirmation">Confirme a nova senha</label><input id="patient-password-confirmation" name="password_confirmation" type="password" required minlength="8" autocomplete="new-password"></div><button class="load-btn" type="submit">Atualizar senha</button></form></section></div>`);
+  return patientLayout('/paciente/perfil', 'Meu perfil', `<section class="page-header"><h1 class="section-title">Meu perfil</h1><p class="page-intro">Mantenha seus dados de contato atualizados.</p></section><div class="two-columns"><section class="page-panel"><h2>Dados pessoais</h2><form data-form="profile"><div class="form-group"><label for="patient-profile-name">Nome</label><input id="patient-profile-name" name="name" required value="${escapeHtml(user.name || '')}"></div><div class="form-group"><label for="patient-profile-email">E-mail</label><input id="patient-profile-email" name="email" type="email" required value="${escapeHtml(user.email || '')}"></div><div class="form-group"><label for="patient-profile-current-password">Senha atual <span class="muted">(só para alterar o e-mail)</span></label><input id="patient-profile-current-password" name="current_password" type="password" autocomplete="current-password"></div><div class="two-columns"><div class="form-group"><label for="patient-profile-phone">Telefone</label><input id="patient-profile-phone" name="phone" value="${escapeHtml(patient.phone || '')}"></div><div class="form-group"><label for="patient-profile-cpf">CPF</label><input id="patient-profile-cpf" name="cpf" value="${escapeHtml(patient.cpf || '')}"></div></div><div class="form-group"><label for="patient-profile-birth">Nascimento</label><input id="patient-profile-birth" name="birth_date" type="date" value="${escapeHtml(patient.birth_date || '')}"></div><button class="load-btn" type="submit">Salvar dados</button></form></section><section class="page-panel"><h2>Senha</h2><form data-form="password"><div class="form-group"><label for="patient-current-password">Senha atual</label><input id="patient-current-password" name="current_password" type="password" required autocomplete="current-password"></div><div class="form-group"><label for="patient-new-password">Nova senha</label><input id="patient-new-password" name="password" type="password" required minlength="8" autocomplete="new-password"></div><div class="form-group"><label for="patient-password-confirmation">Confirme a nova senha</label><input id="patient-password-confirmation" name="password_confirmation" type="password" required minlength="8" autocomplete="new-password"></div><button class="load-btn" type="submit">Atualizar senha</button></form></section></div>`);
 }
 
 function activationView() {
@@ -1050,6 +1055,7 @@ async function submitMedicalRecord(form) {
 async function submitProfile(form) {
   const restore = setFormBusy(form, true, 'Salvando…');
   const values = formValues(form);
+  if (!values.current_password) delete values.current_password;
   try {
     await api('/api/user/profile', { method: 'PUT', body: values });
     await loadCurrentUser();
@@ -1274,7 +1280,12 @@ async function handleAction(action, element) {
   }
 
   if (action === 'edit-appointment') {
-    state.cache.appointment = state.cache.appointments?.find((item) => Number(item.id) === id) || null;
+    const appointment = state.cache.appointments?.find((item) => Number(item.id) === id) || null;
+    if (appointment && !isOpenAppointment(appointment)) {
+      showToast(`Este agendamento está ${(STATUS_LABELS[appointment.status] || appointment.status).toLowerCase()} e não pode ser alterado.`, 'error');
+      return;
+    }
+    state.cache.appointment = appointment;
     state.agenda.modalOpen = true;
     render();
     return;

@@ -216,12 +216,18 @@ function cleanupTestData(PDO $database, array $emails, ?int $procedureId): void
 }
 
 /** Clear only the local test's API login limiter, so the test is deterministic. */
-function resetLocalLoginRateLimit(): void
+/** Clear the local test's rate-limit counters (stored in the database), so the test is deterministic. */
+function resetLocalLoginRateLimit(PDO $database): void
 {
-    $file = sys_get_temp_dir() . '/nuva_rate_limits/limit_' . md5('127.0.0.1_/api/login') . '.json';
-    if (is_file($file)) {
-        @unlink($file);
-    }
+    $database->exec('DELETE FROM rate_limits');
+}
+
+/** Timestamps written directly by the test use the server's clinic timezone. */
+function clinicNow(string $modifier = 'now'): string
+{
+    $timezone = new DateTimeZone(getenv('APP_TIMEZONE') ?: 'America/Sao_Paulo');
+
+    return (new DateTimeImmutable($modifier, $timezone))->format('Y-m-d H:i:s');
 }
 
 $database = new PDO('sqlite:' . $realDatabasePath, null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
@@ -235,7 +241,7 @@ echo "Base URL: {$baseUrl}\n";
 echo "Database: temporary SQLite file\n\n";
 
 try {
-    resetLocalLoginRateLimit();
+    resetLocalLoginRateLimit($database);
 
     $professionalLogin = expectResponse(
         'Professional login',
@@ -289,6 +295,12 @@ try {
         'cpf' => '000.000.000-00',
         'birth_date' => '1990-01-01',
     ], $patientToken), 200);
+    expectResponse('E-mail change requires the current password', requestApi($baseUrl, 'PUT', '/api/user/profile', [
+        'name' => 'Paciente E2E', 'email' => "outro-{$suffix}@example.test",
+    ], $patientToken), 422);
+    expectResponse('E-mail change rejects a wrong current password', requestApi($baseUrl, 'PUT', '/api/user/profile', [
+        'name' => 'Paciente E2E', 'email' => "outro-{$suffix}@example.test", 'current_password' => 'senha-errada',
+    ], $patientToken), 400);
 
     $changedPassword = "Nuva-Changed-{$suffix}!";
     expectResponse('Patient password update', requestApi($baseUrl, 'PUT', '/api/user/password', [
@@ -306,7 +318,7 @@ try {
     $activationToken = bin2hex(random_bytes(24));
     $database->prepare('DELETE FROM password_reset_tokens WHERE email = ?')->execute([$registeredEmail]);
     $database->prepare('INSERT INTO password_reset_tokens (email, token, created_at) VALUES (?, ?, ?)')
-        ->execute([$registeredEmail, hash('sha256', $activationToken), date('Y-m-d H:i:s')]);
+        ->execute([$registeredEmail, hash('sha256', $activationToken), clinicNow()]);
     $activatedPassword = "Nuva-Activated-{$suffix}!";
     expectResponse('Account activation', requestApi($baseUrl, 'POST', '/api/activate-account', [
         'email' => $registeredEmail,
@@ -453,10 +465,20 @@ try {
         'scheduled_at' => '2031-08-20 11:00',
     ], $professionalToken), 201);
     expectResponse('Conflict: reactivating a canceled appointment over a new one is refused', requestApi($baseUrl, 'PATCH', "/api/appointments/{$professionalAppointmentId}/status", ['status' => 'scheduled'], $professionalToken), 409);
-    expectResponse('Conflict: rebooked appointment delete', requestApi($baseUrl, 'DELETE', '/api/appointments/' . (int) ($rebooked['data']['id'] ?? 0), null, $professionalToken), 204);
+    $rebookedId = (int) ($rebooked['data']['id'] ?? 0);
+    expectResponse('Lifecycle: professional completes the appointment', requestApi($baseUrl, 'PATCH', "/api/appointments/{$rebookedId}/status", ['status' => 'completed'], $professionalToken), 200);
+    expectResponse('Lifecycle: patient cannot cancel a completed appointment', requestApi($baseUrl, 'PATCH', "/api/appointments/{$rebookedId}/status", ['status' => 'canceled'], $patientToken), 422);
+    expectResponse('Lifecycle: completed appointment cannot be rescheduled', requestApi($baseUrl, 'PUT', "/api/appointments/{$rebookedId}", ['scheduled_at' => '2031-08-25 10:00'], $professionalToken), 422);
+    expectResponse('Lifecycle: patient cannot delete appointments', requestApi($baseUrl, 'DELETE', "/api/appointments/{$rebookedId}", null, $patientToken), 403);
+    expectResponse('Lifecycle: completed appointment cannot be deleted', requestApi($baseUrl, 'DELETE', "/api/appointments/{$rebookedId}", null, $professionalToken), 422);
 
     expectResponse('Professional patient show after appointment', requestApi($baseUrl, 'GET', "/api/patients/{$patientId}", null, $professionalToken), 200);
     expectResponse('Professional patient record list', requestApi($baseUrl, 'GET', "/api/patients/{$patientId}/records", null, $professionalToken), 200);
+    $audit = $database->prepare("SELECT COUNT(*) FROM audit_logs WHERE action = 'medical_records.viewed' AND patient_id = ? AND actor_user_id IS NOT NULL AND ip IS NOT NULL");
+    $audit->execute([$patientId]);
+    $auditCount = (int) $audit->fetchColumn();
+    $audit->closeCursor();
+    assertTrue($auditCount >= 1, 'record access was not audited');
     $newRecord = expectResponse('Professional medical record create', requestApi($baseUrl, 'POST', "/api/patients/{$patientId}/records", [
         'appointment_id' => $professionalAppointmentId,
         'clinical_notes' => 'Registro clínico temporário E2E.',
@@ -468,7 +490,8 @@ try {
         assertTrue(listContainsId($payload, $recordId), 'patient cannot see own new medical record');
     });
 
-    expectResponse('Patient appointment delete', requestApi($baseUrl, 'DELETE', "/api/appointments/{$patientAppointmentId}", null, $patientToken), 204);
+    expectResponse('Patient cancels instead of deleting', requestApi($baseUrl, 'PATCH', "/api/appointments/{$patientAppointmentId}/status", ['status' => 'canceled'], $patientToken), 200);
+    expectResponse('Professional deletes the canceled request', requestApi($baseUrl, 'DELETE', "/api/appointments/{$patientAppointmentId}", null, $professionalToken), 204);
     expectResponse('Professional appointment delete', requestApi($baseUrl, 'DELETE', "/api/appointments/{$professionalAppointmentId}", null, $professionalToken), 204);
 
     $managedEmail = "e2e-managed-{$suffix}@example.test";
@@ -528,8 +551,8 @@ try {
     $database->prepare("INSERT INTO professionals (user_id, specialty, created_at, updated_at) VALUES (?, 'Clínico Geral', datetime('now'), datetime('now'))")
         ->execute([$secondProfessionalUserId]);
     $secondProfessionalToken = bin2hex(random_bytes(32));
-    $database->prepare("INSERT INTO personal_access_tokens (user_id, token, name, created_at) VALUES (?, ?, 'auth_token', datetime('now'))")
-        ->execute([$secondProfessionalUserId, hash('sha256', $secondProfessionalToken)]);
+    $database->prepare("INSERT INTO personal_access_tokens (user_id, token, name, created_at, expires_at, last_used_at) VALUES (?, ?, 'auth_token', ?, ?, ?)")
+        ->execute([$secondProfessionalUserId, hash('sha256', $secondProfessionalToken), clinicNow(), clinicNow('+12 hours'), clinicNow()]);
     expectResponse('BOLA: second professional cannot show another patient', requestApi($baseUrl, 'GET', "/api/patients/{$managedPatientId}", null, $secondProfessionalToken), 403);
     expectResponse('BOLA: second professional cannot list another record', requestApi($baseUrl, 'GET', "/api/patients/{$managedPatientId}/records", null, $secondProfessionalToken), 403);
     expectResponse('BOLA: second professional cannot book another patient to gain access', requestApi($baseUrl, 'POST', '/api/appointments', [
@@ -620,7 +643,7 @@ try {
     fwrite(STDERR, "\nE2E stopped: {$error->getMessage()}\n");
 } finally {
     cleanupTestData($database, $testEmails, $procedureId);
-    resetLocalLoginRateLimit();
+    resetLocalLoginRateLimit($database);
 }
 
 $total = $passed + $failed;

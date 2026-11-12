@@ -1,12 +1,14 @@
 <?php
 
-use App\Controllers\AuthController;
-use App\Controllers\AppointmentController;
-use App\Controllers\MedicalRecordController;
-use App\Controllers\PatientController;
-use App\Controllers\ProcedureController;
-use App\Controllers\ProfessionalController;
-use App\Core\Router;
+declare(strict_types=1);
+
+use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\MedicalRecordController;
+use App\Http\Controllers\PatientController;
+use App\Http\Controllers\ProcedureController;
+use App\Http\Controllers\ProfessionalController;
+use App\Http\Router;
 
 /** @var Router $router */
 
@@ -16,41 +18,38 @@ $router->post('/api/login', [AuthController::class, 'login'], ['rate_limit:10,1'
 $router->post('/api/activate-account', [AuthController::class, 'activateAccount'], ['rate_limit:10,1']);
 
 // Busca pública de profissionais
-$router->get('/api/professionals/search', [ProfessionalController::class, 'search']);
+$router->get('/api/professionals/search', [ProfessionalController::class, 'search'], ['rate_limit:60,1']);
 
-// Rotas Autenticadas (Bearer Token)
-$router->group(['auth'], function (Router $r) {
-    // Usuário logado e perfil comum
+// Rotas autenticadas (Bearer token)
+$router->group(['auth'], function (Router $r): void {
     $r->get('/api/user', [AuthController::class, 'user']);
     $r->put('/api/user/profile', [AuthController::class, 'updateProfile']);
-    $r->put('/api/user/password', [AuthController::class, 'updatePassword']);
+    $r->put('/api/user/password', [AuthController::class, 'updatePassword'], ['rate_limit:10,1']);
     $r->post('/api/logout', [AuthController::class, 'logout']);
 
-    // Agendamentos (com validação interna de escopo nos métodos)
+    // Agendamentos: o domínio decide o que cada lado (paciente/profissional) pode fazer.
     $r->get('/api/appointments', [AppointmentController::class, 'index']);
     $r->post('/api/appointments', [AppointmentController::class, 'store']);
     $r->put('/api/appointments/{appointment}', [AppointmentController::class, 'update']);
     $r->patch('/api/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus']);
     $r->delete('/api/appointments/{appointment}', [AppointmentController::class, 'destroy']);
 
-    // Portal do Paciente
-    $r->group(['role:patient'], function (Router $pat) {
-        $pat->get('/api/patient/appointments', [AppointmentController::class, 'patientAppointments']);
-        $pat->get('/api/patient/medical-records', [MedicalRecordController::class, 'patientRecords']);
+    // Portal do paciente
+    $r->group(['role:patient'], function (Router $patient): void {
+        $patient->get('/api/patient/appointments', [AppointmentController::class, 'patientAppointments']);
+        $patient->get('/api/patient/medical-records', [MedicalRecordController::class, 'patientRecords']);
     });
 
-    // Portal do Profissional / Gestão Médica
-    $r->group(['role:professional'], function (Router $pro) {
+    // Portal do profissional
+    $r->group(['role:professional'], function (Router $pro): void {
         $pro->get('/api/professional/dashboard', [ProfessionalController::class, 'dashboard']);
-        
-        // Procedimentos
+
         $pro->get('/api/procedures', [ProcedureController::class, 'index']);
         $pro->post('/api/procedures', [ProcedureController::class, 'store']);
         $pro->get('/api/procedures/{procedure}', [ProcedureController::class, 'show']);
         $pro->put('/api/procedures/{procedure}', [ProcedureController::class, 'update']);
         $pro->delete('/api/procedures/{procedure}', [ProcedureController::class, 'destroy']);
 
-        // Gestão de Pacientes e Prontuários Médicos
         $pro->get('/api/patients/search', [PatientController::class, 'search']);
         $pro->get('/api/patients', [PatientController::class, 'index']);
         $pro->post('/api/patients', [PatientController::class, 'store']);

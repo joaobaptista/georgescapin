@@ -86,6 +86,7 @@ CREATE TABLE IF NOT EXISTS personal_access_tokens (
     token VARCHAR(64) UNIQUE NOT NULL,
     name VARCHAR(255) DEFAULT 'auth_token',
     expires_at DATETIME,
+    last_used_at DATETIME,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -94,4 +95,25 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
     email VARCHAR(255) PRIMARY KEY,
     token VARCHAR(255) NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Trilha de auditoria (LGPD / prontuário eletrônico): somente inserção.
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    action VARCHAR(64) NOT NULL,
+    actor_user_id INT NULL,
+    patient_id INT NULL,
+    subject_type VARCHAR(64) NULL,
+    subject_id INT NULL,
+    ip VARCHAR(45) NULL,
+    created_at DATETIME NOT NULL,
+    INDEX audit_logs_patient (patient_id, created_at),
+    INDEX audit_logs_actor (actor_user_id, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Limite de tentativas (login, cadastro), compartilhado entre processos PHP.
+CREATE TABLE IF NOT EXISTS rate_limits (
+    rate_key VARCHAR(191) PRIMARY KEY,
+    hits INT NOT NULL,
+    reset_at DATETIME NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

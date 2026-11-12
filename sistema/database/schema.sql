@@ -76,6 +76,7 @@ CREATE TABLE IF NOT EXISTS personal_access_tokens (
     token TEXT UNIQUE NOT NULL,
     name TEXT DEFAULT 'auth_token',
     expires_at DATETIME,
+    last_used_at DATETIME,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -83,4 +84,25 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
     email TEXT PRIMARY KEY,
     token TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Trilha de auditoria (LGPD / prontuário eletrônico): somente inserção.
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    action TEXT NOT NULL,
+    actor_user_id INTEGER,
+    patient_id INTEGER,
+    subject_type TEXT,
+    subject_id INTEGER,
+    ip TEXT,
+    created_at DATETIME NOT NULL
+);
+CREATE INDEX IF NOT EXISTS audit_logs_patient ON audit_logs (patient_id, created_at);
+CREATE INDEX IF NOT EXISTS audit_logs_actor ON audit_logs (actor_user_id, created_at);
+
+-- Limite de tentativas (login, cadastro), compartilhado entre processos PHP.
+CREATE TABLE IF NOT EXISTS rate_limits (
+    rate_key TEXT PRIMARY KEY,
+    hits INTEGER NOT NULL,
+    reset_at DATETIME NOT NULL
 );

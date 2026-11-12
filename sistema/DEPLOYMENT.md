@@ -27,8 +27,15 @@ Não execute `npm install` nem `npm run build`.
    projeto qualquer `database/database.sqlite` ou dump que exista no servidor
    e então rode `git fetch origin && git reset --hard origin/main`.
 3. Rode **`composer migrate`**. A migração é incremental e segura de repetir;
-   ela cria `users.activated_at`, sem a qual cadastros e ativações falham.
-4. Nunca rode `composer seed` em produção: ele apaga todas as tabelas
+   ela cria as tabelas de auditoria e de limite de tentativas e as colunas
+   `users.activated_at` e `personal_access_tokens.last_used_at`. Na primeira
+   execução, as sessões antigas (sem validade) são encerradas e todos fazem
+   login de novo.
+4. Revise o `.env` com base no `.env.example`: `APP_ENV=production`,
+   `APP_TIMEZONE`, `SESSION_LIFETIME_HOURS`, `SESSION_IDLE_MINUTES` e, se houver
+   proxy ou balanceador na frente, `TRUSTED_PROXIES` com o IP dele (sem isso, o
+   limite de tentativas e a auditoria veem o IP do proxy).
+5. Nunca rode `composer seed` em produção: ele apaga todas as tabelas
    (bloqueado com `APP_ENV=production`).
 
 ## Contas e senhas

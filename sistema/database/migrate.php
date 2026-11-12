@@ -1,40 +1,34 @@
 <?php
 
-require_once dirname(__DIR__) . '/vendor/autoload.php';
+declare(strict_types=1);
 
-use App\Core\Database;
-use Dotenv\Dotenv;
+/**
+ * Creates the schema and applies incremental changes. Safe to run repeatedly:
+ * run it after every deploy (composer migrate).
+ */
 
-if (file_exists(dirname(__DIR__) . '/.env')) {
-    $dotenv = Dotenv::createImmutable(dirname(__DIR__));
-    $dotenv->safeLoad();
-}
+use App\Infrastructure\Persistence\Db;
 
-$driver = $_ENV['DB_CONNECTION'] ?? getenv('DB_CONNECTION') ?: 'sqlite';
-echo "Executando migrações no banco de dados ({$driver})...\n";
+$container = require dirname(__DIR__) . '/bootstrap/app.php';
+$db = $container->get(Db::class);
+$pdo = $db->pdo;
 
-$schemaFile = ($driver === 'mysql') ? __DIR__ . '/schema_mysql.sql' : __DIR__ . '/schema.sql';
-$schemaSql = file_get_contents($schemaFile);
+echo "Executando migrações no banco de dados ({$db->driver})...\n";
 
-$db = Database::getConnection();
-$db->exec($schemaSql);
+$pdo->exec((string) file_get_contents(__DIR__ . ($db->driver === 'mysql' ? '/schema_mysql.sql' : '/schema.sql')));
+echo "✅ Tabelas criadas ou já existentes no {$db->driver}.\n";
 
-echo "✅ Tabelas criadas com sucesso no {$driver}!\n";
+$columns = static fn (string $table): array => $db->driver === 'mysql'
+    ? array_column($db->all("SHOW COLUMNS FROM {$table}"), 'Field')
+    : array_column($db->all("PRAGMA table_info({$table})"), 'name');
 
-// --- Migrações incrementais (bancos criados antes da coluna existir) -------
+// 2026-11: users.activated_at — accounts registered by the clinic start pending.
+if (!in_array('activated_at', $columns('users'), true)) {
+    $pdo->exec('ALTER TABLE users ADD COLUMN activated_at DATETIME NULL');
 
-$userColumns = $driver === 'mysql'
-    ? array_column($db->query('SHOW COLUMNS FROM users')->fetchAll(PDO::FETCH_ASSOC), 'Field')
-    : array_column($db->query('PRAGMA table_info(users)')->fetchAll(PDO::FETCH_ASSOC), 'name');
-
-if (!in_array('activated_at', $userColumns, true)) {
-    $db->exec('ALTER TABLE users ADD COLUMN activated_at DATETIME NULL');
-
-    // Contas ficam "pendentes de ativação" (activated_at nulo) apenas quando
-    // nunca puderam ser usadas: pacientes cadastrados pelo profissional, que
-    // recebiam senha aleatória, e que nunca abriram uma sessão. Todas as outras
-    // contas já estão em uso e são marcadas como ativas.
-    $db->exec(
+    // Pending only when the account could never be used: patients registered
+    // by a professional (random password) who never opened a session.
+    $pdo->exec(
         "UPDATE users SET activated_at = COALESCE(created_at, CURRENT_TIMESTAMP)
          WHERE NOT (
              role = 'patient'
@@ -42,6 +36,14 @@ if (!in_array('activated_at', $userColumns, true)) {
              AND id NOT IN (SELECT user_id FROM personal_access_tokens)
          )"
     );
-    $pending = (int) $db->query('SELECT COUNT(*) FROM users WHERE activated_at IS NULL')->fetchColumn();
+    $pending = (int) $db->one('SELECT COUNT(*) AS n FROM users WHERE activated_at IS NULL')['n'];
     echo "✅ Coluna users.activated_at criada ({$pending} conta(s) pendente(s) de ativação).\n";
+}
+
+// 2026-11: personal_access_tokens.last_used_at — idle timeout of sessions.
+if (!in_array('last_used_at', $columns('personal_access_tokens'), true)) {
+    $pdo->exec('ALTER TABLE personal_access_tokens ADD COLUMN last_used_at DATETIME NULL');
+    // Sessions from before the 12-hour policy had no expiry: end them all.
+    $ended = $db->execute('DELETE FROM personal_access_tokens');
+    echo "✅ Coluna personal_access_tokens.last_used_at criada ({$ended} sessão(ões) antiga(s) encerrada(s)).\n";
 }

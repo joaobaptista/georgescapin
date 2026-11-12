@@ -13,6 +13,12 @@
     },
     "scripts": {
         "migrate": "php database/migrate.php",
-        "seed": "php database/seed.php"
+        "seed": "php database/seed.php",
+        "test": "php tests/run.php"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
     }
 }
