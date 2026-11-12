@@ -79,3 +79,4 @@ backup*.sql
 # Storage e Sessões Locais de Fallback
 /storage/sessions/*
 !/storage/sessions/.gitkeep
+/storage/backups/

@@ -97,7 +97,9 @@ Para gerar uma cópia de segurança completa e consistente do banco MySQL a qual
 php scripts/backup-database.php
 ```
 
-> O script gera tanto o arquivo de referência direta (`backup_clinica_george.sql`) quanto uma cópia carimbada com data/hora (`backup_clinica_george_YYYYMMDD_HHMMSS.sql`), com contagem detalhada de tabelas e registros.
+> O script gera, para cada banco, o arquivo de referência (`backup_<banco>_latest.sql`) e uma cópia carimbada com data/hora (`backup_<banco>_YYYYMMDD_HHMMSS.sql`), com contagem detalhada de tabelas e registros.
+>
+> ⚠️ Os dumps contêm dados de pacientes. Eles são gravados em `storage/backups/` (bloqueado pelo `storage/.htaccess` no Apache; no Nginx, negue `/storage`), com permissão `600`. Para guardá-los fora da raiz do site, defina `BACKUP_DIR=/caminho/fora/do/site`. Nunca os coloque no git nem em pacotes de release. A senha do MySQL é passada ao `mysqldump` por `MYSQL_PWD`, e não aparece na lista de processos.
 
 ### 4.4 Diagnóstico e Gestão de Login / Senhas no Servidor (Auth Doctor)
 Caso encontre qualquer dificuldade de acesso ao painel administrativo no servidor de produção:

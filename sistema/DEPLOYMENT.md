@@ -19,6 +19,30 @@ composer install --no-dev --optimize-autoloader
 
 Não execute `npm install` nem `npm run build`.
 
+## Atualizar um servidor existente
+
+1. Faça um backup do banco antes de atualizar.
+2. O histórico do repositório foi reescrito em 11/11/2026 (remoção de dados
+   sensíveis): `git pull` não funciona em clones antigos. Copie para fora do
+   projeto qualquer `database/database.sqlite` ou dump que exista no servidor
+   e então rode `git fetch origin && git reset --hard origin/main`.
+3. Rode **`composer migrate`**. A migração é incremental e segura de repetir;
+   ela cria `users.activated_at`, sem a qual cadastros e ativações falham.
+4. Nunca rode `composer seed` em produção: ele apaga todas as tabelas
+   (bloqueado com `APP_ENV=production`).
+
+## Contas e senhas
+
+O sistema não envia e-mails nem mensagens.
+
+- Profissionais são criados pela clínica:
+  `php scripts/create-professional.php --name="..." --email=...`
+- Senha esquecida (qualquer conta): `php scripts/password-reset-link.php
+  --email=... --base-url=https://seu-dominio` gera um link de uso único,
+  válido por 72 horas, entregue pela clínica depois de confirmar a identidade.
+- Pacientes cadastrados pelo profissional recebem o link de ativação gerado na
+  tela do prontuário (*Acesso ao portal*).
+
 ## Apache
 
 Configure o `DocumentRoot` para a pasta `public/` e mantenha `AllowOverride
@@ -74,6 +98,14 @@ Se o Node.js já estiver disponível na máquina de desenvolvimento, `node --che
 public/assets/js/app.js` é uma checagem adicional de sintaxe; ele não é
 necessário para rodar ou publicar o sistema.
 
-Para exercitar rotas e APIs sem tocar no banco da clínica, crie um SQLite
-temporário, migre e popule-o, inicie o servidor PHP e use os testes indicados
-no `README.md`.
+Para exercitar rotas, APIs e a interface sem tocar no banco da clínica, crie
+um SQLite temporário, migre e popule-o, inicie o servidor PHP e use os testes
+indicados no `README.md`.
+
+## Segurança do navegador
+
+`public/index.php` e `public/.htaccess` enviam a mesma Content-Security-Policy:
+scripts apenas do próprio domínio (sem inline e sem CDN), estilos e fontes do
+Google Fonts e do unpkg (ícones). Ao adicionar um recurso externo, atualize os
+dois arquivos; `scripts/route-smoke-test.php` falha se `script-src` deixar de
+ser `'self'`.

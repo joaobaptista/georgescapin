@@ -157,18 +157,18 @@ foreach ($databasesToBackup as $dbName) {
         echo "  {$cGray}Detalhes: " . implode(', ', $preview) . "{$cReset}\n";
     }
 
-    // Determinar caminhos de saída
-    $destFiles = [];
-    if ($dbName === 'clinica_george') {
-        $destFiles[] = $root . '/backup_clinica_george.sql';
-        $destFiles[] = $root . "/backup_clinica_george_{$timestamp}.sql";
-    } elseif ($dbName === 'nuva') {
-        $destFiles[] = $root . '/sistema/backup_nuva_latest.sql';
-        $destFiles[] = $root . "/sistema/backup_nuva_{$timestamp}.sql";
-    } else {
-        $destFiles[] = $root . "/backup_{$dbName}_latest.sql";
-        $destFiles[] = $root . "/backup_{$dbName}_{$timestamp}.sql";
+    // Dumps contêm dados de pacientes: ficam fora das pastas servidas pela web
+    // (storage/ é bloqueado por .htaccess; no Nginx, negue /storage) ou em
+    // BACKUP_DIR, de preferência fora da raiz do site.
+    $backupDir = rtrim((string) (getenv('BACKUP_DIR') ?: $root . '/storage/backups'), '/');
+    if (!is_dir($backupDir) && !mkdir($backupDir, 0700, true)) {
+        echo "{$cRed}[ERRO] Não foi possível criar o diretório de backup: {$backupDir}{$cReset}\n";
+        exit(1);
     }
+    $destFiles = [
+        "{$backupDir}/backup_{$dbName}_latest.sql",
+        "{$backupDir}/backup_{$dbName}_{$timestamp}.sql",
+    ];
 
     $primaryDest = $destFiles[0];
 
@@ -180,9 +180,9 @@ foreach ($databasesToBackup as $dbName) {
         '-u ' . escapeshellarg($user),
     ];
 
-    if ($password !== '') {
-        $cmdParts[] = '-p' . escapeshellarg($password);
-    }
+    // A senha vai por MYSQL_PWD, não pela linha de comando: argumentos de
+    // processo ficam visíveis para qualquer usuário do servidor (ps aux).
+    putenv('MYSQL_PWD=' . $password);
 
     $cmdParts[] = '--default-character-set=' . escapeshellarg($charset);
     $cmdParts[] = '--single-transaction';
@@ -190,7 +190,7 @@ foreach ($databasesToBackup as $dbName) {
     $cmdParts[] = '--set-gtid-purged=OFF';
     $cmdParts[] = escapeshellarg($dbName);
 
-    $dumpCommand = implode(' ', $cmdParts) . ' > ' . escapeshellarg($primaryDest);
+    $dumpCommand = 'umask 077 && ' . implode(' ', $cmdParts) . ' > ' . escapeshellarg($primaryDest);
 
     $cmdOutput = [];
     $exitCode = 0;
@@ -205,6 +205,7 @@ foreach ($databasesToBackup as $dbName) {
         // Cria as cópias timestamped
         for ($i = 1; $i < count($destFiles); $i++) {
             copy($primaryDest, $destFiles[$i]);
+            chmod($destFiles[$i], 0600);
         }
 
         echo "  {$cGreen}✓ Backup gerado com sucesso!{$cReset}\n";

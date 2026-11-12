@@ -119,6 +119,9 @@ NUVA_TEST_DB_PATH="$TEST_DB" php -d variables_order=EGPCS test_api.php
 NUVA_TEST_BASE_URL=http://127.0.0.1:8000 php scripts/route-smoke-test.php
 NUVA_E2E_BASE_URL=http://127.0.0.1:8000 NUVA_E2E_DB_PATH="$TEST_DB" NUVA_E2E_ALLOW_MUTATIONS=1 php scripts/api-e2e-test.php
 php scripts/deploy-check.php
+
+# Interface (opcional: requer Node 22+ e Google Chrome, sem npm install)
+NUVA_UI_BASE_URL=http://127.0.0.1:8000 NUVA_UI_ALLOW_MUTATIONS=1 node scripts/ui-e2e-test.mjs --shots="$TEST_DIR/telas"
 ```
 
 - `test_api.php` verifica o núcleo de banco e autenticação.
@@ -127,6 +130,12 @@ php scripts/deploy-check.php
 - `scripts/api-e2e-test.php` percorre os fluxos autenticados, CRUD, papéis,
   logout, rate limit e proteção de prontuários. Ele aceita apenas localhost e
   exige um SQLite temporário.
+- `scripts/ui-e2e-test.mjs` abre um Chrome headless e usa o sistema como o
+  médico e o paciente usariam: agenda, status, conflitos, pacientes,
+  prontuário, ativação, procedimentos, configurações, tema e telas de celular
+  (incluindo controles cortados). Falha em erro de JavaScript ou violação de
+  CSP. Aceita apenas localhost, pode ser repetido no mesmo banco e restaura as
+  contas de demonstração ao final.
 
 ## Deploy
 

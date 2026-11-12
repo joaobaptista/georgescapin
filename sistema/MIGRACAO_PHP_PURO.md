@@ -39,9 +39,19 @@ HTML, CSS ou JavaScript.
 ## Autorização clínica
 
 O JavaScript centraliza as chamadas `fetch`, injeta o token Bearer e limpa a
-sessão em respostas `401`. A API mantém os controles no servidor: além de
-papel de usuário, prontuários e dados detalhados de pacientes só são liberados
-ao profissional responsável ou a quem tenha um agendamento com o paciente.
+sessão em respostas `401`. A API mantém os controles no servidor
+(`App\Core\ClinicalAccess`):
+
+- Um profissional só vê, lista, busca ou abre o prontuário de pacientes
+  vinculados a ele: cadastrados por ele ou com agendamento com ele.
+- O vínculo por agendamento só nasce de uma solicitação do próprio paciente.
+  O profissional não consegue agendar um paciente sem vínculo, o que impede
+  criar um agendamento falso para ganhar acesso a um prontuário.
+- O cadastro público cria apenas pacientes; profissionais são criados pela
+  clínica (`scripts/create-professional.php`).
+- O link de ativação de conta só pode ser gerado pelo profissional que
+  cadastrou o paciente e só para contas nunca ativadas, para que ninguém
+  assuma a conta de um paciente já ativo.
 
 ## Operação
 
