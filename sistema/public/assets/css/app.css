@@ -2506,6 +2506,12 @@ td:empty::after {
   margin-top: 1.25rem;
 }
 
+/* Inside toolbars, buttons size to their label instead of filling the row. */
+.toolbar .action-btn {
+  padding: 8px 16px;
+  width: auto;
+}
+
 .load-btn,
 .action-btn {
   text-decoration: none;

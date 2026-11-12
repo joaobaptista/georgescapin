@@ -232,6 +232,11 @@ function formatDateTime(value) {
   }).format(date);
 }
 
+function formatDate(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value || ''));
+  return match ? `${match[3]}/${match[2]}/${match[1]}` : escapeHtml(value || '');
+}
+
 function asDateTimeInput(value) {
   return value ? escapeHtml(String(value).replace(' ', 'T').slice(0, 16)) : '';
 }
@@ -244,8 +249,30 @@ function emptyState(message) {
   return `<div class="empty-state">${escapeHtml(message)}</div>`;
 }
 
+const STATUS_LABELS = {
+  scheduled: 'Agendado',
+  confirmed: 'Confirmado',
+  completed: 'Concluído',
+  canceled: 'Cancelado',
+};
+
 function statusBadge(status = 'scheduled') {
-  return `<span class="status-badge ${escapeHtml(status)}">${escapeHtml(status)}</span>`;
+  return `<span class="status-badge ${escapeHtml(status)}">${escapeHtml(STATUS_LABELS[status] || status)}</span>`;
+}
+
+// Professional actions follow the appointment lifecycle:
+// agendado → confirmado → concluído, with cancelamento while still open.
+function appointmentActions(appointment) {
+  const id = Number(appointment.id);
+  const open = appointment.status === 'scheduled' || appointment.status === 'confirmed';
+  const statusButton = (status, label, extra = '') => `<button class="action-btn outline${extra}" data-action="appointment-status" data-id="${id}" data-status="${status}">${label}</button>`;
+  return [
+    `<button class="action-btn outline" data-action="edit-appointment" data-id="${id}">Editar</button>`,
+    appointment.status === 'scheduled' ? statusButton('confirmed', 'Confirmar') : '',
+    open ? statusButton('completed', 'Concluir') : '',
+    open ? statusButton('canceled', 'Cancelar', ' danger-button') : '',
+    `<button class="action-btn outline danger-button" data-action="delete-appointment" data-id="${id}">Excluir</button>`,
+  ].join('');
 }
 
 function navButton(path, active, icon, label) {
@@ -274,7 +301,7 @@ function appointmentRows(appointments, options = {}) {
       ? (appointment.status !== 'canceled' && appointment.status !== 'completed'
         ? `<button class="action-btn outline danger-button" data-action="cancel-patient-appointment" data-id="${Number(appointment.id)}">Cancelar</button>`
         : '')
-      : `<div class="toolbar"><button class="action-btn outline" data-action="edit-appointment" data-id="${Number(appointment.id)}">Editar</button><button class="action-btn outline" data-action="appointment-status" data-id="${Number(appointment.id)}" data-status="confirmed">Confirmar</button><button class="action-btn outline danger-button" data-action="delete-appointment" data-id="${Number(appointment.id)}">Excluir</button></div>`;
+      : `<div class="toolbar">${appointmentActions(appointment)}</div>`;
     return `<li><div class="data-row-main"><strong>${escapeHtml(patientName)}</strong><span>${escapeHtml(procedure)} · ${formatDateTime(appointment.scheduled_at)}</span></div><div class="toolbar">${statusBadge(appointment.status)}${actionMarkup}</div></li>`;
   }).join('')}</ul>`;
 }
@@ -285,12 +312,18 @@ async function professionalDashboardView() {
     api('/api/appointments'),
   ]);
   const appointments = apiList(appointmentPayload);
-  const today = new Date().toISOString().slice(0, 10);
-  const todayAppointments = appointments.filter((item) => String(item.scheduled_at).slice(0, 10) === today);
+  // Local date/time (not UTC): after 21:00 in Brazil, UTC is already "tomorrow".
+  const now = new Date();
+  const today = formatDateISO(now);
+  const nowStamp = `${today} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const todayAppointments = appointments.filter((item) => String(item.scheduled_at).slice(0, 10) === today && item.status !== 'canceled');
   const completeCount = todayAppointments.filter((item) => item.status === 'completed').length;
+  const upcoming = appointments
+    .filter((item) => String(item.scheduled_at).slice(0, 16) >= nowStamp && ['scheduled', 'confirmed'].includes(item.status))
+    .slice(0, 5);
   const name = dashboard?.user?.name || state.user?.name || 'Profissional';
 
-  return professionalLayout('/', 'Início', `<section class="page-header"><h1 class="section-title">Olá, ${escapeHtml(name)}</h1><p class="page-intro">Acompanhe sua operação clínica em um painel leve e nativo.</p></section><div class="three-columns"><article class="page-panel"><span class="muted">Agendamentos hoje</span><p class="metric-value">${todayAppointments.length}</p></article><article class="page-panel"><span class="muted">Atendimentos concluídos</span><p class="metric-value">${completeCount}</p></article><article class="page-panel"><span class="muted">Especialidade</span><p class="metric-value" style="font-size:1.25rem">${escapeHtml(dashboard?.specialty || 'Não informada')}</p></article></div><section class="page-panel"><div class="toolbar" style="justify-content:space-between"><div><h2>Próximos atendimentos</h2><p class="muted">Dados carregados da API clínica.</p></div><a class="action-btn outline" href="/pro" data-nav>Ver agenda</a></div>${appointmentRows(appointments.slice(0, 5), { emptyMessage: 'Nenhum agendamento futuro.' })}</section>`);
+  return professionalLayout('/', 'Início', `<section class="page-header"><h1 class="section-title">Olá, ${escapeHtml(name)}</h1><p class="page-intro">Acompanhe os atendimentos do dia e os próximos horários.</p></section><div class="three-columns"><article class="page-panel"><span class="muted">Agendamentos hoje</span><p class="metric-value">${todayAppointments.length}</p></article><article class="page-panel"><span class="muted">Concluídos hoje</span><p class="metric-value">${completeCount}</p></article><article class="page-panel"><span class="muted">Especialidade</span><p class="metric-value" style="font-size:1.25rem">${escapeHtml(dashboard?.specialty || 'Não informada')}</p></article></div><section class="page-panel"><div class="toolbar" style="justify-content:space-between"><div><h2>Próximos atendimentos</h2><p class="muted">Os próximos cinco atendimentos em aberto.</p></div><a class="action-btn outline" href="/pro" data-nav>Ver agenda</a></div>${appointmentRows(upcoming, { emptyMessage: 'Nenhum atendimento futuro em aberto.' })}</section>`);
 }
 
 const MONTH_NAMES = [
@@ -562,9 +595,7 @@ async function agendaView() {
               </div>
               <div class="toolbar">
                 ${statusBadge(a.status)}
-                <button class="action-btn outline" data-action="edit-appointment" data-id="${Number(a.id)}">Editar</button>
-                <button class="action-btn outline" data-action="appointment-status" data-id="${Number(a.id)}" data-status="confirmed">Confirmar</button>
-                <button class="action-btn outline danger-button" data-action="delete-appointment" data-id="${Number(a.id)}">Excluir</button>
+                ${appointmentActions(a)}
               </div>
             </div>
           </div>
@@ -679,7 +710,7 @@ async function patientsView() {
   const patients = apiList(await api('/api/patients'));
   state.cache.patients = patients;
   const searchResults = state.cache.patientSearch;
-  return professionalLayout('/pro/pacientes', 'Pacientes', `<section class="page-header"><h1 class="section-title">Pacientes</h1><p class="page-intro">Cadastre pacientes e acesse seus prontuários clínicos.</p></section><div class="two-columns"><section class="page-panel"><h2>Novo paciente</h2><form data-form="patient"><div class="form-group"><label for="patient-name">Nome</label><input id="patient-name" name="name" required></div><div class="two-columns"><div class="form-group"><label for="patient-cpf">CPF</label><input id="patient-cpf" name="cpf" required></div><div class="form-group"><label for="patient-phone">Telefone</label><input id="patient-phone" name="phone" required></div></div><div class="two-columns"><div class="form-group"><label for="patient-email">E-mail</label><input id="patient-email" name="email" type="email"></div><div class="form-group"><label for="patient-birthdate">Nascimento</label><input id="patient-birthdate" name="birth_date" type="date"></div></div><div class="form-group"><label for="patient-allergies">Alergias ou restrições</label><textarea id="patient-allergies" name="allergies"></textarea></div><div class="form-group"><label for="patient-notes">Observações iniciais</label><textarea id="patient-notes" name="notes"></textarea></div><button class="load-btn" type="submit">Cadastrar paciente</button></form></section><section class="page-panel"><h2>Buscar</h2><form data-form="patient-search" class="toolbar"><input aria-label="Buscar paciente" name="query" placeholder="Nome, CPF ou telefone"><button class="action-btn outline" type="submit">Buscar</button></form>${searchResults.length ? `<ul class="data-list">${searchResults.map((patient) => `<li><div class="data-row-main"><strong>${escapeHtml(patient.name)}</strong><span>${escapeHtml(patient.phone || patient.email || '')}</span></div><a class="action-btn outline" href="/pro/pacientes/prontuario/${Number(patient.id)}" data-nav>Prontuário</a></li>`).join('')}</ul>` : '<p class="muted">Use a busca para localizar um paciente específico.</p>'}</section></div><section class="page-panel"><div class="toolbar" style="justify-content:space-between"><h2>Pacientes cadastrados</h2><span class="muted">${patients.length} itens</span></div>${patients.length ? `<ul class="data-list">${patients.map((patient) => `<li><div class="data-row-main"><strong>${escapeHtml(patient.name || 'Paciente')}</strong><span>${escapeHtml(patient.cpf || 'CPF não informado')} · ${escapeHtml(patient.phone || 'Telefone não informado')}</span></div><a class="action-btn outline" href="/pro/pacientes/prontuario/${Number(patient.id)}" data-nav>Abrir prontuário</a></li>`).join('')}</ul>` : emptyState('Nenhum paciente cadastrado.')}</section>`);
+  return professionalLayout('/pro/pacientes', 'Pacientes', `<section class="page-header"><h1 class="section-title">Pacientes</h1><p class="page-intro">Cadastre pacientes e acesse seus prontuários clínicos.</p></section><div class="two-columns"><section class="page-panel"><h2>Novo paciente</h2><form data-form="patient"><div class="form-group"><label for="patient-name">Nome</label><input id="patient-name" name="name" required></div><div class="two-columns"><div class="form-group"><label for="patient-cpf">CPF</label><input id="patient-cpf" name="cpf" required></div><div class="form-group"><label for="patient-phone">Telefone</label><input id="patient-phone" name="phone" required></div></div><div class="two-columns"><div class="form-group"><label for="patient-email">E-mail</label><input id="patient-email" name="email" type="email"></div><div class="form-group"><label for="patient-birthdate">Nascimento</label><input id="patient-birthdate" name="birth_date" type="date"></div></div><div class="form-group"><label for="patient-allergies">Alergias ou restrições</label><textarea id="patient-allergies" name="allergies"></textarea></div><div class="form-group"><label for="patient-notes">Observações iniciais</label><textarea id="patient-notes" name="notes"></textarea></div><button class="load-btn" type="submit">Cadastrar paciente</button></form></section><section class="page-panel"><h2>Buscar</h2><form data-form="patient-search" class="toolbar"><label class="form-group" style="flex:1; margin:0"><span class="sr-only">Buscar paciente</span><input name="query" placeholder="Nome, CPF ou telefone"></label><button class="action-btn outline" type="submit">Buscar</button></form>${searchResults.length ? `<ul class="data-list">${searchResults.map((patient) => `<li><div class="data-row-main"><strong>${escapeHtml(patient.name)}</strong><span>${escapeHtml(patient.phone || patient.email || '')}</span></div><a class="action-btn outline" href="/pro/pacientes/prontuario/${Number(patient.id)}" data-nav>Prontuário</a></li>`).join('')}</ul>` : '<p class="muted">Use a busca para localizar um paciente específico.</p>'}</section></div><section class="page-panel"><div class="toolbar" style="justify-content:space-between"><h2>Pacientes cadastrados</h2><span class="muted">${patients.length} itens</span></div>${patients.length ? `<ul class="data-list">${patients.map((patient) => `<li><div class="data-row-main"><strong>${escapeHtml(patient.name || 'Paciente')}</strong><span>${escapeHtml(patient.cpf || 'CPF não informado')} · ${escapeHtml(patient.phone || 'Telefone não informado')}</span></div><a class="action-btn outline" href="/pro/pacientes/prontuario/${Number(patient.id)}" data-nav>Abrir prontuário</a></li>`).join('')}</ul>` : emptyState('Nenhum paciente cadastrado.')}</section>`);
 }
 
 function portalAccessPanel(patient) {
@@ -704,12 +735,12 @@ async function patientRecordView(patientId) {
   ]);
   const patient = patientPayload.data || patientPayload;
   const records = apiList(recordPayload);
-  return professionalLayout('/pro/pacientes', 'Prontuário', `<section class="page-header"><a class="page-link" href="/pro/pacientes" data-nav>← Voltar aos pacientes</a><h1 class="section-title">${escapeHtml(patient.name || 'Paciente')}</h1><p class="page-intro">${escapeHtml(patient.cpf || 'CPF não informado')} · ${escapeHtml(patient.phone || 'Telefone não informado')}</p></section><div class="two-columns"><section class="page-panel"><h2>Novo registro clínico</h2><form data-form="medical-record" data-patient-id="${Number(patient.id)}"><div class="form-group"><label for="record-notes">Evolução / notas clínicas</label><textarea id="record-notes" name="clinical_notes" required></textarea></div><div class="form-group"><label for="record-prescription">Prescrição ou orientação</label><textarea id="record-prescription" name="prescription"></textarea></div><button class="load-btn" type="submit">Salvar registro</button></form></section><section class="page-panel"><h2>Informações</h2><p class="muted"><strong>E-mail:</strong> ${escapeHtml(patient.email || 'Não informado')}</p><p class="muted"><strong>Nascimento:</strong> ${escapeHtml(patient.birth_date || 'Não informado')}</p>${portalAccessPanel(patient)}</section></div><section class="page-panel"><h2>Histórico clínico</h2>${records.length ? `<ul class="data-list">${records.map((record) => `<li><div class="data-row-main"><strong>${formatDateTime(record.created_at)}</strong><span>${escapeHtml(record.clinical_notes || 'Sem notas clínicas')}</span>${record.prescription ? `<span>Prescrição: ${escapeHtml(record.prescription)}</span>` : ''}</div></li>`).join('')}</ul>` : emptyState('Ainda não há registros clínicos para este paciente.')}</section>`);
+  return professionalLayout('/pro/pacientes', 'Prontuário', `<section class="page-header"><a class="page-link" href="/pro/pacientes" data-nav>← Voltar aos pacientes</a><h1 class="section-title">${escapeHtml(patient.name || 'Paciente')}</h1><p class="page-intro">${escapeHtml(patient.cpf || 'CPF não informado')} · ${escapeHtml(patient.phone || 'Telefone não informado')}</p></section><div class="two-columns"><section class="page-panel"><h2>Novo registro clínico</h2><form data-form="medical-record" data-patient-id="${Number(patient.id)}"><div class="form-group"><label for="record-notes">Evolução / notas clínicas</label><textarea id="record-notes" name="clinical_notes" required></textarea></div><div class="form-group"><label for="record-prescription">Prescrição ou orientação</label><textarea id="record-prescription" name="prescription"></textarea></div><button class="load-btn" type="submit">Salvar registro</button></form></section><section class="page-panel"><h2>Informações</h2><p class="muted"><strong>E-mail:</strong> ${escapeHtml(patient.email || 'Não informado')}</p><p class="muted"><strong>Nascimento:</strong> ${patient.birth_date ? formatDate(patient.birth_date) : 'Não informado'}</p>${portalAccessPanel(patient)}</section></div><section class="page-panel"><h2>Histórico clínico</h2>${records.length ? `<ul class="data-list">${records.map((record) => `<li><div class="data-row-main"><strong>${formatDateTime(record.created_at)}</strong><span>${escapeHtml(record.clinical_notes || 'Sem notas clínicas')}</span>${record.prescription ? `<span>Prescrição: ${escapeHtml(record.prescription)}</span>` : ''}</div></li>`).join('')}</ul>` : emptyState('Ainda não há registros clínicos para este paciente.')}</section>`);
 }
 
 async function settingsView() {
   const user = state.user || await loadCurrentUser();
-  return professionalLayout('/configuracoes', 'Configurações', `<section class="page-header"><h1 class="section-title">Configurações</h1><p class="page-intro">Atualize seus dados de acesso. Dados clínicos do profissional exigem uma API própria e não são simulados.</p></section><div class="two-columns"><section class="page-panel"><h2>Meu perfil</h2><form data-form="profile"><div class="form-group"><label for="profile-name">Nome</label><input id="profile-name" name="name" required value="${escapeHtml(user.name || '')}"></div><div class="form-group"><label for="profile-email">E-mail</label><input id="profile-email" name="email" type="email" required value="${escapeHtml(user.email || '')}"></div><button class="load-btn" type="submit">Salvar perfil</button></form></section><section class="page-panel"><h2>Alterar senha</h2><form data-form="password"><div class="form-group"><label for="current-password">Senha atual</label><input id="current-password" name="current_password" type="password" required autocomplete="current-password"></div><div class="form-group"><label for="new-password">Nova senha</label><input id="new-password" name="password" type="password" required minlength="8" autocomplete="new-password"></div><div class="form-group"><label for="new-password-confirmation">Confirme a nova senha</label><input id="new-password-confirmation" name="password_confirmation" type="password" required minlength="8" autocomplete="new-password"></div><button class="load-btn" type="submit">Atualizar senha</button></form></section></div>`);
+  return professionalLayout('/configuracoes', 'Configurações', `<section class="page-header"><h1 class="section-title">Configurações</h1><p class="page-intro">Atualize seu nome, e-mail de acesso e senha.</p></section><div class="two-columns"><section class="page-panel"><h2>Meu perfil</h2><form data-form="profile"><div class="form-group"><label for="profile-name">Nome</label><input id="profile-name" name="name" required value="${escapeHtml(user.name || '')}"></div><div class="form-group"><label for="profile-email">E-mail</label><input id="profile-email" name="email" type="email" required value="${escapeHtml(user.email || '')}"></div><button class="load-btn" type="submit">Salvar perfil</button></form></section><section class="page-panel"><h2>Alterar senha</h2><form data-form="password"><div class="form-group"><label for="current-password">Senha atual</label><input id="current-password" name="current_password" type="password" required autocomplete="current-password"></div><div class="form-group"><label for="new-password">Nova senha</label><input id="new-password" name="password" type="password" required minlength="8" autocomplete="new-password"></div><div class="form-group"><label for="new-password-confirmation">Confirme a nova senha</label><input id="new-password-confirmation" name="password_confirmation" type="password" required minlength="8" autocomplete="new-password"></div><button class="load-btn" type="submit">Atualizar senha</button></form></section></div>`);
 }
 
 async function patientDashboardView() {
@@ -838,6 +869,7 @@ async function submitLogin(form) {
   try {
     const payload = await api('/api/login', { method: 'POST', body: values });
     saveSession(payload);
+    document.querySelector('#nuva-toast')?.remove();
     navigate(currentHome(), true);
   } catch (error) {
     showToast(error.message, 'error');
@@ -857,6 +889,7 @@ async function submitRegister(form) {
   try {
     const payload = await api('/api/register', { method: 'POST', body: values });
     saveSession(payload);
+    document.querySelector('#nuva-toast')?.remove();
     navigate(currentHome(), true);
   } catch (error) {
     showToast(error.message, 'error');
@@ -1133,8 +1166,10 @@ async function handleAction(action, element) {
   }
 
   if (action === 'toggle-theme') {
-    document.documentElement.toggleAttribute('data-theme', !document.documentElement.hasAttribute('data-theme'));
-    localStorage.setItem('nuva_theme', document.documentElement.hasAttribute('data-theme') ? 'dark' : 'light');
+    const dark = document.documentElement.getAttribute('data-theme') !== 'dark';
+    if (dark) document.documentElement.setAttribute('data-theme', 'dark');
+    else document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('nuva_theme', dark ? 'dark' : 'light');
     return;
   }
 
@@ -1242,9 +1277,11 @@ async function handleAction(action, element) {
   }
 
   if (action === 'appointment-status') {
+    const status = element.dataset.status;
+    if (status === 'canceled' && !window.confirm('Cancelar este agendamento? O horário ficará livre na agenda.')) return;
     try {
-      await api(`/api/appointments/${id}/status`, { method: 'PATCH', body: { status: element.dataset.status } });
-      showToast('Status do agendamento atualizado.');
+      await api(`/api/appointments/${id}/status`, { method: 'PATCH', body: { status } });
+      showToast(`Agendamento ${(STATUS_LABELS[status] || 'atualizado').toLowerCase()}.`);
       render();
     } catch (error) {
       showToast(errorText(error), 'error');
