@@ -22,7 +22,7 @@ class ProfessionalController
         }
 
         if (!$professional) {
-            Response::json(['error' => 'Profissional não encontrado.'], 404);
+            Response::json(['message' => 'Profissional não encontrado.'], 404);
         }
 
         $formatted = [

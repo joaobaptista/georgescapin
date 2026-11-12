@@ -605,8 +605,8 @@ async function agendaView() {
     const defaultDateTime = editing ? asDateTimeInput(editing.scheduled_at) : (state.agenda.modalSlot || `${todayISO}T09:00`);
 
     modalHtml = `
-      <div class="modal-backdrop" data-action="close-appointment-modal">
-        <div class="agenda-modal" onclick="event.stopPropagation()">
+      <div class="modal-backdrop" data-action="close-appointment-modal" data-backdrop>
+        <div class="agenda-modal" role="dialog" aria-modal="true">
           <div class="agenda-modal-header">
             <h2>${editing ? 'Editar Agendamento' : 'Novo Agendamento'}</h2>
             <button type="button" class="modal-close-btn" data-action="close-appointment-modal" title="Fechar"><i class="ph ph-x"></i></button>
@@ -1288,6 +1288,8 @@ document.addEventListener('click', async (event) => {
 
   const action = event.target.closest('[data-action]');
   if (!action) return;
+  // A backdrop only reacts to clicks on itself, never to clicks inside its dialog.
+  if (action.hasAttribute('data-backdrop') && event.target !== action) return;
   event.preventDefault();
   await handleAction(action.dataset.action, action);
 });

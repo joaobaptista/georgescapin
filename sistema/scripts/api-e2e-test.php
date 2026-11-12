@@ -457,6 +457,17 @@ try {
     ], $professionalToken), 201);
     $managedPatientId = (int) ($managedPatient['data']['id'] ?? 0);
     assertTrue($managedPatientId > 0, 'managed patient ID was not returned');
+    expectResponse('Patient create rejects an e-mail already in use', requestApi($baseUrl, 'POST', '/api/patients', [
+        'name' => 'Paciente duplicado E2E ' . $suffix,
+        'cpf' => '555.666.777-88',
+        'phone' => '11966660000',
+        'email' => $managedEmail,
+    ], $professionalToken), 422);
+    $duplicate = $database->prepare("SELECT COUNT(*) FROM users WHERE name = ?");
+    $duplicate->execute(['Paciente duplicado E2E ' . $suffix]);
+    $duplicateCount = (int) $duplicate->fetchColumn();
+    $duplicate->closeCursor();
+    assertTrue($duplicateCount === 0, 'rejected duplicate patient still created a user');
     expectResponse('Professional patient list', requestApi($baseUrl, 'GET', '/api/patients', null, $professionalToken), 200, static function (mixed $payload) use ($managedPatientId): void {
         assertTrue(listContainsId($payload, $managedPatientId), 'created patient was not returned in the list');
     });

@@ -117,12 +117,12 @@ class AuthController
         $isValid = Auth::validatePasswordResetToken($validated['email'], $validated['token']);
 
         if (!$isValid) {
-            Response::json(['error' => 'Token inválido ou expirado.'], 400);
+            Response::json(['message' => 'Token inválido ou expirado.'], 400);
         }
 
         $user = Database::fetchOne("SELECT id FROM users WHERE email = ?", [$validated['email']]);
         if (!$user) {
-            Response::json(['error' => 'Usuário não encontrado.'], 404);
+            Response::json(['message' => 'Usuário não encontrado.'], 404);
         }
 
         $hashedPassword = Auth::hashPassword($validated['password']);
@@ -172,7 +172,7 @@ class AuthController
             );
         }
 
-        Response::json(['message' => 'Profile updated successfully']);
+        Response::json(['message' => 'Perfil atualizado com sucesso.']);
     }
 
     public function updatePassword(Request $request): void
@@ -198,6 +198,6 @@ class AuthController
             [$newHashed, $user['id']]
         );
 
-        Response::json(['message' => 'Password updated successfully']);
+        Response::json(['message' => 'Senha atualizada com sucesso.']);
     }
 }

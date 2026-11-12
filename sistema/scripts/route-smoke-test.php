@@ -222,6 +222,21 @@ record(report(
         : 'legacy build-runtime reference found: ' . bodyPreview($nativeShell['body'])
 ));
 
+$cspHeader = '';
+foreach ($nativeShell['headers'] as $header) {
+    if (stripos($header, 'Content-Security-Policy:') === 0) {
+        $cspHeader = $header;
+    }
+}
+$scriptSrc = preg_match('/script-src([^;]*)/i', $cspHeader, $cspMatch) === 1 ? trim($cspMatch[1]) : '';
+$cspPassed = $scriptSrc === "'self'"
+    && preg_match('/<script(?![^>]*\bsrc="\/assets\/)[^>]*>/i', $nativeShell['body']) !== 1;
+record(report(
+    'CSP allows only first-party scripts',
+    $cspPassed,
+    $cspPassed ? "script-src 'self'; shell loads no inline or third-party script" : "script-src: {$scriptSrc}"
+));
+
 $staticAssets = [
     ['/assets/css/app.css', 'text/css'],
     ['/assets/js/app.js', 'javascript'],

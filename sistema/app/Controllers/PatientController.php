@@ -100,8 +100,15 @@ class PatientController
         $validated = $validator->validated();
 
         $email = $validated['email'] ?? null;
-        if (!$email || Database::fetchOne("SELECT id FROM users WHERE email = ?", [$email])) {
-            $email = 'paciente_' . uniqid() . '@nuva.com.br';
+        if ($email && Database::fetchOne("SELECT id FROM users WHERE email = ?", [$email])) {
+            Response::error('Este e-mail já está em uso.', 422, [
+                'email' => ['Este e-mail já pertence a outra conta. Se o paciente já tem cadastro, peça que ele agende pelo portal.'],
+            ]);
+        }
+        if (!$email) {
+            // Sem e-mail informado: endereço interno em domínio reservado
+            // (.invalid, RFC 2606), que nunca pertence a terceiros.
+            $email = 'paciente_' . bin2hex(random_bytes(6)) . '@sem-email.invalid';
         }
 
         $tempPassword = Auth::hashPassword('placeholder_' . uniqid());

@@ -50,9 +50,10 @@ if (file_exists(dirname(__DIR__) . '/.env')) {
 // HTTP Security Headers
 header("X-Content-Type-Options: nosniff");
 header("X-Frame-Options: SAMEORIGIN");
-header("X-XSS-Protection: 1; mode=block");
 header("Referrer-Policy: strict-origin-when-cross-origin");
-header("Content-Security-Policy: default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self' data: https://fonts.gstatic.com https://unpkg.com https://cdn.jsdelivr.net; frame-ancestors 'self'; img-src 'self' data: https:; object-src 'none'; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com https://cdn.jsdelivr.net");
+// Mesma política de public/.htaccess. Scripts: somente arquivos próprios
+// (sem inline e sem CDN); estilos inline seguem liberados para os atributos style.
+header("Content-Security-Policy: default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self' data: https://fonts.gstatic.com https://unpkg.com; form-action 'self'; frame-ancestors 'self'; img-src 'self' data:; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com");
 
 $request = new Request();
 
