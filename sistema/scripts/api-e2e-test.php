@@ -305,8 +305,8 @@ try {
 
     $activationToken = bin2hex(random_bytes(24));
     $database->prepare('DELETE FROM password_reset_tokens WHERE email = ?')->execute([$registeredEmail]);
-    $database->prepare("INSERT INTO password_reset_tokens (email, token, created_at) VALUES (?, ?, datetime('now'))")
-        ->execute([$registeredEmail, $activationToken]);
+    $database->prepare('INSERT INTO password_reset_tokens (email, token, created_at) VALUES (?, ?, ?)')
+        ->execute([$registeredEmail, hash('sha256', $activationToken), date('Y-m-d H:i:s')]);
     $activatedPassword = "Nuva-Activated-{$suffix}!";
     expectResponse('Account activation', requestApi($baseUrl, 'POST', '/api/activate-account', [
         'email' => $registeredEmail,
@@ -390,6 +390,9 @@ try {
     expectResponse('Linked patient is listed', requestApi($baseUrl, 'GET', '/api/patients', null, $professionalToken), 200, static function (mixed $payload) use ($patientId): void {
         assertTrue(listContainsId($payload, $patientId), 'patient who booked was not listed for the professional');
     });
+    // Linked by the patient's booking, but not registered by this professional:
+    // generating a link here would hand the professional the patient's account.
+    expectResponse('Activation: linked self-registered account cannot be taken over', requestApi($baseUrl, 'POST', "/api/patients/{$patientId}/activation-link", [], $professionalToken), 403);
 
     expectResponse('Appointment rejects an impossible date', requestApi($baseUrl, 'POST', '/api/appointments', [
         'patient_id' => $patientId,
@@ -422,11 +425,35 @@ try {
         'notes' => 'Agendamento temporário atualizado.',
     ], $professionalToken), 200);
     expectResponse('Professional appointment status update', requestApi($baseUrl, 'PATCH', "/api/appointments/{$professionalAppointmentId}/status", ['status' => 'confirmed'], $professionalToken), 200);
+    expectResponse('Conflict: overlapping appointment is refused', requestApi($baseUrl, 'POST', '/api/appointments', [
+        'patient_id' => $patientId,
+        'scheduled_at' => '2031-08-20 11:30',
+    ], $professionalToken), 409);
+    expectResponse('Conflict: earlier appointment running into the slot is refused', requestApi($baseUrl, 'POST', '/api/appointments', [
+        'patient_id' => $patientId,
+        'procedure_id' => $procedureId,
+        'scheduled_at' => '2031-08-20 10:30',
+    ], $professionalToken), 409);
+    $adjacent = expectResponse('Conflict: back-to-back appointment is allowed', requestApi($baseUrl, 'POST', '/api/appointments', [
+        'patient_id' => $patientId,
+        'scheduled_at' => '2031-08-20 11:45',
+    ], $professionalToken), 201);
+    $adjacentId = (int) ($adjacent['data']['id'] ?? 0);
+    expectResponse('Conflict: moving into an occupied slot is refused', requestApi($baseUrl, 'PUT', "/api/appointments/{$adjacentId}", [
+        'scheduled_at' => '2031-08-20 11:15',
+    ], $professionalToken), 409);
+    expectResponse('Conflict: back-to-back appointment delete', requestApi($baseUrl, 'DELETE', "/api/appointments/{$adjacentId}", null, $professionalToken), 204);
     expectResponse('Patient generic appointment list', requestApi($baseUrl, 'GET', '/api/appointments', null, $patientToken), 200, static function (mixed $payload) use ($professionalAppointmentId): void {
         assertTrue(listContainsId($payload, $professionalAppointmentId), 'patient cannot see own appointment in generic list');
     });
     expectResponse('Patient cannot confirm appointment', requestApi($baseUrl, 'PATCH', "/api/appointments/{$professionalAppointmentId}/status", ['status' => 'confirmed'], $patientToken), 403);
     expectResponse('Patient appointment cancellation', requestApi($baseUrl, 'PATCH', "/api/appointments/{$professionalAppointmentId}/status", ['status' => 'canceled'], $patientToken), 200);
+    $rebooked = expectResponse('Conflict: canceled slot can be booked again', requestApi($baseUrl, 'POST', '/api/appointments', [
+        'patient_id' => $patientId,
+        'scheduled_at' => '2031-08-20 11:00',
+    ], $professionalToken), 201);
+    expectResponse('Conflict: reactivating a canceled appointment over a new one is refused', requestApi($baseUrl, 'PATCH', "/api/appointments/{$professionalAppointmentId}/status", ['status' => 'scheduled'], $professionalToken), 409);
+    expectResponse('Conflict: rebooked appointment delete', requestApi($baseUrl, 'DELETE', '/api/appointments/' . (int) ($rebooked['data']['id'] ?? 0), null, $professionalToken), 204);
 
     expectResponse('Professional patient show after appointment', requestApi($baseUrl, 'GET', "/api/patients/{$patientId}", null, $professionalToken), 200);
     expectResponse('Professional patient record list', requestApi($baseUrl, 'GET', "/api/patients/{$patientId}/records", null, $professionalToken), 200);
@@ -519,6 +546,53 @@ try {
     expectResponse('BOLA: second professional cannot create another record', requestApi($baseUrl, 'POST', "/api/patients/{$managedPatientId}/records", [
         'clinical_notes' => 'Tentativa indevida.',
     ], $secondProfessionalToken), 403);
+
+    expectResponse('Activation: managed patient starts pending', requestApi($baseUrl, 'GET', "/api/patients/{$managedPatientId}", null, $professionalToken), 200, static function (mixed $payload): void {
+        assertTrue(($payload['data']['portal_status'] ?? null) === 'pending', 'managed patient is not pending');
+        assertTrue(($payload['data']['can_generate_activation_link'] ?? false) === true, 'registering professional cannot generate the link');
+    });
+    expectResponse('Activation: unrelated professional cannot generate a link', requestApi($baseUrl, 'POST', "/api/patients/{$managedPatientId}/activation-link", [], $secondProfessionalToken), 404);
+    $activationLink = expectResponse('Activation: registering professional generates a link', requestApi($baseUrl, 'POST', "/api/patients/{$managedPatientId}/activation-link", ['email' => $managedEmail], $professionalToken), 200, static function (mixed $payload): void {
+        assertTrue(str_starts_with((string) ($payload['data']['activation_path'] ?? ''), '/ativar-conta?'), 'activation path was not returned');
+    });
+    parse_str((string) parse_url($activationLink['data']['activation_path'], PHP_URL_QUERY), $linkQuery);
+    $managedPassword = "Nuva-Managed-{$suffix}!";
+    expectResponse('Activation: patient sets a password with the link', requestApi($baseUrl, 'POST', '/api/activate-account', [
+        'email' => $linkQuery['email'] ?? '',
+        'token' => $linkQuery['token'] ?? '',
+        'password' => $managedPassword,
+        'password_confirmation' => $managedPassword,
+    ]), 200);
+    expectResponse('Activation: link works only once', requestApi($baseUrl, 'POST', '/api/activate-account', [
+        'email' => $linkQuery['email'] ?? '',
+        'token' => $linkQuery['token'] ?? '',
+        'password' => $managedPassword,
+        'password_confirmation' => $managedPassword,
+    ]), 400);
+    expectResponse('Activation: account is now active', requestApi($baseUrl, 'GET', "/api/patients/{$managedPatientId}", null, $professionalToken), 200, static function (mixed $payload): void {
+        assertTrue(($payload['data']['portal_status'] ?? null) === 'active', 'activated account is not active');
+    });
+    expectResponse('Activation: active account cannot get a new link', requestApi($baseUrl, 'POST', "/api/patients/{$managedPatientId}/activation-link", [], $professionalToken), 409);
+
+    $noEmailPatient = expectResponse('Activation: patient registered without e-mail', requestApi($baseUrl, 'POST', '/api/patients', [
+        'name' => 'Paciente sem e-mail E2E ' . $suffix,
+        'cpf' => '999.888.777-66',
+        'phone' => '11955550000',
+    ], $professionalToken), 201, static function (mixed $payload): void {
+        assertTrue(array_key_exists('email', $payload['data'] ?? []) && $payload['data']['email'] === null, 'placeholder e-mail was exposed');
+    });
+    $noEmailPatientId = (int) ($noEmailPatient['data']['id'] ?? 0);
+    // The API hides the internal placeholder address; register it for cleanup.
+    $placeholder = $database->prepare('SELECT u.email FROM users u JOIN patients p ON p.user_id = u.id WHERE p.id = ?');
+    $placeholder->execute([$noEmailPatientId]);
+    $testEmails[] = (string) $placeholder->fetchColumn();
+    $placeholder->closeCursor();
+    expectResponse('Activation: link requires an e-mail', requestApi($baseUrl, 'POST', "/api/patients/{$noEmailPatientId}/activation-link", [], $professionalToken), 422);
+    $noEmailAddress = "e2e-noemail-{$suffix}@example.test";
+    $testEmails[] = $noEmailAddress;
+    expectResponse('Activation: e-mail is set when generating the link', requestApi($baseUrl, 'POST', "/api/patients/{$noEmailPatientId}/activation-link", ['email' => $noEmailAddress], $professionalToken), 200, static function (mixed $payload) use ($noEmailAddress): void {
+        assertTrue(($payload['data']['email'] ?? null) === $noEmailAddress, 'patient e-mail was not updated');
+    });
 
     expectResponse('Procedure delete', requestApi($baseUrl, 'DELETE', "/api/procedures/{$procedureId}", null, $professionalToken), 204);
     $procedureId = null;

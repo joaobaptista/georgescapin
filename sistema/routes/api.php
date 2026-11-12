@@ -57,5 +57,6 @@ $router->group(['auth'], function (Router $r) {
         $pro->get('/api/patients/{patient}', [PatientController::class, 'show']);
         $pro->get('/api/patients/{id}/records', [MedicalRecordController::class, 'recordsForPatient']);
         $pro->post('/api/patients/{id}/records', [MedicalRecordController::class, 'storeRecord']);
+        $pro->post('/api/patients/{id}/activation-link', [PatientController::class, 'activationLink'], ['rate_limit:30,1']);
     });
 });

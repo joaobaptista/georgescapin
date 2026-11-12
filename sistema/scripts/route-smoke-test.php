@@ -334,6 +334,7 @@ $protectedRoutes = [
     ['GET', '/api/patients/999999999'],
     ['GET', '/api/patients/999999999/records'],
     ['POST', '/api/patients/999999999/records'],
+    ['POST', '/api/patients/999999999/activation-link'],
 ];
 
 foreach ($protectedRoutes as [$method, $path]) {

@@ -71,13 +71,21 @@ class Auth
         Database::execute("DELETE FROM personal_access_tokens WHERE token = ?", [$hashedToken]);
     }
 
+    /** Validade dos links de ativação/redefinição: enviados pela clínica, sem e-mail automático. */
+    public const PASSWORD_RESET_TTL_HOURS = 72;
+
+    /**
+     * Gera um token de uso único para criar/redefinir a senha. O banco guarda
+     * apenas o hash SHA-256; o valor em texto só existe no link entregue.
+     */
     public static function createPasswordResetToken(string $email): string
     {
         $token = bin2hex(random_bytes(24));
         Database::execute("DELETE FROM password_reset_tokens WHERE email = ?", [$email]);
+        // created_at é gravado pelo PHP para ser lido no mesmo fuso por strtotime().
         Database::insert(
-            "INSERT INTO password_reset_tokens (email, token, created_at) VALUES (?, ?, datetime('now'))",
-            [$email, $token]
+            "INSERT INTO password_reset_tokens (email, token, created_at) VALUES (?, ?, ?)",
+            [$email, hash('sha256', $token), date('Y-m-d H:i:s')]
         );
         return $token;
     }
@@ -86,19 +94,16 @@ class Auth
     {
         $record = Database::fetchOne(
             "SELECT * FROM password_reset_tokens WHERE email = ? AND token = ?",
-            [$email, $token]
+            [$email, hash('sha256', $token)]
         );
         if (!$record) {
             return false;
         }
 
-        // Expiração de 1 hora para token de redefinição
-        if (!empty($record['created_at'])) {
-            $createdAt = strtotime($record['created_at']);
-            if ($createdAt && (time() - $createdAt) > 3600) {
-                Database::execute("DELETE FROM password_reset_tokens WHERE email = ?", [$email]);
-                return false;
-            }
+        $createdAt = strtotime((string) ($record['created_at'] ?? ''));
+        if (!$createdAt || (time() - $createdAt) > self::PASSWORD_RESET_TTL_HOURS * 3600) {
+            Database::execute("DELETE FROM password_reset_tokens WHERE email = ?", [$email]);
+            return false;
         }
 
         return true;

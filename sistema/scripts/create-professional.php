@@ -57,7 +57,7 @@ $db = Database::getConnection();
 $db->beginTransaction();
 try {
     $userId = Database::insert(
-        "INSERT INTO users (name, email, password, role, created_at, updated_at) VALUES (?, ?, ?, 'professional', datetime('now'), datetime('now'))",
+        "INSERT INTO users (name, email, password, role, activated_at, created_at, updated_at) VALUES (?, ?, ?, 'professional', datetime('now'), datetime('now'), datetime('now'))",
         [$name, $email, Auth::hashPassword($password)]
     );
     $professionalId = Database::insert(

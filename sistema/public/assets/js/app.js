@@ -19,6 +19,7 @@ const state = {
     patientSearch: [],
     professionalSearch: [],
     selectedProfessional: null,
+    activationLink: null,
   },
 };
 
@@ -681,6 +682,21 @@ async function patientsView() {
   return professionalLayout('/pro/pacientes', 'Pacientes', `<section class="page-header"><h1 class="section-title">Pacientes</h1><p class="page-intro">Cadastre pacientes e acesse seus prontuários clínicos.</p></section><div class="two-columns"><section class="page-panel"><h2>Novo paciente</h2><form data-form="patient"><div class="form-group"><label for="patient-name">Nome</label><input id="patient-name" name="name" required></div><div class="two-columns"><div class="form-group"><label for="patient-cpf">CPF</label><input id="patient-cpf" name="cpf" required></div><div class="form-group"><label for="patient-phone">Telefone</label><input id="patient-phone" name="phone" required></div></div><div class="two-columns"><div class="form-group"><label for="patient-email">E-mail</label><input id="patient-email" name="email" type="email"></div><div class="form-group"><label for="patient-birthdate">Nascimento</label><input id="patient-birthdate" name="birth_date" type="date"></div></div><div class="form-group"><label for="patient-allergies">Alergias ou restrições</label><textarea id="patient-allergies" name="allergies"></textarea></div><div class="form-group"><label for="patient-notes">Observações iniciais</label><textarea id="patient-notes" name="notes"></textarea></div><button class="load-btn" type="submit">Cadastrar paciente</button></form></section><section class="page-panel"><h2>Buscar</h2><form data-form="patient-search" class="toolbar"><input aria-label="Buscar paciente" name="query" placeholder="Nome, CPF ou telefone"><button class="action-btn outline" type="submit">Buscar</button></form>${searchResults.length ? `<ul class="data-list">${searchResults.map((patient) => `<li><div class="data-row-main"><strong>${escapeHtml(patient.name)}</strong><span>${escapeHtml(patient.phone || patient.email || '')}</span></div><a class="action-btn outline" href="/pro/pacientes/prontuario/${Number(patient.id)}" data-nav>Prontuário</a></li>`).join('')}</ul>` : '<p class="muted">Use a busca para localizar um paciente específico.</p>'}</section></div><section class="page-panel"><div class="toolbar" style="justify-content:space-between"><h2>Pacientes cadastrados</h2><span class="muted">${patients.length} itens</span></div>${patients.length ? `<ul class="data-list">${patients.map((patient) => `<li><div class="data-row-main"><strong>${escapeHtml(patient.name || 'Paciente')}</strong><span>${escapeHtml(patient.cpf || 'CPF não informado')} · ${escapeHtml(patient.phone || 'Telefone não informado')}</span></div><a class="action-btn outline" href="/pro/pacientes/prontuario/${Number(patient.id)}" data-nav>Abrir prontuário</a></li>`).join('')}</ul>` : emptyState('Nenhum paciente cadastrado.')}</section>`);
 }
 
+function portalAccessPanel(patient) {
+  const heading = '<h3 style="margin-top:1.25rem">Acesso ao portal</h3>';
+  if (patient.portal_status === 'active') {
+    return `${heading}<p class="muted">Conta ativa. O paciente entra com o próprio e-mail e senha.</p>`;
+  }
+  if (!patient.can_generate_activation_link) {
+    return `${heading}<p class="muted">Conta ainda não ativada. O link de ativação é gerado pelo profissional que cadastrou o paciente.</p>`;
+  }
+  const link = state.cache.activationLink?.patientId === Number(patient.id) ? state.cache.activationLink : null;
+  const linkMarkup = link
+    ? `<div class="form-group"><label for="activation-link-url">Link de ativação</label><input id="activation-link-url" readonly value="${escapeHtml(link.url)}"></div><p class="muted">Válido por ${Number(link.expiresInHours)} horas e de uso único. Envie ao paciente por WhatsApp ou entregue pessoalmente.</p><button class="action-btn outline" type="button" data-action="copy-activation-link">Copiar link</button>`
+    : '';
+  return `${heading}<p class="muted">Conta ainda não ativada. Gere um link para o paciente criar a própria senha.</p><form data-form="activation-link" data-patient-id="${Number(patient.id)}"><div class="form-group"><label for="activation-email">E-mail do paciente (login)</label><input id="activation-email" name="email" type="email" required value="${escapeHtml(patient.email || '')}" placeholder="paciente@exemplo.com"></div><button class="load-btn" type="submit">${link ? 'Gerar novo link' : 'Gerar link de ativação'}</button></form>${linkMarkup}`;
+}
+
 async function patientRecordView(patientId) {
   const [patientPayload, recordPayload] = await Promise.all([
     api(`/api/patients/${patientId}`),
@@ -688,7 +704,7 @@ async function patientRecordView(patientId) {
   ]);
   const patient = patientPayload.data || patientPayload;
   const records = apiList(recordPayload);
-  return professionalLayout('/pro/pacientes', 'Prontuário', `<section class="page-header"><a class="page-link" href="/pro/pacientes" data-nav>← Voltar aos pacientes</a><h1 class="section-title">${escapeHtml(patient.name || 'Paciente')}</h1><p class="page-intro">${escapeHtml(patient.cpf || 'CPF não informado')} · ${escapeHtml(patient.phone || 'Telefone não informado')}</p></section><div class="two-columns"><section class="page-panel"><h2>Novo registro clínico</h2><form data-form="medical-record" data-patient-id="${Number(patient.id)}"><div class="form-group"><label for="record-notes">Evolução / notas clínicas</label><textarea id="record-notes" name="clinical_notes" required></textarea></div><div class="form-group"><label for="record-prescription">Prescrição ou orientação</label><textarea id="record-prescription" name="prescription"></textarea></div><button class="load-btn" type="submit">Salvar registro</button></form></section><section class="page-panel"><h2>Informações</h2><p class="muted"><strong>E-mail:</strong> ${escapeHtml(patient.email || 'Não informado')}</p><p class="muted"><strong>Nascimento:</strong> ${escapeHtml(patient.birth_date || 'Não informado')}</p></section></div><section class="page-panel"><h2>Histórico clínico</h2>${records.length ? `<ul class="data-list">${records.map((record) => `<li><div class="data-row-main"><strong>${formatDateTime(record.created_at)}</strong><span>${escapeHtml(record.clinical_notes || 'Sem notas clínicas')}</span>${record.prescription ? `<span>Prescrição: ${escapeHtml(record.prescription)}</span>` : ''}</div></li>`).join('')}</ul>` : emptyState('Ainda não há registros clínicos para este paciente.')}</section>`);
+  return professionalLayout('/pro/pacientes', 'Prontuário', `<section class="page-header"><a class="page-link" href="/pro/pacientes" data-nav>← Voltar aos pacientes</a><h1 class="section-title">${escapeHtml(patient.name || 'Paciente')}</h1><p class="page-intro">${escapeHtml(patient.cpf || 'CPF não informado')} · ${escapeHtml(patient.phone || 'Telefone não informado')}</p></section><div class="two-columns"><section class="page-panel"><h2>Novo registro clínico</h2><form data-form="medical-record" data-patient-id="${Number(patient.id)}"><div class="form-group"><label for="record-notes">Evolução / notas clínicas</label><textarea id="record-notes" name="clinical_notes" required></textarea></div><div class="form-group"><label for="record-prescription">Prescrição ou orientação</label><textarea id="record-prescription" name="prescription"></textarea></div><button class="load-btn" type="submit">Salvar registro</button></form></section><section class="page-panel"><h2>Informações</h2><p class="muted"><strong>E-mail:</strong> ${escapeHtml(patient.email || 'Não informado')}</p><p class="muted"><strong>Nascimento:</strong> ${escapeHtml(patient.birth_date || 'Não informado')}</p>${portalAccessPanel(patient)}</section></div><section class="page-panel"><h2>Histórico clínico</h2>${records.length ? `<ul class="data-list">${records.map((record) => `<li><div class="data-row-main"><strong>${formatDateTime(record.created_at)}</strong><span>${escapeHtml(record.clinical_notes || 'Sem notas clínicas')}</span>${record.prescription ? `<span>Prescrição: ${escapeHtml(record.prescription)}</span>` : ''}</div></li>`).join('')}</ul>` : emptyState('Ainda não há registros clínicos para este paciente.')}</section>`);
 }
 
 async function settingsView() {
@@ -780,7 +796,7 @@ async function render() {
     switch (route.name) {
       case 'login': view = loginView(); break;
       case 'register': view = registerView(); break;
-      case 'recover': view = simpleView('Recuperação de senha', 'A recuperação de senha ainda depende do atendimento da clínica. Entre em contato com o suporte para receber o link seguro.', 'ph-key'); break;
+      case 'recover': view = simpleView('Recuperação de senha', 'Fale com a clínica: depois de confirmar sua identidade, ela envia um link seguro, válido por 72 horas, para você criar uma nova senha.', 'ph-key'); break;
       case 'activate': view = activationView(); break;
       case 'dashboard': view = await professionalDashboardView(); break;
       case 'agenda': view = await agendaView(); break;
@@ -1058,6 +1074,26 @@ async function submitPatientBooking(form) {
   }
 }
 
+async function submitActivationLink(form) {
+  const patientId = Number(form.dataset.patientId);
+  const restore = setFormBusy(form, true, 'Gerando…');
+  try {
+    const payload = await api(`/api/patients/${patientId}/activation-link`, { method: 'POST', body: formValues(form) });
+    const data = payload.data || payload;
+    state.cache.activationLink = {
+      patientId,
+      url: `${location.origin}${data.activation_path}`,
+      expiresInHours: data.expires_in_hours,
+    };
+    showToast('Link de ativação gerado.');
+    render();
+  } catch (error) {
+    showToast(errorText(error), 'error');
+  } finally {
+    restore();
+  }
+}
+
 async function submitActivation(form) {
   const restore = setFormBusy(form, true, 'Ativando…');
   try {
@@ -1081,6 +1117,18 @@ async function handleAction(action, element) {
 
   if (action === 'logout') {
     await logout();
+    return;
+  }
+
+  if (action === 'copy-activation-link') {
+    const input = document.getElementById('activation-link-url');
+    try {
+      await navigator.clipboard.writeText(input.value);
+      showToast('Link copiado.');
+    } catch {
+      input.select();
+      showToast('Selecione o link e copie manualmente.', 'error');
+    }
     return;
   }
 
@@ -1311,6 +1359,7 @@ document.addEventListener('submit', async (event) => {
     'professional-search': submitProfessionalSearch,
     'patient-booking': submitPatientBooking,
     activation: submitActivation,
+    'activation-link': submitActivationLink,
   };
   await handlers[form.dataset.form]?.(form);
 });

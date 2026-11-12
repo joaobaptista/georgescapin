@@ -123,6 +123,7 @@ class AppointmentController
         // registrar atendimentos retroativos.
         $scheduledAt = $this->scheduledAtOrFail($validated['scheduled_at'], !$isProfessional);
         $procedureId = $this->procedureOrFail($validated['procedure_id'] ?? null, (int) $professionalId);
+        $this->assertSlotAvailable((int) $professionalId, $scheduledAt, $procedureId);
 
         $id = Database::insert(
             "INSERT INTO appointments (patient_id, professional_id, procedure_id, scheduled_at, status, notes, created_at, updated_at) VALUES (?, ?, ?, ?, 'scheduled', ?, datetime('now'), datetime('now'))",
@@ -175,6 +176,10 @@ class AppointmentController
             ? $this->procedureOrFail($validated['procedure_id'], (int) $appointment['professional_id'])
             : $appointment['procedure_id'];
 
+        if ($appointment['status'] !== 'canceled') {
+            $this->assertSlotAvailable((int) $appointment['professional_id'], $scheduledAt, $procedureId, $id);
+        }
+
         Database::execute(
             "UPDATE appointments SET procedure_id = ?, scheduled_at = ?, notes = ?, updated_at = datetime('now') WHERE id = ?",
             [
@@ -217,6 +222,16 @@ class AppointmentController
             if ($validated['status'] !== 'canceled') {
                 Response::json(['message' => 'Pacientes só possuem permissão para cancelar agendamentos.'], 403);
             }
+        }
+
+        // Reativar um agendamento cancelado volta a ocupar o horário.
+        if ($appointment['status'] === 'canceled' && $validated['status'] !== 'canceled') {
+            $this->assertSlotAvailable(
+                (int) $appointment['professional_id'],
+                $appointment['scheduled_at'],
+                $appointment['procedure_id'] !== null ? (int) $appointment['procedure_id'] : null,
+                $id
+            );
         }
 
         Database::execute(
@@ -282,6 +297,67 @@ class AppointmentController
         }
 
         return $date->format('Y-m-d H:i:s');
+    }
+
+    private const DEFAULT_DURATION_MINUTES = 30;
+
+    /**
+     * Recusa (409) um horário que se sobrepõe a outro atendimento não cancelado
+     * do mesmo profissional. A duração vem do procedimento (30 min sem
+     * procedimento). Atendimentos encostados (um termina quando o outro começa)
+     * são permitidos.
+     */
+    private function assertSlotAvailable(int $professionalId, string $startsAt, ?int $procedureId, ?int $ignoreAppointmentId = null): void
+    {
+        $start = new \DateTimeImmutable($startsAt);
+        $end = $start->modify('+' . $this->durationMinutes($procedureId) . ' minutes');
+
+        // Só atendimentos que começam até 1 dia antes podem alcançar este horário.
+        $candidates = Database::fetchAll(
+            "SELECT a.id, a.scheduled_at, proc.duration_minutes
+             FROM appointments a
+             LEFT JOIN procedures proc ON a.procedure_id = proc.id
+             WHERE a.professional_id = ?
+               AND a.status <> 'canceled'
+               AND a.id <> ?
+               AND a.scheduled_at >= ?
+               AND a.scheduled_at < ?",
+            [
+                $professionalId,
+                $ignoreAppointmentId ?? 0,
+                $start->modify('-1 day')->format('Y-m-d H:i:s'),
+                $end->format('Y-m-d H:i:s'),
+            ]
+        );
+
+        foreach ($candidates as $other) {
+            try {
+                $otherStart = new \DateTimeImmutable((string) $other['scheduled_at']);
+            } catch (\Exception) {
+                continue; // registro antigo com data ilegível não bloqueia a agenda
+            }
+            $otherMinutes = (int) ($other['duration_minutes'] ?? 0);
+            $otherEnd = $otherStart->modify('+' . ($otherMinutes > 0 ? $otherMinutes : self::DEFAULT_DURATION_MINUTES) . ' minutes');
+
+            if ($otherStart < $end && $start < $otherEnd) {
+                $window = $otherStart->format('d/m H:i') . ' às ' . $otherEnd->format('H:i');
+                Response::error("Horário indisponível: já existe um atendimento em {$window}.", 409, [
+                    'scheduled_at' => ["Conflita com outro atendimento ({$window})."],
+                ]);
+            }
+        }
+    }
+
+    private function durationMinutes(?int $procedureId): int
+    {
+        if ($procedureId === null) {
+            return self::DEFAULT_DURATION_MINUTES;
+        }
+
+        $procedure = Database::fetchOne("SELECT duration_minutes FROM procedures WHERE id = ?", [$procedureId]);
+        $minutes = (int) ($procedure['duration_minutes'] ?? 0);
+
+        return $minutes > 0 ? $minutes : self::DEFAULT_DURATION_MINUTES;
     }
 
     /** O procedimento, quando informado, precisa pertencer ao profissional do agendamento. */

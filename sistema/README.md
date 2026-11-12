@@ -13,7 +13,7 @@ public/index.php        Front controller da API e fallback das páginas
 public/index.html       Shell da interface nativa
 public/assets/css/      Estilos estáticos
 public/assets/js/       Router History API, sessão e telas nativas
-routes/api.php          27 endpoints REST
+routes/api.php          28 endpoints REST
 scripts/                Smoke test, E2E e verificação de deploy
 ```
 
@@ -48,6 +48,31 @@ Agendamentos aceitam `AAAA-MM-DD HH:MM[:SS]` (também com `T`) e são gravados
 como `AAAA-MM-DD HH:MM:SS`. Pacientes só agendam horários futuros, comparados no
 fuso da clínica: `APP_TIMEZONE` (padrão `America/Sao_Paulo`). O procedimento
 informado precisa pertencer ao profissional do agendamento.
+
+Dois atendimentos não cancelados do mesmo profissional não podem se sobrepor
+(HTTP 409). A duração é a do procedimento, ou 30 minutos sem procedimento;
+atendimentos encostados (um termina quando o outro começa) são permitidos.
+
+> ⚠️ **Ao atualizar um servidor existente, rode `composer migrate`.** A migração
+> cria a coluna `users.activated_at`; sem ela, cadastros e ativações falham.
+
+## Ativação de conta e recuperação de senha
+
+O sistema não envia e-mails nem mensagens. Os links são gerados e entregues
+pela clínica (WhatsApp, presencialmente), valem por 72 horas, funcionam uma
+única vez e encerram as sessões abertas da conta. O banco guarda só o hash.
+
+- **Paciente cadastrado pelo profissional:** a conta nasce pendente. Na tela do
+  prontuário, em *Acesso ao portal*, o profissional que fez o cadastro gera o
+  link de ativação (informando o e-mail do paciente, se faltar). Contas já
+  ativas não aceitam esse link, para que um profissional não assuma a conta do
+  paciente.
+- **Senha esquecida (paciente ou profissional):** a administração, no
+  servidor, depois de confirmar a identidade da pessoa:
+
+  ```bash
+  php scripts/password-reset-link.php --email=pessoa@exemplo.com --base-url=https://sistema.clinica.com.br
+  ```
 
 ## Cadastrar profissionais
 
@@ -98,7 +123,7 @@ php scripts/deploy-check.php
 
 - `test_api.php` verifica o núcleo de banco e autenticação.
 - `scripts/route-smoke-test.php` testa todas as rotas visuais, CORS, 404/405,
-  validação pública e os 23 endpoints protegidos sem token.
+  validação pública e os 24 endpoints protegidos sem token.
 - `scripts/api-e2e-test.php` percorre os fluxos autenticados, CRUD, papéis,
   logout, rate limit e proteção de prontuários. Ele aceita apenas localhost e
   exige um SQLite temporário.

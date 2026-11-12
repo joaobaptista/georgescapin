@@ -98,9 +98,20 @@ runTest('Password-reset token expiration', static function () use ($resetEmail):
     $token = Auth::createPasswordResetToken($resetEmail);
     assertTest(Auth::validatePasswordResetToken($resetEmail, $token), 'fresh reset token was rejected');
 
+    $stored = Database::fetchOne("SELECT token FROM password_reset_tokens WHERE email = ?", [$resetEmail]);
+    assertTest(($stored['token'] ?? null) === hash('sha256', $token), 'reset token is not stored as a SHA-256 hash');
+    assertTest(!Auth::validatePasswordResetToken($resetEmail, hash('sha256', $token)), 'stored hash was accepted as a token');
+
+    $almostExpired = Auth::PASSWORD_RESET_TTL_HOURS * 3600 - 60;
     Database::execute(
         "UPDATE password_reset_tokens SET created_at = ? WHERE email = ?",
-        [date('Y-m-d H:i:s', strtotime('-2 hours')), $resetEmail]
+        [date('Y-m-d H:i:s', time() - $almostExpired), $resetEmail]
+    );
+    assertTest(Auth::validatePasswordResetToken($resetEmail, $token), 'token was rejected before its expiry');
+
+    Database::execute(
+        "UPDATE password_reset_tokens SET created_at = ? WHERE email = ?",
+        [date('Y-m-d H:i:s', time() - Auth::PASSWORD_RESET_TTL_HOURS * 3600 - 60), $resetEmail]
     );
 
     assertTest(!Auth::validatePasswordResetToken($resetEmail, $token), 'expired reset token was accepted');

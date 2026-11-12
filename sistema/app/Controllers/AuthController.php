@@ -41,7 +41,7 @@ class AuthController
         $hashedPassword = Auth::hashPassword($validated['password']);
 
         $userId = Database::insert(
-            "INSERT INTO users (name, email, password, role, created_at, updated_at) VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))",
+            "INSERT INTO users (name, email, password, role, activated_at, created_at, updated_at) VALUES (?, ?, ?, ?, datetime('now'), datetime('now'), datetime('now'))",
             [$validated['name'], $validated['email'], $hashedPassword, $role]
         );
 
@@ -127,11 +127,13 @@ class AuthController
 
         $hashedPassword = Auth::hashPassword($validated['password']);
         Database::execute(
-            "UPDATE users SET password = ?, updated_at = datetime('now') WHERE id = ?",
+            "UPDATE users SET password = ?, activated_at = COALESCE(activated_at, datetime('now')), updated_at = datetime('now') WHERE id = ?",
             [$hashedPassword, $user['id']]
         );
 
+        // O link é de uso único, e uma senha nova encerra as sessões abertas.
         Auth::deletePasswordResetToken($validated['email']);
+        Database::execute("DELETE FROM personal_access_tokens WHERE user_id = ?", [$user['id']]);
 
         Response::json(['success' => true, 'message' => 'Conta ativada com sucesso!']);
     }

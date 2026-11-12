@@ -138,6 +138,9 @@ Database::insert(
     ]
 );
 
+// Contas de demonstração já nascem ativas (têm senha conhecida).
+$db->exec("UPDATE users SET activated_at = created_at");
+
 echo "✅ Banco de dados populado com sucesso!\n";
 echo "--- Usuários criados ---\n";
 echo "👨‍⚕️ Médico: dr.gabriel@nuva.com.br / senha123\n";
