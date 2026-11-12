@@ -370,6 +370,15 @@ try {
         'scheduled_at' => '2031-08-21 10:00:00',
     ], $patientToken), 422);
 
+    expectResponse('Patient cannot book in the past', requestApi($baseUrl, 'POST', '/api/appointments', [
+        'professional_id' => $professionalId,
+        'scheduled_at' => '2020-01-10 10:00',
+    ], $patientToken), 422);
+    expectResponse('Patient cannot book with a malformed date', requestApi($baseUrl, 'POST', '/api/appointments', [
+        'professional_id' => $professionalId,
+        'scheduled_at' => 'amanhã cedo',
+    ], $patientToken), 422);
+
     // The patient's own booking request is what links them to the professional.
     $patientAppointment = expectResponse('Patient appointment create', requestApi($baseUrl, 'POST', '/api/appointments', [
         'professional_id' => $professionalId,
@@ -382,13 +391,29 @@ try {
         assertTrue(listContainsId($payload, $patientId), 'patient who booked was not listed for the professional');
     });
 
-    $scheduledAt = '2031-08-20 10:30:00';
+    expectResponse('Appointment rejects an impossible date', requestApi($baseUrl, 'POST', '/api/appointments', [
+        'patient_id' => $patientId,
+        'scheduled_at' => '2031-02-30 10:00',
+    ], $professionalToken), 422);
+    expectResponse('Appointment rejects a procedure from another professional', requestApi($baseUrl, 'POST', '/api/appointments', [
+        'patient_id' => $patientId,
+        'procedure_id' => 999999999,
+        'scheduled_at' => '2031-08-20 10:30',
+    ], $professionalToken), 422);
+    expectResponse('Patient cannot attach a foreign procedure', requestApi($baseUrl, 'PUT', "/api/appointments/{$patientAppointmentId}", [
+        'procedure_id' => 999999999,
+        'scheduled_at' => '2031-08-21 10:00:00',
+    ], $patientToken), 422);
+
+    // datetime-local input ("T" separator, no seconds) is stored normalized.
     $professionalAppointment = expectResponse('Professional appointment create', requestApi($baseUrl, 'POST', '/api/appointments', [
         'patient_id' => $patientId,
         'procedure_id' => $procedureId,
-        'scheduled_at' => $scheduledAt,
+        'scheduled_at' => '2031-08-20T10:30',
         'notes' => 'Agendamento temporário E2E.',
-    ], $professionalToken), 201);
+    ], $professionalToken), 201, static function (mixed $payload): void {
+        assertTrue(($payload['data']['scheduled_at'] ?? null) === '2031-08-20 10:30:00', 'scheduled_at was not normalized');
+    });
     $professionalAppointmentId = (int) ($professionalAppointment['data']['id'] ?? 0);
     assertTrue($professionalAppointmentId > 0, 'appointment ID was not returned');
     expectResponse('Professional appointment update', requestApi($baseUrl, 'PUT', "/api/appointments/{$professionalAppointmentId}", [

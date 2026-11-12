@@ -40,6 +40,15 @@ composer migrate
 composer seed
 ```
 
+> ⚠️ O seed **apaga todas as tabelas** antes de inserir os dados de
+> demonstração. Ele nunca roda com `APP_ENV=production` e, se o banco já tiver
+> usuários, só continua com `composer seed -- --force`.
+
+Agendamentos aceitam `AAAA-MM-DD HH:MM[:SS]` (também com `T`) e são gravados
+como `AAAA-MM-DD HH:MM:SS`. Pacientes só agendam horários futuros, comparados no
+fuso da clínica: `APP_TIMEZONE` (padrão `America/Sao_Paulo`). O procedimento
+informado precisa pertencer ao profissional do agendamento.
+
 ## Cadastrar profissionais
 
 O cadastro público do site cria apenas contas de paciente. Contas de

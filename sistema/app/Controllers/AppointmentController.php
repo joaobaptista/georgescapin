@@ -119,13 +119,18 @@ class AppointmentController
             Response::error('Profissional não encontrado.', 422, ['professional_id' => ['Profissional não encontrado.']]);
         }
 
+        // Pacientes só solicitam horários futuros; o profissional pode
+        // registrar atendimentos retroativos.
+        $scheduledAt = $this->scheduledAtOrFail($validated['scheduled_at'], !$isProfessional);
+        $procedureId = $this->procedureOrFail($validated['procedure_id'] ?? null, (int) $professionalId);
+
         $id = Database::insert(
             "INSERT INTO appointments (patient_id, professional_id, procedure_id, scheduled_at, status, notes, created_at, updated_at) VALUES (?, ?, ?, ?, 'scheduled', ?, datetime('now'), datetime('now'))",
             [
                 $patientId,
                 $professionalId,
-                $validated['procedure_id'] ?? null,
-                $validated['scheduled_at'],
+                $procedureId,
+                $scheduledAt,
                 $validated['notes'] ?? null,
             ]
         );
@@ -159,11 +164,22 @@ class AppointmentController
 
         $validated = $validator->validated();
 
+        // Quem edita como paciente só pode mover o horário para o futuro.
+        $editsAsPatient = $appointment['professional_id'] !== $userProId;
+        $scheduledAt = $this->scheduledAtOrFail($validated['scheduled_at'], false);
+        if ($editsAsPatient && $scheduledAt !== $appointment['scheduled_at']) {
+            $scheduledAt = $this->scheduledAtOrFail($validated['scheduled_at'], true);
+        }
+
+        $procedureId = array_key_exists('procedure_id', $validated) && $validated['procedure_id'] !== null
+            ? $this->procedureOrFail($validated['procedure_id'], (int) $appointment['professional_id'])
+            : $appointment['procedure_id'];
+
         Database::execute(
             "UPDATE appointments SET procedure_id = ?, scheduled_at = ?, notes = ?, updated_at = datetime('now') WHERE id = ?",
             [
-                $validated['procedure_id'] ?? $appointment['procedure_id'],
-                $validated['scheduled_at'],
+                $procedureId,
+                $scheduledAt,
                 $validated['notes'] ?? $appointment['notes'],
                 $id,
             ]
@@ -232,6 +248,60 @@ class AppointmentController
         Database::execute("DELETE FROM appointments WHERE id = ?", [$id]);
 
         Response::noContent();
+    }
+
+    /**
+     * Aceita "AAAA-MM-DD HH:MM[:SS]" (com espaço ou "T") e devolve sempre
+     * "AAAA-MM-DD HH:MM:SS". Datas inexistentes, como 2031-02-30, são recusadas.
+     */
+    private function scheduledAtOrFail(mixed $value, bool $mustBeFuture): string
+    {
+        $value = trim((string) $value);
+        // Horários são digitados no fuso da clínica; a comparação com "agora"
+        // usa esse mesmo fuso, independentemente do fuso do servidor.
+        $clinicTimezone = new \DateTimeZone($_ENV['APP_TIMEZONE'] ?? getenv('APP_TIMEZONE') ?: 'America/Sao_Paulo');
+        $date = null;
+        foreach (['Y-m-d H:i:s', 'Y-m-d H:i', 'Y-m-d\TH:i:s', 'Y-m-d\TH:i'] as $format) {
+            $candidate = \DateTimeImmutable::createFromFormat('!' . $format, $value, $clinicTimezone);
+            if ($candidate !== false && $candidate->format($format) === $value) {
+                $date = $candidate;
+                break;
+            }
+        }
+
+        if ($date === null) {
+            Response::error('Data e horário inválidos.', 422, [
+                'scheduled_at' => ['Informe data e horário no formato AAAA-MM-DD HH:MM.'],
+            ]);
+        }
+
+        if ($mustBeFuture && $date <= new \DateTimeImmutable('now', $clinicTimezone)) {
+            Response::error('Escolha um horário futuro.', 422, [
+                'scheduled_at' => ['Não é possível agendar em uma data ou horário que já passou.'],
+            ]);
+        }
+
+        return $date->format('Y-m-d H:i:s');
+    }
+
+    /** O procedimento, quando informado, precisa pertencer ao profissional do agendamento. */
+    private function procedureOrFail(mixed $procedureId, int $professionalId): ?int
+    {
+        if ($procedureId === null || $procedureId === '') {
+            return null;
+        }
+
+        $procedure = Database::fetchOne(
+            "SELECT id FROM procedures WHERE id = ? AND professional_id = ?",
+            [(int) $procedureId, $professionalId]
+        );
+        if (!$procedure) {
+            Response::error('Procedimento não encontrado para este profissional.', 422, [
+                'procedure_id' => ['Procedimento não encontrado para este profissional.'],
+            ]);
+        }
+
+        return (int) $procedureId;
     }
 
     private function getAppointmentById(int $id): ?array

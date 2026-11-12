@@ -11,11 +11,28 @@ if (file_exists(dirname(__DIR__) . '/.env')) {
     $dotenv->safeLoad();
 }
 
-echo "Populando banco de dados com dados iniciais...\n";
-
 $db = Database::getConnection();
 
-$driver = $_ENV['DB_CONNECTION'] ?? 'sqlite';
+$driver = $_ENV['DB_CONNECTION'] ?? getenv('DB_CONNECTION') ?: 'sqlite';
+
+// O seed APAGA todas as tabelas antes de inserir os dados de demonstração.
+// - Em APP_ENV=production ele nunca roda.
+// - Em um banco que já tem usuários, exige --force (composer seed -- --force).
+$appEnv = strtolower((string) ($_ENV['APP_ENV'] ?? getenv('APP_ENV') ?: ''));
+if ($appEnv === 'production') {
+    fwrite(STDERR, "❌ Seed bloqueado: APP_ENV=production. O seed apaga todos os dados do banco.\n");
+    exit(1);
+}
+
+$existingUsers = (int) $db->query('SELECT COUNT(*) FROM users')->fetchColumn();
+if ($existingUsers > 0 && !in_array('--force', $argv ?? [], true)) {
+    fwrite(STDERR, "❌ Seed cancelado: o banco ({$driver}) já tem {$existingUsers} usuário(s).\n");
+    fwrite(STDERR, "   O seed APAGA pacientes, agendamentos e prontuários existentes.\n");
+    fwrite(STDERR, "   Para substituir tudo pelos dados de demonstração, rode: php database/seed.php --force\n");
+    exit(1);
+}
+
+echo "Populando banco de dados com dados iniciais...\n";
 
 // Desativar restrições de FK para limpeza
 if ($driver === 'mysql') {
