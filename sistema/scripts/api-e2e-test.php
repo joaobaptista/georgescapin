@@ -352,6 +352,36 @@ try {
     ], $professionalToken), 200);
     expectResponse('Procedure validation', requestApi($baseUrl, 'POST', '/api/procedures', [], $professionalToken), 422);
 
+    // A self-registered patient is not linked to any professional yet: the
+    // professional can neither book, list, search nor open them.
+    expectResponse('Professional cannot book an unlinked patient', requestApi($baseUrl, 'POST', '/api/appointments', [
+        'patient_id' => $patientId,
+        'scheduled_at' => '2031-08-19 09:00:00',
+    ], $professionalToken), 403);
+    expectResponse('Unlinked patient is not listed', requestApi($baseUrl, 'GET', '/api/patients', null, $professionalToken), 200, static function (mixed $payload) use ($patientId): void {
+        assertTrue(!listContainsId($payload, $patientId), 'unlinked self-registered patient was listed');
+    });
+    expectResponse('Unlinked patient is not searchable', requestApi($baseUrl, 'GET', '/api/patients/search?q=E2E', null, $professionalToken), 200, static function (mixed $payload) use ($patientId): void {
+        assertTrue(!listContainsId($payload, $patientId), 'unlinked self-registered patient was returned in search');
+    });
+    expectResponse('Unlinked patient records are protected', requestApi($baseUrl, 'GET', "/api/patients/{$patientId}/records", null, $professionalToken), 403);
+    expectResponse('Patient cannot book a missing professional', requestApi($baseUrl, 'POST', '/api/appointments', [
+        'professional_id' => 999999999,
+        'scheduled_at' => '2031-08-21 10:00:00',
+    ], $patientToken), 422);
+
+    // The patient's own booking request is what links them to the professional.
+    $patientAppointment = expectResponse('Patient appointment create', requestApi($baseUrl, 'POST', '/api/appointments', [
+        'professional_id' => $professionalId,
+        'scheduled_at' => '2031-08-21 10:00:00',
+        'notes' => 'Solicitação temporária feita pelo paciente.',
+    ], $patientToken), 201);
+    $patientAppointmentId = (int) ($patientAppointment['data']['id'] ?? 0);
+    assertTrue($patientAppointmentId > 0, 'patient-created appointment ID was not returned');
+    expectResponse('Linked patient is listed', requestApi($baseUrl, 'GET', '/api/patients', null, $professionalToken), 200, static function (mixed $payload) use ($patientId): void {
+        assertTrue(listContainsId($payload, $patientId), 'patient who booked was not listed for the professional');
+    });
+
     $scheduledAt = '2031-08-20 10:30:00';
     $professionalAppointment = expectResponse('Professional appointment create', requestApi($baseUrl, 'POST', '/api/appointments', [
         'patient_id' => $patientId,
@@ -386,13 +416,6 @@ try {
         assertTrue(listContainsId($payload, $recordId), 'patient cannot see own new medical record');
     });
 
-    $patientAppointment = expectResponse('Patient appointment create', requestApi($baseUrl, 'POST', '/api/appointments', [
-        'professional_id' => $professionalId,
-        'scheduled_at' => '2031-08-21 10:00:00',
-        'notes' => 'Solicitação temporária feita pelo paciente.',
-    ], $patientToken), 201);
-    $patientAppointmentId = (int) ($patientAppointment['data']['id'] ?? 0);
-    assertTrue($patientAppointmentId > 0, 'patient-created appointment ID was not returned');
     expectResponse('Patient appointment delete', requestApi($baseUrl, 'DELETE', "/api/appointments/{$patientAppointmentId}", null, $patientToken), 204);
     expectResponse('Professional appointment delete', requestApi($baseUrl, 'DELETE', "/api/appointments/{$professionalAppointmentId}", null, $professionalToken), 204);
 
@@ -420,16 +443,43 @@ try {
     $secondProfessionalEmail = "e2e-professional-{$suffix}@example.test";
     $secondProfessionalPassword = "Nuva-Pro-{$suffix}!";
     $testEmails[] = $secondProfessionalEmail;
-    $secondProfessional = expectResponse('Second professional registration', requestApi($baseUrl, 'POST', '/api/register', [
+    expectResponse('Public registration cannot create a professional', requestApi($baseUrl, 'POST', '/api/register', [
         'name' => 'Profissional E2E ' . $suffix,
         'email' => $secondProfessionalEmail,
         'password' => $secondProfessionalPassword,
         'password_confirmation' => $secondProfessionalPassword,
         'role' => 'professional',
-    ]), 201);
-    $secondProfessionalToken = $secondProfessional['token'];
+    ]), 403);
+    $leftover = $database->prepare('SELECT COUNT(*) FROM users WHERE email = ?');
+    $leftover->execute([$secondProfessionalEmail]);
+    $leftoverCount = (int) $leftover->fetchColumn();
+    $leftover->closeCursor(); // an open SQLite cursor would block the server's writes
+    assertTrue($leftoverCount === 0, 'refused professional registration still created a user');
+
+    // Professionals are provisioned by the clinic (scripts/create-professional.php).
+    // The test provisions one directly and issues a token without using /api/login,
+    // so the login rate-limit count below stays unchanged.
+    $database->prepare("INSERT INTO users (name, email, password, role, created_at, updated_at) VALUES (?, ?, ?, 'professional', datetime('now'), datetime('now'))")
+        ->execute(['Profissional E2E ' . $suffix, $secondProfessionalEmail, password_hash($secondProfessionalPassword, PASSWORD_BCRYPT)]);
+    $secondProfessionalUserId = (int) $database->lastInsertId();
+    $database->prepare("INSERT INTO professionals (user_id, specialty, created_at, updated_at) VALUES (?, 'Clínico Geral', datetime('now'), datetime('now'))")
+        ->execute([$secondProfessionalUserId]);
+    $secondProfessionalToken = bin2hex(random_bytes(32));
+    $database->prepare("INSERT INTO personal_access_tokens (user_id, token, name, created_at) VALUES (?, ?, 'auth_token', datetime('now'))")
+        ->execute([$secondProfessionalUserId, hash('sha256', $secondProfessionalToken)]);
     expectResponse('BOLA: second professional cannot show another patient', requestApi($baseUrl, 'GET', "/api/patients/{$managedPatientId}", null, $secondProfessionalToken), 403);
     expectResponse('BOLA: second professional cannot list another record', requestApi($baseUrl, 'GET', "/api/patients/{$managedPatientId}/records", null, $secondProfessionalToken), 403);
+    expectResponse('BOLA: second professional cannot book another patient to gain access', requestApi($baseUrl, 'POST', '/api/appointments', [
+        'patient_id' => $managedPatientId,
+        'scheduled_at' => '2031-08-22 10:00:00',
+    ], $secondProfessionalToken), 403);
+    expectResponse('BOLA: records stay protected after the booking attempt', requestApi($baseUrl, 'GET', "/api/patients/{$managedPatientId}/records", null, $secondProfessionalToken), 403);
+    expectResponse('BOLA: second professional lists no foreign patients', requestApi($baseUrl, 'GET', '/api/patients', null, $secondProfessionalToken), 200, static function (mixed $payload) use ($managedPatientId, $patientId): void {
+        assertTrue(!listContainsId($payload, $managedPatientId) && !listContainsId($payload, $patientId), 'foreign patients were listed');
+    });
+    expectResponse('BOLA: second professional cannot search foreign patients', requestApi($baseUrl, 'GET', '/api/patients/search?q=E2E', null, $secondProfessionalToken), 200, static function (mixed $payload) use ($managedPatientId, $patientId): void {
+        assertTrue(!listContainsId($payload, $managedPatientId) && !listContainsId($payload, $patientId), 'foreign patients were returned in search');
+    });
     expectResponse('BOLA: second professional cannot create another record', requestApi($baseUrl, 'POST', "/api/patients/{$managedPatientId}/records", [
         'clinical_notes' => 'Tentativa indevida.',
     ], $secondProfessionalToken), 403);

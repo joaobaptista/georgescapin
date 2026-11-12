@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Core\ClinicalAccess;
 use App\Core\Database;
 use App\Core\Request;
 use App\Core\Response;
@@ -104,6 +105,18 @@ class AppointmentController
 
         if (!$professionalId || !$patientId) {
             Response::json(['message' => 'Perfil do usuário incompleto para realizar o agendamento.'], 422);
+        }
+
+        if ($isProfessional) {
+            // O agendamento cria vínculo de acesso ao prontuário. Por isso o
+            // profissional só agenda pacientes que já estão vinculados a ele;
+            // um vínculo novo nasce do cadastro na clínica ou de uma solicitação
+            // feita pelo próprio paciente.
+            if (!ClinicalAccess::professionalCanAccessPatient((int) $professionalId, $patientId)) {
+                Response::json(['message' => 'Paciente não encontrado entre os seus pacientes.'], 403);
+            }
+        } elseif (!Database::fetchOne("SELECT id FROM professionals WHERE id = ?", [$professionalId])) {
+            Response::error('Profissional não encontrado.', 422, ['professional_id' => ['Profissional não encontrado.']]);
         }
 
         $id = Database::insert(

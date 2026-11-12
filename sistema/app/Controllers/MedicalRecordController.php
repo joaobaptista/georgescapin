@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Core\ClinicalAccess;
 use App\Core\Database;
 use App\Core\Request;
 use App\Core\Response;
@@ -29,7 +30,7 @@ class MedicalRecordController
                 Response::json(['message' => 'Paciente não encontrado.'], 404);
             }
 
-            if (!$userProfessionalId || !$this->professionalCanAccessPatient((int) $userProfessionalId, $patientId)) {
+            if (!$userProfessionalId || !ClinicalAccess::professionalCanAccessPatient((int) $userProfessionalId, $patientId)) {
                 Response::json(['message' => 'Acesso não autorizado ao prontuário deste paciente.'], 403);
             }
         }
@@ -59,7 +60,7 @@ class MedicalRecordController
             Response::json(['message' => 'Paciente não encontrado.'], 404);
         }
 
-        if (!$this->professionalCanAccessPatient((int) $professionalId, $patientId)) {
+        if (!ClinicalAccess::professionalCanAccessPatient((int) $professionalId, $patientId)) {
             Response::json(['message' => 'Acesso não autorizado ao prontuário deste paciente.'], 403);
         }
 
@@ -137,25 +138,5 @@ class MedicalRecordController
             ] : null,
             'created_at'      => $r['created_at'],
         ];
-    }
-
-    private function professionalCanAccessPatient(int $professionalId, int $patientId): bool
-    {
-        $patient = Database::fetchOne(
-            "SELECT p.id
-             FROM patients p
-             WHERE p.id = ?
-               AND (
-                   p.professional_id = ?
-                   OR EXISTS (
-                       SELECT 1
-                       FROM appointments a
-                       WHERE a.patient_id = p.id AND a.professional_id = ?
-                   )
-               )",
-            [$patientId, $professionalId, $professionalId]
-        );
-
-        return $patient !== null;
     }
 }

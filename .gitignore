@@ -63,6 +63,14 @@ temp/
 *.sql.gz
 build/
 
+# Dumps e bancos locais: contêm dados de pacientes (LGPD). Schemas e seeds
+# (schema.sql, seed.sql) continuam versionados.
+backup*.sql
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.db
+
 # Uploads (ignora arquivos gerados por upload dinâmico no CMS, mantendo .htaccess e .gitkeep)
 /public/uploads/*
 !/public/uploads/.htaccess

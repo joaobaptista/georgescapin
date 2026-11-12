@@ -8,6 +8,39 @@ use App\Core\Router;
 use App\Middlewares\CorsMiddleware;
 use Dotenv\Dotenv;
 
+// Erros nunca são exibidos ao cliente: detalhes internos (SQL, caminhos,
+// stack trace) vão apenas para o log do servidor. APP_DEBUG=true inclui a
+// mensagem da exceção na resposta, somente para desenvolvimento local.
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+
+function nuvaDebugEnabled(): bool
+{
+    return filter_var($_ENV['APP_DEBUG'] ?? getenv('APP_DEBUG') ?: 'false', FILTER_VALIDATE_BOOL);
+}
+
+set_exception_handler(static function (Throwable $error): void {
+    error_log(sprintf(
+        '[nuva] %s: %s em %s:%d',
+        $error::class,
+        $error->getMessage(),
+        $error->getFile(),
+        $error->getLine()
+    ));
+
+    if (!headers_sent()) {
+        http_response_code(500);
+        header('Content-Type: application/json; charset=utf-8');
+    }
+
+    $payload = ['message' => 'Erro interno do servidor. Tente novamente em instantes.'];
+    if (nuvaDebugEnabled()) {
+        $payload['error'] = $error->getMessage();
+    }
+
+    echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+});
+
 // Load .env
 if (file_exists(dirname(__DIR__) . '/.env')) {
     $dotenv = Dotenv::createImmutable(dirname(__DIR__));

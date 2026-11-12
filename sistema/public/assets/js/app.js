@@ -202,14 +202,10 @@ function registerView() {
     <header class="auth-header" style="text-align:center; margin-bottom: 1.5rem;">
       <p class="brand-logo" style="justify-content:center; margin-bottom:.5rem;">Nüva<span class="brand-dot">.</span></p>
       <h1>Crie sua conta</h1>
-      <p class="auth-subtitle">Escolha seu perfil e comece a usar o portal.</p>
+      <p class="auth-subtitle">Crie sua conta de paciente para buscar profissionais e acompanhar seus tratamentos.</p>
     </header>
     <form class="auth-form" data-form="register">
-      <fieldset class="role-selector">
-        <legend>Como você usará o Nüva?</legend>
-        <label class="role-card active"><input type="radio" name="role" value="patient" checked><i class="ph-fill ph-user"></i><span><strong>Sou paciente</strong><small>Busco profissionais e acompanho meus tratamentos.</small></span></label>
-        <label class="role-card"><input type="radio" name="role" value="professional"><i class="ph-fill ph-stethoscope"></i><span><strong>Sou profissional</strong><small>Gerencio agenda, pacientes e procedimentos.</small></span></label>
-      </fieldset>
+      <input type="hidden" name="role" value="patient">
       <div class="form-group"><label for="register-name">Nome</label><input id="register-name" name="name" required autocomplete="name" placeholder="Seu nome completo"></div>
       <div class="form-group"><label for="register-email">E-mail</label><input id="register-email" name="email" type="email" required autocomplete="email" placeholder="seu@email.com"></div>
       <div class="form-group"><label for="register-password">Senha</label><div class="password-field"><input id="register-password" name="password" type="password" required minlength="8" autocomplete="new-password" placeholder="Mínimo de 8 caracteres"><button type="button" class="password-toggle" data-action="toggle-password" data-target="register-password" aria-label="Mostrar senha"><i class="ph ph-eye"></i></button></div></div>
@@ -217,6 +213,7 @@ function registerView() {
       <button class="load-btn auth-submit-btn" type="submit">Criar conta</button>
     </form>
     <p class="switch-link">Já possui uma conta? <a href="/login" data-nav>Fazer login</a></p>
+    <p class="form-help" style="text-align:center">É profissional de saúde? O acesso é liberado pela clínica.</p>
   `);
 }
 

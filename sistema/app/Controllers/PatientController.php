@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Core\Auth;
+use App\Core\ClinicalAccess;
 use App\Core\Database;
 use App\Core\Request;
 use App\Core\Response;
@@ -21,9 +22,9 @@ class PatientController
         $sql = "SELECT p.*, u.name, u.email 
                 FROM patients p 
                 LEFT JOIN users u ON p.user_id = u.id 
-                WHERE p.professional_id = ? OR p.professional_id IS NULL
+                WHERE " . ClinicalAccess::PATIENT_SCOPE_SQL . "
                 ORDER BY p.id DESC";
-        $patients = Database::fetchAll($sql, [$professionalId]);
+        $patients = Database::fetchAll($sql, ClinicalAccess::patientScopeParams((int) $professionalId));
 
         $formatted = array_map(function ($p) {
             return [
@@ -62,7 +63,7 @@ class PatientController
         }
 
         $professionalId = (int) ($request->user['professional']['id'] ?? 0);
-        if ($userRole === 'professional' && (!$professionalId || !$this->professionalCanAccessPatient($professionalId, (int) $patient['id']))) {
+        if ($userRole === 'professional' && (!$professionalId || !ClinicalAccess::professionalCanAccessPatient($professionalId, (int) $patient['id']))) {
             Response::json(['message' => 'Acesso não autorizado aos dados deste paciente.'], 403);
         }
 
@@ -165,9 +166,12 @@ class PatientController
                 FROM patients p 
                 LEFT JOIN users u ON p.user_id = u.id 
                 WHERE (u.name LIKE ? OR p.cpf LIKE ? OR p.phone LIKE ?)
-                  AND (p.professional_id = ? OR p.professional_id IS NULL)
+                  AND " . ClinicalAccess::PATIENT_SCOPE_SQL . "
                 LIMIT 15";
-        $params = ["%{$query}%", "%{$query}%", "%{$query}%", $professionalId];
+        $params = array_merge(
+            ["%{$query}%", "%{$query}%", "%{$query}%"],
+            ClinicalAccess::patientScopeParams((int) $professionalId)
+        );
 
         $patients = Database::fetchAll($sql, $params);
 
@@ -183,25 +187,5 @@ class PatientController
         }, $patients);
 
         Response::json(['data' => $formatted]);
-    }
-
-    private function professionalCanAccessPatient(int $professionalId, int $patientId): bool
-    {
-        $patient = Database::fetchOne(
-            "SELECT p.id
-             FROM patients p
-             WHERE p.id = ?
-               AND (
-                   p.professional_id = ?
-                   OR EXISTS (
-                       SELECT 1
-                       FROM appointments a
-                       WHERE a.patient_id = p.id AND a.professional_id = ?
-                   )
-               )",
-            [$patientId, $professionalId, $professionalId]
-        );
-
-        return $patient !== null;
     }
 }

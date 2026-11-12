@@ -40,6 +40,19 @@ composer migrate
 composer seed
 ```
 
+## Cadastrar profissionais
+
+O cadastro público do site cria apenas contas de paciente. Contas de
+profissional dão acesso a dados clínicos e são criadas pela clínica:
+
+```bash
+NUVA_PRO_PASSWORD='senha-inicial' php scripts/create-professional.php \
+  --name="Dra. Ana Souza" --email=ana@clinica.com.br \
+  --specialty="Dermatologia" --crm="CRM/SP 000000" --city="São Paulo" --state=SP
+```
+
+Sem `NUVA_PRO_PASSWORD`, uma senha aleatória é gerada e exibida uma única vez.
+
 ## Credenciais de demonstração
 
 | Perfil | E-mail | Senha |
@@ -96,3 +109,9 @@ consulte [DEPLOYMENT.md](DEPLOYMENT.md).
 - Rotas de paciente/profissional usam middleware de papel e controles de posse.
 - Prontuários profissionais exigem vínculo por cadastro na clínica ou
   agendamento, impedindo acesso direto a pacientes de outro profissional.
+  O profissional só agenda pacientes já vinculados a ele; um vínculo novo por
+  agendamento nasce de uma solicitação do próprio paciente. Listagem e busca de
+  pacientes seguem a mesma regra (`App\Core\ClinicalAccess`).
+- Exceções não tratadas retornam JSON 500 genérico e são registradas no log do
+  servidor. `APP_DEBUG=true` inclui a mensagem do erro na resposta — use apenas
+  em desenvolvimento local.

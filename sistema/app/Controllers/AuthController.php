@@ -28,7 +28,16 @@ class AuthController
             Response::error('Este e-mail já está em uso.', 422, ['email' => ['Este e-mail já está em uso.']]);
         }
 
-        $role = $validated['role'] ?? 'patient';
+        // Perfis profissionais dão acesso a dados clínicos e não podem ser
+        // criados pelo cadastro público: use scripts/create-professional.php.
+        if (($validated['role'] ?? 'patient') !== 'patient') {
+            Response::error(
+                'O cadastro de profissionais é feito pela clínica. Solicite seu acesso à administração.',
+                403
+            );
+        }
+
+        $role = 'patient';
         $hashedPassword = Auth::hashPassword($validated['password']);
 
         $userId = Database::insert(
@@ -36,17 +45,10 @@ class AuthController
             [$validated['name'], $validated['email'], $hashedPassword, $role]
         );
 
-        if ($role === 'patient') {
-            Database::insert(
-                "INSERT INTO patients (user_id, cpf, phone, created_at, updated_at) VALUES (?, ?, ?, datetime('now'), datetime('now'))",
-                [$userId, $validated['cpf'] ?? null, $validated['phone'] ?? null]
-            );
-        } elseif ($role === 'professional') {
-            Database::insert(
-                "INSERT INTO professionals (user_id, specialty, created_at, updated_at) VALUES (?, 'Clínico Geral', datetime('now'), datetime('now'))",
-                [$userId]
-            );
-        }
+        Database::insert(
+            "INSERT INTO patients (user_id, cpf, phone, created_at, updated_at) VALUES (?, ?, ?, datetime('now'), datetime('now'))",
+            [$userId, $validated['cpf'] ?? null, $validated['phone'] ?? null]
+        );
 
         $user = Database::fetchOne("SELECT id, name, email, role, created_at, updated_at FROM users WHERE id = ?", [$userId]);
         $user['patient'] = Database::fetchOne("SELECT * FROM patients WHERE user_id = ?", [$userId]);
