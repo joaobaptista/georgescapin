@@ -31,6 +31,11 @@ final class Response
         return new self(204);
     }
 
+    public static function redirect(string $location): self
+    {
+        return new self(302, ['Location' => $location, 'Cache-Control' => 'no-store']);
+    }
+
     public static function html(string $html): self
     {
         return new self(200, ['Content-Type' => 'text/html; charset=utf-8'], $html);

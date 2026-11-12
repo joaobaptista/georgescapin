@@ -14,6 +14,8 @@ final class Request
 
     public ?string $clientIp = null;
 
+    public bool $https = false;
+
     public function __construct(
         private readonly string $method,
         private readonly string $path,
@@ -74,6 +76,18 @@ final class Request
     public function header(string $name): ?string
     {
         return $this->headers[strtolower($name)] ?? null;
+    }
+
+    public function cookie(string $name): ?string
+    {
+        foreach (explode(';', (string) $this->header('cookie')) as $pair) {
+            [$key, $value] = array_pad(explode('=', trim($pair), 2), 2, null);
+            if ($key === $name && $value !== null) {
+                return urldecode($value);
+            }
+        }
+
+        return null;
     }
 
     public function bearerToken(): ?string

@@ -2939,3 +2939,51 @@ td:empty::after {
     transform: translateY(0);
   }
 }
+
+/* "Entrar com o Google" (layout per Google's sign-in branding: white, logo + text) */
+.google-btn {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #dadce0;
+  border-radius: var(--md-shape-corner-full);
+  color: #3c4043;
+  display: flex;
+  font-family: var(--font-plain);
+  font-size: 14px;
+  font-weight: 600;
+  gap: 12px;
+  justify-content: center;
+  padding: 11px 16px;
+  text-decoration: none;
+  transition: background-color var(--transition-short), box-shadow var(--transition-short);
+  width: 100%;
+}
+.google-btn:hover {
+  background: #f8f9fa;
+  box-shadow: 0 1px 3px rgba(60, 64, 67, .2);
+}
+.google-btn:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+.google-note {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 13px;
+  margin: .5rem 0 0;
+  text-align: center;
+}
+.auth-divider {
+  align-items: center;
+  color: var(--md-sys-color-on-surface-variant);
+  display: flex;
+  font-size: 13px;
+  gap: 12px;
+  margin: 1.25rem 0;
+}
+.auth-divider::before,
+.auth-divider::after {
+  background: var(--md-sys-color-outline-variant);
+  content: '';
+  flex: 1;
+  height: 1px;
+}

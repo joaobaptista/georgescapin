@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\MedicalRecordController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\ProcedureController;
@@ -16,6 +17,12 @@ use App\Http\Router;
 $router->post('/api/register', [AuthController::class, 'register'], ['rate_limit:10,1']);
 $router->post('/api/login', [AuthController::class, 'login'], ['rate_limit:10,1']);
 $router->post('/api/activate-account', [AuthController::class, 'activateAccount'], ['rate_limit:10,1']);
+
+// Entrar / cadastrar com o Google (OpenID Connect + PKCE)
+$router->get('/api/auth/providers', [GoogleAuthController::class, 'providers']);
+$router->get('/api/auth/google/redirect', [GoogleAuthController::class, 'redirect'], ['rate_limit:20,1']);
+$router->get('/api/auth/google/callback', [GoogleAuthController::class, 'callback'], ['rate_limit:20,1']);
+$router->post('/api/auth/google/exchange', [GoogleAuthController::class, 'exchange'], ['rate_limit:20,1']);
 
 // Busca pública de profissionais
 $router->get('/api/professionals/search', [ProfessionalController::class, 'search'], ['rate_limit:60,1']);

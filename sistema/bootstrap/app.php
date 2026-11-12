@@ -12,6 +12,9 @@ use App\Application\Clinical\MedicalRecordQueries;
 use App\Application\Clinical\PatientQueries;
 use App\Application\Clinical\ProfessionalQueries;
 use App\Application\Identity\AccountQueries;
+use App\Application\Identity\GoogleIdentityProvider;
+use App\Application\Identity\LoginCodeStore;
+use App\Application\Identity\OAuthStateStore;
 use App\Application\Identity\SessionPolicy;
 use App\Application\Scheduling\AppointmentQueries;
 use App\Application\Shared\RateLimiter;
@@ -60,6 +63,9 @@ foreach ([
     RateLimiter::class => P\PdoRateLimiter::class,
     PasswordHasher::class => BcryptPasswordHasher::class,
     AuditTrail::class => P\PdoAuditTrail::class,
+    GoogleIdentityProvider::class => \App\Infrastructure\Google\GoogleOAuthClient::class,
+    OAuthStateStore::class => P\PdoOAuthStateStore::class,
+    LoginCodeStore::class => P\PdoLoginCodeStore::class,
     UserRepository::class => P\PdoUserRepository::class,
     SessionRepository::class => P\PdoSessionRepository::class,
     PasswordResetRepository::class => P\PdoPasswordResetRepository::class,

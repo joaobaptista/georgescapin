@@ -45,7 +45,10 @@ apontam sempre para dentro: o domínio não conhece banco, HTTP nem framework.
   solicitação do paciente.
 - **Catalog (catálogo)** — `Procedure`: cada profissional gerencia o próprio.
 - **Identity (identidade)** — `User`, `Session` (12 h de validade, 2 h de
-  inatividade), links de senha de uso único.
+  inatividade), links de senha de uso único e login com o Google
+  (`StartGoogleSignIn` / `CompleteGoogleSignIn`: OpenID Connect com PKCE,
+  `state` preso a cookie HttpOnly, `nonce`, e-mail verificado; o navegador
+  recebe só um código de uso único, trocado por sessão via POST).
 - **Audit (auditoria)** — `AuditTrail`: quem leu ou alterou dados sensíveis.
 
 ## Leitura e escrita
@@ -93,7 +96,8 @@ php scripts/audit-log.php --patient=12   # quem acessou o prontuário do pacient
 php scripts/audit-log.php --user=5       # o que o usuário 5 fez
 ```
 
-Eventos: `login.succeeded`, `login.failed`, `patient.viewed`,
+Eventos: `login.succeeded`, `login.failed`, `login.succeeded_google`,
+`account.registered_google`, `account.google_linked`, `patient.viewed`,
 `medical_records.viewed`, `medical_record.created`,
 `patient.activation_link_issued`, `appointment.deleted`,
 `account.password_changed`, `account.email_changed`, `account.password_set`.

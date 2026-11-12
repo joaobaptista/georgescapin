@@ -21,6 +21,7 @@ const state = {
     selectedProfessional: null,
     activationLink: null,
   },
+  authProviders: null,
 };
 
 function readStoredUser() {
@@ -172,6 +173,43 @@ function authLayout(content) {
   return `<main class="auth-body"><div class="auth-container"><section class="auth-card card">${content}</section></div></main>`;
 }
 
+// "Entrar com o Google": shown only when the server has Google configured.
+async function loadAuthProviders() {
+  if (state.authProviders) return state.authProviders;
+  try {
+    const response = await fetch('/api/auth/providers', { headers: { Accept: 'application/json' } });
+    state.authProviders = response.ok ? await response.json() : { google: false };
+  } catch {
+    state.authProviders = { google: false };
+  }
+  return state.authProviders;
+}
+
+const GOOGLE_LOGO = '<svg class="google-logo" viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
+
+function googleSignIn(label, note = '') {
+  if (!state.authProviders?.google) return '';
+  return `<a class="google-btn" href="/api/auth/google/redirect">${GOOGLE_LOGO}<span>${escapeHtml(label)}</span></a>${note ? `<p class="google-note">${escapeHtml(note)}</p>` : ''}<div class="auth-divider"><span>ou com e-mail e senha</span></div>`;
+}
+
+// Google sends the browser back to /login#google_code=… (or #google_error=…).
+// The fragment never reaches servers; the one-time code is exchanged via POST.
+async function consumeGoogleRedirect() {
+  if (!/google_(code|error)=/.test(location.hash)) return;
+  const params = new URLSearchParams(location.hash.slice(1));
+  history.replaceState(null, '', location.pathname + location.search);
+  if (params.get('google_error')) {
+    showToast(params.get('google_error'), 'error');
+    return;
+  }
+  try {
+    saveSession(await api('/api/auth/google/exchange', { method: 'POST', body: { code: params.get('google_code') } }));
+    history.replaceState(null, '', currentHome());
+  } catch (error) {
+    showToast(errorText(error), 'error');
+  }
+}
+
 function loginView() {
   return authLayout(`
     <header class="auth-header" style="text-align:center; margin-bottom: 1.75rem;">
@@ -179,6 +217,7 @@ function loginView() {
       <h1>Bem-vindo de volta</h1>
       <p class="auth-subtitle">Acesse sua conta para continuar.</p>
     </header>
+    ${googleSignIn('Continuar com o Google')}
     <form class="auth-form" data-form="login">
       <div class="form-group">
         <label for="login-email">E-mail</label>
@@ -205,6 +244,7 @@ function registerView() {
       <h1>Crie sua conta</h1>
       <p class="auth-subtitle">Crie sua conta de paciente para buscar profissionais e acompanhar seus tratamentos.</p>
     </header>
+    ${googleSignIn('Cadastrar com o Google', 'Cria uma conta de paciente vinculada à sua conta Google.')}
     <form class="auth-form" data-form="register">
       <input type="hidden" name="role" value="patient">
       <div class="form-group"><label for="register-name">Nome</label><input id="register-name" name="name" required autocomplete="name" placeholder="Seu nome completo"></div>
@@ -841,8 +881,8 @@ async function render() {
   try {
     let view;
     switch (route.name) {
-      case 'login': view = loginView(); break;
-      case 'register': view = registerView(); break;
+      case 'login': await loadAuthProviders(); view = loginView(); break;
+      case 'register': await loadAuthProviders(); view = registerView(); break;
       case 'recover': view = simpleView('Recuperação de senha', 'Fale com a clínica: depois de confirmar sua identidade, ela envia um link seguro, válido por 72 horas, para você criar uma nova senha.', 'ph-key'); break;
       case 'activate': view = activationView(); break;
       case 'dashboard': view = await professionalDashboardView(); break;
@@ -1429,4 +1469,4 @@ if (localStorage.getItem('nuva_theme') === 'dark') {
   document.documentElement.setAttribute('data-theme', 'dark');
 }
 
-render();
+consumeGoogleRedirect().finally(render);

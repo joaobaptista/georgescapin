@@ -15,7 +15,8 @@ $container = require dirname(__DIR__) . '/bootstrap/app.php';
 $clientIp = $container->get(ClientIp::class);
 $request = Request::fromGlobals();
 $request->clientIp = $clientIp->resolve($_SERVER);
+$request->https = $clientIp->isHttps($_SERVER);
 
 $container->get(Kernel::class)
-    ->handle($request, $clientIp->isHttps($_SERVER))
+    ->handle($request, $request->https)
     ->send($request->method() !== 'HEAD');

@@ -38,6 +38,26 @@ Não execute `npm install` nem `npm run build`.
 5. Nunca rode `composer seed` em produção: ele apaga todas as tabelas
    (bloqueado com `APP_ENV=production`).
 
+## Entrar com o Google
+
+Opcional: sem configuração, o botão não aparece.
+
+1. No [Google Cloud Console](https://console.cloud.google.com/apis/credentials),
+   crie um **ID do cliente OAuth** do tipo *Aplicativo da Web*. Prefira um
+   cliente próprio da clínica: o nome mostrado na tela de consentimento do
+   Google é o do projeto do cliente.
+2. Em *URIs de redirecionamento autorizados*, adicione
+   `https://SEU-DOMINIO/api/auth/google/callback` (igual a `APP_URL` +
+   `/api/auth/google/callback`).
+3. Na tela de consentimento OAuth, os escopos são apenas `openid`, `email` e
+   `profile` (não exigem verificação do Google).
+4. No `.env`: `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` (o segredo nunca vai
+   para o git). Rode `composer migrate`.
+
+Regras: o e-mail precisa ser verificado pelo Google; contas ativas com o mesmo
+e-mail são vinculadas; pessoas novas viram pacientes; contas criadas pela
+clínica e ainda não ativadas continuam usando o link de ativação.
+
 ## Contas e senhas
 
 O sistema não envia e-mails nem mensagens.

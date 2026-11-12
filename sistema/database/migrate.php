@@ -47,3 +47,14 @@ if (!in_array('last_used_at', $columns('personal_access_tokens'), true)) {
     $ended = $db->execute('DELETE FROM personal_access_tokens');
     echo "✅ Coluna personal_access_tokens.last_used_at criada ({$ended} sessão(ões) antiga(s) encerrada(s)).\n";
 }
+
+// 2026-11: users.google_sub — sign in with Google (stable Google account id).
+if (!in_array('google_sub', $columns('users'), true)) {
+    if ($db->driver === 'mysql') {
+        $pdo->exec('ALTER TABLE users ADD COLUMN google_sub VARCHAR(255) NULL, ADD UNIQUE KEY users_google_sub (google_sub)');
+    } else {
+        $pdo->exec('ALTER TABLE users ADD COLUMN google_sub TEXT NULL');
+        $pdo->exec('CREATE UNIQUE INDEX IF NOT EXISTS users_google_sub ON users (google_sub)');
+    }
+    echo "✅ Coluna users.google_sub criada (login com o Google).\n";
+}

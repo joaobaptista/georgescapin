@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     role VARCHAR(50) NOT NULL DEFAULT 'patient',
     activated_at DATETIME NULL,
+    google_sub VARCHAR(255) NULL UNIQUE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -116,4 +117,19 @@ CREATE TABLE IF NOT EXISTS rate_limits (
     rate_key VARCHAR(191) PRIMARY KEY,
     hits INT NOT NULL,
     reset_at DATETIME NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Login com o Google: sign-ins pendentes (state + PKCE) e códigos de uso único.
+CREATE TABLE IF NOT EXISTS oauth_states (
+    state_hash CHAR(64) PRIMARY KEY,
+    code_verifier VARCHAR(128) NOT NULL,
+    nonce VARCHAR(128) NOT NULL,
+    created_at DATETIME NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS login_codes (
+    code_hash CHAR(64) PRIMARY KEY,
+    user_id INT NOT NULL,
+    created_at DATETIME NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

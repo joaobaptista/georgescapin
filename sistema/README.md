@@ -133,6 +133,10 @@ php scripts/deploy-check.php
 NUVA_UI_BASE_URL=http://127.0.0.1:8000 NUVA_UI_ALLOW_MUTATIONS=1 node scripts/ui-e2e-test.mjs --shots="$TEST_DIR/telas"
 ```
 
+O login com o Google é testado contra um provedor falso local
+(`tests/fake-google`), sem tocar no Google; o passo a passo está no cabeçalho
+de `scripts/google-login-e2e-test.php`.
+
 - `tests/run.php` (`composer test`) cobre as regras de domínio e os casos de uso
   com repositórios em memória, e falha se uma camada interna depender de uma
   externa.

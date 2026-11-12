@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Application\Identity\GoogleIdentity;
+use App\Application\Identity\GoogleIdentityProvider;
+use App\Application\Identity\LoginCodeStore;
+use App\Application\Identity\OAuthStateStore;
 use App\Application\Shared\RateLimiter;
 use App\Application\Shared\Transaction;
 use App\Domain\Audit\AuditTrail;
@@ -111,6 +115,17 @@ final class MemoryUsers implements UserRepository
         return null;
     }
 
+    public function findByGoogleSubject(string $subject): ?User
+    {
+        foreach ($this->users as $user) {
+            if ($user->googleSubject === $subject) {
+                return $user;
+            }
+        }
+
+        return null;
+    }
+
     public function emailInUse(string $email, ?int $exceptUserId = null): bool
     {
         $user = $this->findByEmail($email);
@@ -122,7 +137,7 @@ final class MemoryUsers implements UserRepository
     {
         $id = $user->id ?? count($this->users) + 1;
         $this->users[$id] = $user->id === null
-            ? new User($id, $user->name, $user->email, $user->passwordHash, $user->role, $user->activatedAt)
+            ? new User($id, $user->name, $user->email, $user->passwordHash, $user->role, $user->activatedAt, $user->googleSubject)
             : $user;
 
         return $id;
@@ -284,5 +299,68 @@ final class MemoryAppointments implements AppointmentRepository
         }
 
         return $slots;
+    }
+}
+
+final class FakeGoogle implements GoogleIdentityProvider
+{
+    public ?GoogleIdentity $identity = null;
+
+    /** @var list<array{code: string, verifier: string}> */
+    public array $exchanges = [];
+
+    public function isConfigured(): bool
+    {
+        return true;
+    }
+
+    public function authorizationUrl(string $state, string $codeChallenge, string $nonce): string
+    {
+        return 'https://google.test/auth?' . http_build_query(['state' => $state, 'code_challenge' => $codeChallenge, 'nonce' => $nonce]);
+    }
+
+    public function exchange(string $code, string $codeVerifier): GoogleIdentity
+    {
+        $this->exchanges[] = ['code' => $code, 'verifier' => $codeVerifier];
+
+        return $this->identity;
+    }
+}
+
+final class MemoryOAuthStates implements OAuthStateStore
+{
+    /** @var array<string, array{codeVerifier: string, nonce: string, createdAt: \DateTimeImmutable}> */
+    public array $states = [];
+
+    public function put(string $stateHash, string $codeVerifier, string $nonce, \DateTimeImmutable $createdAt): void
+    {
+        $this->states[$stateHash] = ['codeVerifier' => $codeVerifier, 'nonce' => $nonce, 'createdAt' => $createdAt];
+    }
+
+    public function take(string $stateHash): ?array
+    {
+        $entry = $this->states[$stateHash] ?? null;
+        unset($this->states[$stateHash]);
+
+        return $entry;
+    }
+}
+
+final class MemoryLoginCodes implements LoginCodeStore
+{
+    /** @var array<string, array{userId: int, createdAt: \DateTimeImmutable}> */
+    public array $codes = [];
+
+    public function put(string $codeHash, int $userId, \DateTimeImmutable $createdAt): void
+    {
+        $this->codes[$codeHash] = ['userId' => $userId, 'createdAt' => $createdAt];
+    }
+
+    public function take(string $codeHash): ?array
+    {
+        $entry = $this->codes[$codeHash] ?? null;
+        unset($this->codes[$codeHash]);
+
+        return $entry;
     }
 }

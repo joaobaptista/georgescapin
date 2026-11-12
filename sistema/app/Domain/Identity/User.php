@@ -14,6 +14,8 @@ final class User
         public string $passwordHash,
         public readonly Role $role,
         public ?\DateTimeImmutable $activatedAt,
+        /** Stable Google account id ("sub"), once the user signs in with Google. */
+        public ?string $googleSubject = null,
     ) {
     }
 
@@ -25,5 +27,10 @@ final class User
     public function activate(\DateTimeImmutable $now): void
     {
         $this->activatedAt ??= $now;
+    }
+
+    public function linkGoogle(string $subject): void
+    {
+        $this->googleSubject = $subject;
     }
 }

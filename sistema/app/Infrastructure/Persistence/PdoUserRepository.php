@@ -24,6 +24,11 @@ final class PdoUserRepository implements UserRepository
         return $this->map($this->db->one('SELECT * FROM users WHERE email = ?', [$email]));
     }
 
+    public function findByGoogleSubject(string $subject): ?User
+    {
+        return $this->map($this->db->one('SELECT * FROM users WHERE google_sub = ?', [$subject]));
+    }
+
     public function emailInUse(string $email, ?int $exceptUserId = null): bool
     {
         return $this->db->one('SELECT id FROM users WHERE email = ? AND id <> ?', [$email, $exceptUserId ?? 0]) !== null;
@@ -33,14 +38,14 @@ final class PdoUserRepository implements UserRepository
     {
         if ($user->id === null) {
             return $this->db->insert(
-                'INSERT INTO users (name, email, password, role, activated_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [$user->name, $user->email, $user->passwordHash, $user->role->value, Db::ts($user->activatedAt), Db::ts($now), Db::ts($now)],
+                'INSERT INTO users (name, email, password, role, activated_at, google_sub, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                [$user->name, $user->email, $user->passwordHash, $user->role->value, Db::ts($user->activatedAt), $user->googleSubject, Db::ts($now), Db::ts($now)],
             );
         }
 
         $this->db->execute(
-            'UPDATE users SET name = ?, email = ?, password = ?, activated_at = ?, updated_at = ? WHERE id = ?',
-            [$user->name, $user->email, $user->passwordHash, Db::ts($user->activatedAt), Db::ts($now), $user->id],
+            'UPDATE users SET name = ?, email = ?, password = ?, activated_at = ?, google_sub = ?, updated_at = ? WHERE id = ?',
+            [$user->name, $user->email, $user->passwordHash, Db::ts($user->activatedAt), $user->googleSubject, Db::ts($now), $user->id],
         );
 
         return $user->id;
@@ -59,6 +64,7 @@ final class PdoUserRepository implements UserRepository
             (string) $row['password'],
             Role::from((string) $row['role']),
             !empty($row['activated_at']) ? new \DateTimeImmutable((string) $row['activated_at']) : null,
+            $row['google_sub'] ?? null,
         );
     }
 }

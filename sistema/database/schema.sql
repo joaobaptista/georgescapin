@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     password TEXT NOT NULL,
     role TEXT NOT NULL DEFAULT 'patient',
     activated_at DATETIME,
+    google_sub TEXT UNIQUE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -105,4 +106,18 @@ CREATE TABLE IF NOT EXISTS rate_limits (
     rate_key TEXT PRIMARY KEY,
     hits INTEGER NOT NULL,
     reset_at DATETIME NOT NULL
+);
+
+-- Login com o Google: sign-ins pendentes (state + PKCE) e códigos de uso único.
+CREATE TABLE IF NOT EXISTS oauth_states (
+    state_hash TEXT PRIMARY KEY,
+    code_verifier TEXT NOT NULL,
+    nonce TEXT NOT NULL,
+    created_at DATETIME NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS login_codes (
+    code_hash TEXT PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at DATETIME NOT NULL
 );
