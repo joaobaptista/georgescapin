@@ -59,11 +59,15 @@ $excludedPatterns = [
     '#^build(/|$)#',
     '#^\.DS_Store#',
     '#/\.DS_Store#',
-    '#^\.env$#', // NUNCA empacota o .env local com credenciais de desenvolvimento
+    // NUNCA empacota .env (credenciais) nem dumps/bancos com dados de pacientes,
+    // em qualquer pasta: antes, sistema/backup_nuva_*.sql entrava no pacote.
+    '#(^|/)\.env$#',
     '#\.log$#',
-    '#\.sqlite$#',
-    '#^site_george\.zip$#',
-    '#^backup_.*\.sql$#',
+    '#\.(sqlite|sqlite3|db)$#',
+    '#\.sqlite-journal$#',
+    '#(^|/)backup[^/]*\.sql$#',
+    '#\.sql\.gz$#',
+    '#\.zip$#',
 ];
 
 $fileCount = 0;
